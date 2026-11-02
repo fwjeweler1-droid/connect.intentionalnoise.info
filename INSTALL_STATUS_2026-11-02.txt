@@ -1,0 +1,29 @@
+INTENTIONAL NOISE CONNECT — NOV 2 HANDOFF
+STATUS: READY-TO-DEPLOY ZIP / NOT DEPLOYED.
+
+Confirmed on GitHub before preparation:
+- connect.intentionalnoise.info lives in repository fwjeweler1-droid/connect.intentionalnoise.info, main branch.
+- Homepage and auth.html exist. Live homepage still has informational cards rather than linked ones.
+- Existing search.html is a limited guitarist search page.
+- Main intentionalnoise.info already has a Connect navigation link.
+- Direct attempted GitHub update of Connect index.html returned 403 "Resource not accessible by integration." NO LIVE FILES WERE CHANGED.
+
+Prepared release files in ZIP root:
+- index.html: approved design, click-through cards, landing search.
+- auth.html: signup/login with private-by-default profiles and search return.
+- search.html and search-categories.js: member-only search by role/instrument, keyword and distance.
+- gig-requests.html: free member-only gig posting and browsing.
+- make-contact.html, build-together.html, show-your-work.html, stay-in-control.html, no-paid-ranking.html, find-musicians.html: destination pages.
+- payment-gateway.html: dummy $12/year optional band-page gateway; DOES NOT CHARGE.
+- backend/*.sql: manual Supabase migrations, NOT public website files.
+- SEO_REFERENCE/*: older suggested SEO assets for separate review; do not blindly replace live pages.
+
+Critical install order:
+1. Back up current repository main and Supabase schema/policies; do not disturb original .info repo/DNS.
+2. Review SQL changes, verify policies in Supabase staging, then apply migrations only when approved.
+3. Deploy root .html/.js files into Connect repository, keeping untouched existing assets.
+4. Test signup, confirmation, login, return to selected search, member-only access, anonymous queries, public/private profile, gig requests, signout, mobile layout.
+5. Link the optional band-page feature to /payment-gateway.html ONLY when navigation is actually added. No Stripe/PayPal checkout until explicitly approved.
+6. Verify SSL and redirect behavior; do not assume www.connect DNS is needed.
+
+No public repository or Supabase deployment has been performed. Completion must be tested after deployment.

@@ -1,0 +1,21 @@
+CONNECT WORKING UPDATE PACKAGE — 2026-11-01
+STATUS: STAGED ONLY. Not deployed.
+
+Changes included
+- Six landing-page cards link to their destination pages.
+- Landing search: musician, sound engineer, band, vocalist, guitarist, bassist, drummer, keyboard player, producer and songwriter.
+- Free signup/login; no payment step. Search choices survive login and email confirmation.
+- Matching names and profiles require login. Listing is optional; profiles stay private by default.
+- Member profiles can record multiple roles and individual/band type.
+- Existing guitarist search expanded to multiple categories with keyword and distance filters.
+- Messaging and audition pages accurately explain development status.
+
+INSTALL ORDER
+1. Run backend/Connect_Member_Search.sql and backend/Connect_Gig_Requests.sql in Supabase SQL Editor. Do not upload backend files to GitHub Pages.
+2. Upload the root HTML and JS files to connect.intentionalnoise.info, preserving existing files not included in this update.
+3. Keep Supabase email verification enabled; retain owner-only profile write policies.
+4. Verify signup, email confirmation, login return to search, private/listed profile behavior, anonymous database denial, and signout clearing results.
+
+Existing auth/search code was extended. Automated local checks cover links, JavaScript syntax, role matching and safe return URLs. Live Supabase account and database checks remain to be run after installation.
+Latest additions: Current gig requests (free member-only posting and browsing), Available for gigs (explicit profile flag), and an optional $12/year band-page proposal. No checkout, subscription or domain purchase is enabled.
+No live repository or database changes were applied by this package.

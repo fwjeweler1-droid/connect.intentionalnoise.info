@@ -1,0 +1,9 @@
+OPTIONAL BAND WEBPAGE — PROPOSAL ONLY
+Price idea: $12 per year for one limited public promotional page.
+Keep member search, gig requests, profiles and member contact free.
+Suggested page: band name, short bio, one image, music/video links, gig dates, booking link. No arbitrary scripts or unlimited media hosting.
+Default example path: connect.intentionalnoise.info/myband (use a URL-safe band-name slug).
+An existing domain can redirect visitors to that page. Keeping a band's own domain in the address bar requires a custom-domain hosting/routing feature plus HTTPS and domain ownership verification; DNS alone cannot target a /myband path.
+myband.band is a separate registered domain under the real .band extension, not a path. Availability and registration/renewal fees are separate and not included in the proposed $12 hosting fee.
+Payment collection, subscription activation, page publishing and custom-domain routing are NOT implemented or enabled. Price, limits, renewal and expiration policy need a final product decision.
+Sources checked 2026-11-01: https://www.iana.org/domains/root/db/.band.html ; https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site
