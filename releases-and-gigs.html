@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101d28">
+  <meta name="description" content="FROG — Free Releases Or Gigs. Discover music released by Intentional Noise Connect members and find musicians and gig opportunities.">
+  <title>FROG — Free Releases Or Gigs | Intentional Noise Connect</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark}
+    *{box-sizing:border-box}
+    body{margin:0;background:#101d28;color:#f4f7f8}
+    a{color:#7de1df}
+    .wrap{width:min(1120px,calc(100% - 36px));margin-inline:auto}
+    header{background:#142633;border-bottom:1px solid #2b4655}
+    nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0}
+    nav a{font-size:.92rem;text-decoration:none}
+    .accent{color:#7de1df}
+    main{padding:40px 0 64px}
+    .eyebrow{color:#7de1df;font-size:.8rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+    h1{font-size:clamp(2rem,5vw,3.4rem);margin:12px 0}
+    .intro{color:#bdd0d8;line-height:1.6;margin-bottom:30px;max-width:720px}
+    .columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:stretch}
+    .panel{background:#172b38;border:1px solid #2c4a59;border-radius:16px;padding:24px;min-width:0}
+    .panel-heading{display:flex;gap:16px;align-items:center;min-height:132px;margin-bottom:14px}
+    .panel-heading h2{font-size:clamp(1.6rem,3vw,2.15rem);margin:0 0 5px}
+    .panel-heading p{margin:0;color:#bdd0d8;line-height:1.4}
+    .frog{width:120px;height:auto;aspect-ratio:1;object-fit:contain;flex:0 0 120px;border-radius:12px}
+    .barrel{display:flex;align-items:center;justify-content:center;width:112px;min-width:112px;height:112px;border-radius:18px;background:#223c47;font-size:4.5rem;line-height:1}
+    .speech{color:#7de1df;font-size:1.15rem;font-weight:800;margin-top:8px!important}
+    h3{font-size:1.13rem;margin:18px 0 12px}
+    .feature{display:grid;grid-template-columns:126px minmax(0,1fr);gap:16px;padding:15px;border:1px solid #355261;border-radius:12px;background:#10232f}
+    .art-slot{width:126px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:8px;border:1px dashed #7794a2;background:#213846;color:#c1d3da;padding:10px;font-size:.85rem}
+    .feature h4{font-size:1.05rem;margin:2px 0 8px}
+    .feature p{margin:4px 0 8px;color:#c5d6dc;line-height:1.55;font-size:.95rem}
+    .meta{color:#96bac7!important;font-size:.85rem!important}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;background:#7de1df;color:#0c2027;border-radius:9px;text-decoration:none;font-weight:750;margin-top:10px}
+    .btn.secondary{background:transparent;color:#f4f7f8;border:1px solid #698b99}
+    .subgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+    .subcard{background:#10232f;border:1px solid #355261;border-radius:12px;padding:15px;min-width:0}
+    .subcard h4{margin:0 0 6px}
+    .subcard p{margin:0;color:#c5d6dc;font-size:.93rem;line-height:1.5}
+    .subcard .art-slot{width:100%;max-width:94px;margin-bottom:10px}
+    .footnote{margin-top:18px;color:#9cb9c4;font-size:.88rem;line-height:1.5}
+    footer{border-top:1px solid #2b4655;color:#a9c1ca;padding:26px 0;font-size:.9rem}
+    a:focus-visible{outline:3px solid #7de1df;outline-offset:4px}
+    @media(max-width:850px){.columns{grid-template-columns:1fr}}
+    @media(max-width:520px){nav{flex-wrap:wrap}.panel{padding:16px}.panel-heading{min-height:110px}.frog{width:94px;flex-basis:94px}.barrel{width:90px;min-width:90px;height:90px;font-size:3.6rem}.feature{grid-template-columns:92px minmax(0,1fr);gap:12px}.feature .art-slot{width:92px}.subgrid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header><nav class="wrap"><strong>INTENTIONAL NOISE <span class="accent">CONNECT</span></strong><a href="/">Connect home</a></nav></header>
+  <main class="wrap">
+    <div class="eyebrow">FROG · Free Releases Or Gigs</div>
+    <h1>What's new. Who's playing.</h1>
+    <p class="intro">Discover releases from registered artists, find musicians available for gigs, and see who's looking for talent. Member networking stays free.</p>
+    <div class="columns">
+      <section class="panel" aria-labelledby="releases-title">
+        <div class="panel-heading">
+          <img class="frog" src="https://raw.githubusercontent.com/fwjeweler1-droid/connect.intentionalnoise.info/main/FROG_Official_IntentionalNoise_Info_Mascot_LOCKED.png" width="120" height="120" alt="FROG, the official Free Releases Or Gigs mascot" loading="lazy">
+          <div><h2 id="releases-title">Releases</h2><p class="speech">Here's what's croakin'...</p></div>
+        </div>
+        <h3>Featured member release</h3>
+        <article class="feature">
+          <div class="art-slot" aria-label="Reserved for member release cover image">Release artwork</div>
+          <div>
+            <h4>Featured artist release</h4>
+            <p class="meta">Artist · Release date</p>
+            <p>Album or single information from a registered member will appear here.</p>
+            <a class="btn secondary" href="/auth.html">Member sign in</a>
+          </div>
+        </article>
+        <p class="footnote">Planned: each member can list up to five releases with cover art, release details, and official listening or presale links. Upload and member management are not active on this page yet.</p>
+      </section>
+      <section class="panel" aria-labelledby="gigs-title">
+        <div class="panel-heading">
+          <div class="barrel" role="img" aria-label="A barrel of gigs">🛢️</div>
+          <div><h2 id="gigs-title">Gigs</h2><p class="speech">Grab your gig!</p></div>
+        </div>
+        <h3>Find your next opportunity</h3>
+        <div class="subgrid">
+          <article class="subcard">
+            <div class="art-slot" aria-label="Reserved for available-for-gigs image">Gig image</div>
+            <h4>Available for gigs</h4>
+            <p>Musicians and bands offering performances or services.</p>
+            <a class="btn secondary" href="/search.html?category=available_for_gigs&amp;distance=any">Find talent</a>
+          </article>
+          <article class="subcard">
+            <div class="art-slot" aria-label="Reserved for looking-for-gigs image">Gig image</div>
+            <h4>Looking for</h4>
+            <p>Openings, auditions, event bookings, and collaboration requests.</p>
+            <a class="btn secondary" href="/gig-requests.html">View requests</a>
+          </article>
+        </div>
+        <p class="footnote">Planned: each member can publish one Gig or Presale link with a small promotional image. Posting and image uploads require a later database and interface connection.</p>
+      </section>
+    </div>
+  </main>
+  <footer><div class="wrap">© 2026 Intentional Noise · FROG — Free Releases Or Gigs · <a href="/">Connect home</a></div></footer>
+</body>
+</html>
