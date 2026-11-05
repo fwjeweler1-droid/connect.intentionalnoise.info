@@ -8,7 +8,7 @@ const viewingOther=!!memberParam&&/^[0-9a-f]{8}-[0-9a-f-]{27,}$/.test(memberPara
 function note(msg){$('status').textContent=msg;}
 function setCounter(){ $('count').textContent=clips.length+' of 5 slots in use';$('save').disabled=clips.length>=5||uploading; }
 async function createPlayer(row,parent){
- const {data,error}=await db.storage.from('connect-clips').createSignedUrl(row.file_path,1200);
+ const {data,error}=await db.storage.from('connect-clips').createSignedUrl(row.file_path,120);
  if(error||!data?.signedUrl){const p=document.createElement('p');p.textContent='Preview unavailable. '+(error?.message||'');parent.append(p);return}
  const el=document.createElement(row.media_type==='video'?'video':'audio');el.src=data.signedUrl;el.controls=true;el.preload='none';el.className='media';if(row.media_type==='video')el.playsInline=true;parent.append(el);
 }
@@ -81,7 +81,7 @@ $('uploadForm').addEventListener('submit',async e=>{
   const row={user_id:member.id,title,media_type:f.type.startsWith('video/')?'video':'audio',file_path:path,mime_type:f.type,duration_seconds:Math.round(dur*100)/100,audience:$('audience').value};
   const {error:de}=await db.from('connect_work_previews').insert(row);
   if(de)throw de;
-  $('uploadForm').reset();renderFile();note('Saved! This work is pending review and not yet visible to others.');
+  $('uploadForm').reset();renderFile();note('Saved to your selected audience.');
  }catch(err){if(path)await db.storage.from('connect-clips').remove([path]);note('Could not save: '+(err.message||'Please try again.'))}
  finally{uploading=false;await loadClips();setCounter()}
 });
