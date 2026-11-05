@@ -19,12 +19,13 @@ function printRows(rows,isOwner){
   const card=document.createElement('article');card.className='clip';
   const name=document.createElement('h3');name.textContent=row.title;
   const info=document.createElement('p');info.className='muted';
-  info.textContent=(row.media_type==='audio'?'Audio':'Video')+' · '+Number(row.duration_seconds).toFixed(0)+' sec · '+(row.audience==='members'?'Connect members':'Public')+(isOwner?' · '+(row.status==='pending'?'Awaiting review':row.status==='approved'?'Approved':'Needs changes'):'');
+  info.textContent=(row.media_type==='audio'?'Audio':'Video')+' · '+Number(row.duration_seconds).toFixed(0)+' sec · '+(row.audience==='members'?'Connect members':'Public')+(isOwner?' · '+(row.status==='pending'?'Processing':row.status==='approved'?'Shared':'Taken offline'):'');
   card.append(name,info);
   if(row.status==='approved'||isOwner){createPlayer(row,card)}
   else if(isOwner){
     const p=document.createElement('p');p.textContent=row.status==='pending'?'Your work is stored privately for content review.':(row.review_note||'This submission needs a correction.');card.append(p);
   }
+  if(!isOwner&&row.status==='approved'){const btn=document.createElement('button');btn.type='button';btn.className='alt';btn.textContent='Report this work';btn.addEventListener('click',async()=>{const reason=prompt('Describe the problem with this recording (12 characters minimum):');if(reason===null)return;if(reason.trim().length<12){note('Please provide at least 12 characters.');return}btn.disabled=true;const {data,error}=await db.rpc('report_connect_clip',{p_clip_id:row.id,p_reason:reason.trim()});note(error?'Could not file report: '+error.message:(data||'Report received.'));btn.disabled=false});card.append(btn)}
   if(isOwner){const btn=document.createElement('button');btn.type='button';btn.className='alt';btn.textContent='Remove this work';btn.addEventListener('click',async()=>{
     btn.disabled=true;note('Removing work…');
     const {error}=await db.from('connect_work_previews').delete().eq('id',row.id).eq('user_id',member.id);
