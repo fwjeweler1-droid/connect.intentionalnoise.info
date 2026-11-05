@@ -1,79 +1,106 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Manage My Artist Page | Intentional Noise Connect</title>
-<meta name="description" content="Manage your public Intentional Noise artist page using your existing Connect account.">
+<title>Edit My Public Band Page | Intentional Noise Connect</title>
+<meta name="description" content="Upload music, artwork, and short Reels or submit links for review. Manage your public band page using your existing Intentional Noise Connect account.">
 <style>
-:root{color-scheme:dark;font-family:system-ui,Segoe UI,Arial,sans-serif;background:#090807;color:#f8eddf}*{box-sizing:border-box}body{margin:0}
-header{background:linear-gradient(120deg,#080808,#302518);padding:20px;border-bottom:1px solid #ad905c}
-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.wrap{max-width:900px;margin:auto;padding:0 20px}h1,h2,h3{font-family:Georgia,serif;color:#ffe2ac}h1{margin-top:25px}
-p{line-height:1.6;color:#e0d5c1}a{color:#f1d5a3}main{padding:10px 0 60px}
-.panel{background:linear-gradient(145deg,#2b241b,#12100e);border:1px solid #a88e60;border-radius:14px;padding:24px;margin:20px 0}
-label{display:block;font-weight:750;margin:16px 0 7px}input,textarea,select{font:inherit;width:100%;padding:12px;background:#151310;color:white;border:1px solid #b49b6b;border-radius:8px}
-textarea{min-height:100px}.check{display:flex;align-items:flex-start;gap:10px;font-weight:500;line-height:1.5}.check input{width:auto;margin-top:5px}
-button,.button{border:1px solid #e3bf87;border-radius:9px;padding:11px 15px;color:#160f09;background:linear-gradient(#f0d7a4,#b68c50);font:inherit;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}
-button:disabled{opacity:.5;cursor:wait}.secondary{color:#ffe6b9;background:#292015}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
-.note{background:#282017;border-left:3px solid #dbb57d;padding:13px 16px}.status{min-height:1.5em;color:#ffe1a7;white-space:pre-wrap}
-.hidden{display:none!important}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.roles{min-height:198px}
-@media(max-width:620px){.grid{grid-template-columns:1fr}}footer{border-top:1px solid #68563c;text-align:center;padding:20px;color:#bea987}
-</style></head><body><header><div class="wrap"><strong>INTENTIONAL NOISE CONNECT · ARTIST PAGE MANAGER</strong><a href="/">← Artist Showcases</a></div></header>
-<main class="wrap"><h1>One profile. Your public page.</h1><p>You are using <strong>your existing Connect account</strong>. Artist profiles, instruments and roles come from Connect; only your approved public information appears on .band.</p>
-<nav class="panel" aria-label="Profile and page navigation" style="display:flex;gap:10px;flex-wrap:wrap"><a class="button secondary" id="myPublicPageNav" aria-disabled="true" href="artists.html">1. Public view of my band page</a><a class="button" href="band-page.html">2. Edit my public band page</a><a class="button secondary" href="auth.html#profile">3. Edit my Connect page</a><p id="publicPageNavNote" style="width:100%;margin:0">Sign in to see your published band page.</p></nav>
-<section class="panel" id="signInPanel"><h2>Connect sign-in</h2><p>One membership. Sign in through Connect once; return here automatically to manage your public artist page.</p><a class="button" href="auth.html?next=%2Fband-page.html">Continue with Connect</a></section>
-<section class="hidden" id="editor">
-<div class="panel"><div class="actions"><button type="button" id="signOut" class="secondary">Sign out of Connect</button><a class="button secondary" href="auth.html#profile">Edit my Connect profile ↗</a><a class="button secondary" href="search.html">Find collaborators ↗</a></div><p id="memberEmail"></p><h2>Your Connect musician profile</h2><p>These details are automatically loaded from your Connect account. To change anything, edit your Connect profile once—your public .band page updates from that record.</p><h3 id="profileName"></h3><p id="profileBio"></p><div id="profileDetails"></div><p id="profileStatus" class="status" role="status"></p></div>
-<div class="panel"><h2>Your public .band showcase</h2><p>Every Connect musician gets a private draft. You choose when to make a text-only artist page public; no duplicate registration or administrator setup is needed.</p>
-<label for="pageSlug">Your page address (lowercase letters, numbers, hyphens)</label><input id="pageSlug" pattern="[a-z0-9]+(-[a-z0-9]+)*" minlength="3" maxlength="90"><p>Addresses are unique. To change yours after publishing, unpublish it first.</p><button id="saveSlug" class="secondary" type="button">Save page address</button>
-<p><strong>Publication status: </strong><span id="pageStatus">Private draft</span></p><div id="publicLink" class="hidden"><p>Your artist page: <a id="publicAnchor" target="_blank" rel="noopener noreferrer">View my public artist page ↗</a></p></div>
-<div class="note"><strong>Media and content rules:</strong> Lawful music, performances, videos and related artwork only. No nudity, sexually explicit content, harassment, hateful abuse, graphic violence, or illegal activity. You must own or have permission to use all material. Public images, video and storage links require additional review and cannot be posted with this text-only switch.</div>
-<label class="check"><input type="checkbox" id="agree"> I confirm that my public name and biography follow the rules, and I want this information accessible to anyone on the internet.</label>
-<div class="actions"><button id="publish" type="button">Publish my page</button><button id="unpublish" class="secondary" type="button">Unpublish my page</button></div><p id="publishStatus" class="status" role="status"></p></div>
-<div class="panel"><h2>Artist logo and promotional Reel</h2><p>Intentional Noise's logo is the default. A replacement artist logo and up-to-60-second Reel must be submitted for review before appearing publicly. Media upload and review are not yet activated; these controls do not claim to upload files.</p><a class="button secondary" href="https://connect.intentionalnoise.info/show-your-work.html">Show your work on Connect ↗</a></div>
-</section></main><footer>© 2026 Intentional Noise LLC · <a href="https://intentionalnoise.info">About the network</a></footer>
-<script type="module">
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
-const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0',{auth:{flowType:'pkce',detectSessionInUrl:true,autoRefreshToken:true,persistSession:true}});
-const $=id=>document.getElementById(id);
-let activeUser=null,artistPage=null;
-function show(id,yes){$(id).classList.toggle('hidden',!yes)}
-function status(id,msg){$(id).textContent=msg}
-async function load(){
- const {data:{user},error}=await db.auth.getUser();activeUser=error?null:user;
- show('signInPanel',!activeUser);show('editor',!!activeUser);
- if(!activeUser)return;
- $('memberEmail').textContent='Signed in: '+(activeUser.email||'Connect member');
- const {data:p,error:profileError}=await db.from('musician_profiles').select('display_name,bio,roles,instruments,genres,available_for_gigs').eq('user_id',activeUser.id).maybeSingle();
- if(profileError){status('profileStatus','Profile error: '+profileError.message);return;}
- if(!p){status('profileStatus','Save your musician profile in Connect first. Your public draft is created automatically.');return;}
- $('profileName').textContent=p.display_name||'Artist';
- $('profileBio').textContent=p.bio||'';
- const details=[['Roles',(p.roles||[]).map(x=>x.replaceAll('_',' '))],['Instruments',p.instruments||[]],['Genres',p.genres||[]]];
- $('profileDetails').replaceChildren();
- for(const [label,items] of details){if(!items.length)continue;const row=document.createElement('p');const name=document.createElement('strong');name.textContent=label+': ';row.append(name,document.createTextNode(items.join(', ')));$('profileDetails').append(row);}
- if(p.available_for_gigs){const gig=document.createElement('p');gig.textContent='Available for gigs';$('profileDetails').append(gig);}
- status('profileStatus','These details are synchronized from Connect.');
- const {data:page,error:pageError}=await db.from('artist_pages').select('slug,published,requested_publication').eq('user_id',activeUser.id).maybeSingle();
- if(pageError){status('publishStatus','Page error: '+pageError.message);return}
- artistPage=page;
- if(!page){status('publishStatus','Save your Connect musician profile to generate your private artist page.');return}
- $('pageSlug').value=page.slug;const navPublic=$('myPublicPageNav');navPublic.href=page.published?'https://intentionalnoise.band/public-artist.html?slug='+encodeURIComponent(page.slug):'artists.html';navPublic.setAttribute('aria-disabled',String(!page.published));$('publicPageNavNote').textContent=page.published?'View what visitors see of your published artist page.':'Publish your page below before the public-view link becomes available.';
- $('pageStatus').textContent=page.published?'Published':'Private draft';
- const url='https://intentionalnoise.band/public-artist.html?slug='+encodeURIComponent(page.slug);
- $('publicAnchor').href=url;show('publicLink',page.published);
- $('pageSlug').disabled=page.published;$('saveSlug').disabled=page.published;
- $('unpublish').disabled=!page.published;
- $('publish').disabled=page.published;
-}
-$('signOut').addEventListener('click',async()=>{await db.auth.signOut();activeUser=null;artistPage=null;await load()});
-$('saveSlug').addEventListener('click',async()=>{if(!activeUser||!artistPage||artistPage.published)return;const slug=$('pageSlug').value.trim().toLowerCase();if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)||slug.length<3||slug.length>90)return status('publishStatus','Use 3–90 lowercase letters, numbers and hyphens.');
-$('saveSlug').disabled=true;const {error}=await db.from('artist_pages').update({slug}).eq('user_id',activeUser.id);
-status('publishStatus',error?'Address not saved: '+error.message:'Page address saved.');$('saveSlug').disabled=false;if(!error)await load()});
-async function visibility(publicPage){if(!activeUser||!artistPage)return;if(publicPage&&!$('agree').checked)return status('publishStatus','Confirm the public-content rules first.');
-$('publish').disabled=true;$('unpublish').disabled=true;status('publishStatus',publicPage?'Publishing your text-only artist page…':'Taking your artist page offline…');
-const {data,error}=await db.rpc('set_my_artist_page_publication',{p_publish:publicPage,p_accept_rules:publicPage&&$('agree').checked});
-status('publishStatus',error?'Request failed: '+error.message:publicPage?'Your public artist page is published.':'Your page is no longer publicly listed.');
-await load();}
-$('publish').addEventListener('click',()=>visibility(true));$('unpublish').addEventListener('click',()=>visibility(false));
-db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){activeUser=null;artistPage=null;show('signInPanel',true);show('editor',false)}});
-await load();
-</script></body></html>
+:root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color-scheme:dark;background:#0c141b;color:#f0f6f8}
+*{box-sizing:border-box}body{margin:0}a{color:#8fe8e5}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #eacb8b;outline-offset:3px}
+header{background:#132833;border-bottom:1px solid #3b5c65}
+.wrap{max-width:1000px;margin:auto;padding:0 20px}header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:68px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:.04em}main{padding-top:28px;padding-bottom:64px}
+h1,h2,h3{line-height:1.23}h1{font-size:clamp(2rem,5vw,3rem);margin:6px 0 12px}h2{font-size:1.45rem;margin:0 0 12px}h3{font-size:1.1rem;margin:8px 0}
+p{line-height:1.6;color:#cddde2}.muted{color:#bed1d8}.small{font-size:.91rem}.eyebrow{color:#88dfdc;letter-spacing:.14em;font-size:.78rem;font-weight:800}
+.panel{background:linear-gradient(135deg,#1c3441,#142530);border:1px solid #54737d;padding:clamp(18px,3vw,28px);border-radius:15px;margin:18px 0}
+.hero{background:linear-gradient(115deg,#213b45,#142b38);padding:28px;border-radius:14px;border:1px solid #477482}
+.hero p{margin-bottom:0}.hidden{display:none!important}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.button,button{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 16px;background:#89e5df;color:#09262c;border:1px solid #89e5df;border-radius:9px;font:inherit;font-weight:800;text-decoration:none;cursor:pointer}
+.button.secondary,button.secondary{background:#1a3440;color:#e9fcfb;border:1px solid #7fc0c1}
+button:hover,.button:hover{filter:brightness(1.12)}
+button:disabled,.disabled-link{opacity:.54;pointer-events:none;cursor:not-allowed}
+nav.actions{margin-top:22px}.nav-link{background:#1c3640;color:#eff9fa;border:1px solid #547c87}
+label{display:block;margin:15px 0 6px;font-weight:750}
+input:not([type=checkbox]),select{width:100%;max-width:100%;padding:12px 14px;background:#0c202a;border:1px solid #78949e;border-radius:9px;color:#fff;font:inherit}
+input[type=checkbox]{width:auto;margin:3px 10px 0 0;flex:none}
+.check{display:flex;align-items:flex-start;gap:2px;margin:18px 0;font-weight:500;line-height:1.55}
+.hint{font-size:.88rem;color:#c5d7dc;margin:7px 0}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:7px;padding:32px 15px;margin:14px 0 4px;border:2px dashed #81bebd;border-radius:12px;background:#102b36;cursor:pointer;min-height:150px}
+.drop.dragging{background:#265360;border-color:#a5fff0}
+.drop strong{font-size:1.06rem}.drop input[type=file]{width:100%;max-width:420px}
+.media-preview{display:block;max-width:100%;max-height:310px;object-fit:contain;margin-top:15px;border:1px solid #537782;border-radius:10px;background:#071318}
+#preview p{word-break:break-word}
+.state{display:inline-flex;border:1px solid #b59a62;border-radius:20px;padding:5px 11px;background:#423a26;color:#f9e4ac;font-size:.83rem;font-weight:800}
+.state.live{color:#b3ffdc;background:#194439;border-color:#64a78e}.state.rejected{color:#ffcece;background:#492c2c;border-color:#b87878}
+.submission{border:1px solid #4c7380;border-radius:11px;padding:15px;margin:12px 0;background:#102631}
+.submission-head{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.compact{min-height:38px;padding:8px 12px;font-size:.86rem}
+.notice{background:#112d38;border-left:4px solid #81dddd;padding:13px 17px;border-radius:7px;margin:16px 0}
+.detail-row{margin:8px 0;color:#d7e8e9}
+.status{white-space:pre-wrap;color:#b3f0e5;min-height:1.4em;margin-top:12px}
+details{border-top:1px solid #52717e;padding-top:16px;margin-top:22px}
+summary{cursor:pointer;font-weight:750;color:#d3f7f4}
+#publicUrl{overflow-wrap:anywhere}
+footer{border-top:1px solid #375968;text-align:center;padding:25px;color:#bed2d9}
+@media(max-width:630px){.actions>.button,.actions>button{flex:1 1 210px}.wrap{padding:0 14px}.hero{padding:20px}}
+</style></head>
+<body>
+<header><div class="wrap"><span class="brand">INTENTIONAL NOISE <span style="color:#89e5df">CONNECT</span></span><a href="auth.html#profile">My musician profile</a></div></header>
+<main class="wrap">
+<div class="hero"><div class="eyebrow">MY ARTIST SHOWCASE</div><h1>Edit my public band page</h1><p>Show the world what you create. Your Connect account and artist details are already linked—no new registration or password needed.</p></div>
+<div id="guest" class="panel hidden"><h2>Use your Connect account</h2><p>Sign in through Connect once, then return to this page automatically.</p><a class="button" href="auth.html?next=%2Fband-page.html">Sign in through Connect</a></div>
+<div id="completeProfile" class="panel hidden"><h2>Finish your musician profile</h2><p>Save your basic musician information in Connect. Your private band-page draft is created automatically.</p><a class="button" href="auth.html#profile">Complete my musician profile</a></div>
+<div id="workspace" class="hidden">
+<nav class="actions" aria-label="My page navigation">
+<a id="publicViewLink" class="button nav-link disabled-link" aria-disabled="true" href="#publishPanel" target="_blank" rel="noopener noreferrer">View my public page</a>
+<a class="button nav-link" href="auth.html#profile">Edit my Connect details</a>
+<a class="button nav-link" href="https://intentionalnoise.band/artists.html">See other artists</a>
+</nav>
+<section class="panel" id="profileSummary">
+<h2>My artist identity</h2>
+<h3 id="artistName">Loading…</h3><p id="artistBio"></p><div id="details"></div>
+<p class="hint">Your musician details are edited in Connect and appear here automatically. <a href="auth.html#profile">Change them here.</a></p>
+</section>
+<section class="panel" id="uploadPanel">
+<h2>Add music, artwork, or a Reel</h2><p>Upload a file from your computer or link content you already store elsewhere. Nothing appears to the public until it has been reviewed and approved.</p>
+<form id="mediaForm">
+<label for="mediaKind">1. What are you adding?</label>
+<select id="mediaKind"><option value="artwork">Release or promotional artwork</option><option value="logo">My band / artist logo</option><option value="track">Music track</option><option value="reel">Promotional video Reel (up to 60 seconds)</option></select>
+<label for="mediaMethod">2. Where is it?</label>
+<select id="mediaMethod"><option value="upload">Upload from my device</option><option value="link">Link something from my storage or a music website</option></select>
+<div id="uploadArea">
+<label class="drop" id="dropZone" for="mediaFile"><strong id="fileLabel">Drag artwork here, or click to select</strong><span class="hint">Images, audio, and video under 50 MB. Reels up to 60 seconds.</span><input type="file" id="mediaFile" accept=".png,.jpg,.jpeg,.webp"></label>
+<p class="hint" id="fileName">No file selected</p>
+</div>
+<div id="linkArea" class="hidden">
+<label for="mediaUrl">Paste a secure link (https://)</label><input id="mediaUrl" type="url" placeholder="https://your-storage-or-music-site.com/your-file" autocomplete="off">
+<p class="hint">The link must allow reviewers to access the submitted media. A link to private storage may need separate sharing permission. We won't copy your private storage files.</p>
+</div>
+<label for="mediaTitle">3. Give it a title</label>
+<input id="mediaTitle" type="text" maxlength="120" placeholder="Example: My new single / Band logo" autocomplete="off" required>
+<div id="preview" aria-label="Media preview"></div>
+<div class="notice"><strong>Content and ownership rules:</strong> Music-related media only. No nudity, sexual content, hate, harassment, graphic violence, unlawful activity, or content you don't have permission to share. Files and links are kept in the review queue before any public use.</div>
+<label class="check"><input type="checkbox" id="mediaRules" required> I own or have permission to use this material, and it complies with the content rules.</label>
+<button id="submitMedia" type="submit">Save media for review</button>
+<p id="mediaStatus" class="status" role="status" aria-live="polite"></p>
+</form>
+</section>
+<section class="panel" id="myMediaPanel"><h2>My submitted content</h2><p class="muted">Track what's waiting, approved, or needs changes. Pending submissions can be removed.</p><div id="submissionList"></div><p id="submissionsStatus" class="status" role="status"></p></section>
+<section class="panel" id="publishPanel"><h2>My public page</h2>
+<p>Every musician receives a private draft automatically. You decide when your name and biography are visible publicly; uploaded music, videos and logos go through the separate review process.</p>
+<p><strong>Page status: </strong><span id="publicationStatus" class="state">Private draft</span></p>
+<p id="publicNote" class="muted"></p>
+<p><a id="publicUrl" href="#publishPanel" class="disabled-link" target="_blank" rel="noopener noreferrer">Your public link activates after publishing</a></p>
+<label class="check"><input id="publishRules" type="checkbox"> I authorize public display of my artist profile and agree to the content rules.</label>
+<div class="actions"><button id="publish" type="button">Publish my artist profile</button><button class="secondary" id="unpublish" type="button">Make my profile private</button></div>
+<p id="publishMessage" class="status" role="status"></p>
+<details><summary>Change my public page link (optional)</summary><p class="hint">Your page already has a unique address. You only need this section if you want a shorter name in the link.</p>
+<label for="urlSlug">Address name</label><input id="urlSlug" type="text" maxlength="90" pattern="[a-z0-9]+(-[a-z0-9]+)*" autocomplete="off">
+<p class="hint">For example, choosing <code>myband</code> makes the link <code>intentionalnoise.band/public-artist.html?slug=myband</code>. You can only change this before publishing or after making the page private.</p>
+<button class="secondary" id="saveSlug" type="button">Save my link name</button></details>
+</section>
+</div>
+<p id="pageMessage" class="status" role="status"></p>
+</main>
+<footer>© 2026 Intentional Noise · <a href="https://intentionalnoise.info/">About the network</a> · <a href="https://intentionalnoise.band/">Visit public artist showcases</a></footer>
+<script type="module" src="band-editor.js"></script>
+</body></html>
