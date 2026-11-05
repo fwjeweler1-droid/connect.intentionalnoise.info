@@ -17,17 +17,11 @@ button:disabled{opacity:.5;cursor:wait}.secondary{color:#ffe6b9;background:#2920
 .hidden{display:none!important}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.roles{min-height:198px}
 @media(max-width:620px){.grid{grid-template-columns:1fr}}footer{border-top:1px solid #68563c;text-align:center;padding:20px;color:#bea987}
 </style></head><body><header><div class="wrap"><strong>INTENTIONAL NOISE CONNECT · ARTIST PAGE MANAGER</strong><a href="/">← Artist Showcases</a></div></header>
-<main class="wrap"><h1>Your music. Your public page.</h1><p>You are using <strong>your existing Connect account</strong>. Artist profiles, instruments and roles come from Connect; only your approved public information appears on .band.</p>
+<main class="wrap"><h1>One profile. Your public page.</h1><p>You are using <strong>your existing Connect account</strong>. Artist profiles, instruments and roles come from Connect; only your approved public information appears on .band.</p>
 <nav class="panel" aria-label="Profile and page navigation" style="display:flex;gap:10px;flex-wrap:wrap"><a class="button secondary" id="myPublicPageNav" aria-disabled="true" href="artists.html">1. Public view of my band page</a><a class="button" href="band-page.html">2. Edit my public band page</a><a class="button secondary" href="auth.html#profile">3. Edit my Connect page</a><p id="publicPageNavNote" style="width:100%;margin:0">Sign in to see your published band page.</p></nav>
 <section class="panel" id="signInPanel"><h2>Connect sign-in</h2><p>One membership. Sign in through Connect once; return here automatically to manage your public artist page.</p><a class="button" href="auth.html?next=%2Fband-page.html">Continue with Connect</a></section>
 <section class="hidden" id="editor">
-<div class="panel"><div class="actions"><button type="button" id="signOut" class="secondary">Sign out</button><a class="button secondary" href="https://connect.intentionalnoise.info/search.html">Find collaborators on Connect ↗</a></div><p id="memberEmail"></p><h2>Your Connect musician profile</h2><p>Changes saved here also update your Connect musician information. Only publicly published pages appear in .band's artist directory.</p>
-<form id="profileForm"><label for="name">Artist or band name</label><input id="name" maxlength="80" minlength="2" required>
-<label for="bio">About your music</label><textarea id="bio" maxlength="2000"></textarea>
-<label for="roles">Roles — hold Ctrl (or Command) to select multiple on a computer</label>
-<select id="roles" class="roles" multiple><option value="musician">Musician</option><option value="sound_engineer">Sound engineer</option><option value="band">Band</option><option value="vocalist">Vocalist</option><option value="guitar">Guitarist</option><option value="bass">Bassist</option><option value="drums">Drummer</option><option value="keys">Keyboard player</option><option value="producer">Producer</option><option value="songwriter">Songwriter</option></select>
-<div class="grid"><div><label for="instruments">Instruments (comma-separated)</label><input id="instruments" maxlength="300" placeholder="Kazoo, guitar, piano"></div><div><label for="genres">Genres (comma-separated)</label><input id="genres" maxlength="300" placeholder="Rock, country, gospel"></div></div>
-<label class="check"><input type="checkbox" id="gigStatus"> Available for gigs</label><button type="submit" id="saveProfile">Save musician details</button><p id="profileStatus" role="status" class="status"></p></form></div>
+<div class="panel"><div class="actions"><button type="button" id="signOut" class="secondary">Sign out of Connect</button><a class="button secondary" href="auth.html#profile">Edit my Connect profile ↗</a><a class="button secondary" href="search.html">Find collaborators ↗</a></div><p id="memberEmail"></p><h2>Your Connect musician profile</h2><p>These details are automatically loaded from your Connect account. To change anything, edit your Connect profile once—your public .band page updates from that record.</p><h3 id="profileName"></h3><p id="profileBio"></p><div id="profileDetails"></div><p id="profileStatus" class="status" role="status"></p></div>
 <div class="panel"><h2>Your public .band showcase</h2><p>Every Connect musician gets a private draft. You choose when to make a text-only artist page public; no duplicate registration or administrator setup is needed.</p>
 <label for="pageSlug">Your page address (lowercase letters, numbers, hyphens)</label><input id="pageSlug" pattern="[a-z0-9]+(-[a-z0-9]+)*" minlength="3" maxlength="90"><p>Addresses are unique. To change yours after publishing, unpublish it first.</p><button id="saveSlug" class="secondary" type="button">Save page address</button>
 <p><strong>Publication status: </strong><span id="pageStatus">Private draft</span></p><div id="publicLink" class="hidden"><p>Your artist page: <a id="publicAnchor" target="_blank" rel="noopener noreferrer">View my public artist page ↗</a></p></div>
@@ -41,7 +35,6 @@ import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0',{auth:{flowType:'pkce',detectSessionInUrl:true,autoRefreshToken:true,persistSession:true}});
 const $=id=>document.getElementById(id);
 let activeUser=null,artistPage=null;
-const labels=(items)=>Array.from(items).map(s=>s.trim()).filter(Boolean).slice(0,25);
 function show(id,yes){$(id).classList.toggle('hidden',!yes)}
 function status(id,msg){$(id).textContent=msg}
 async function load(){
@@ -51,11 +44,14 @@ async function load(){
  $('memberEmail').textContent='Signed in: '+(activeUser.email||'Connect member');
  const {data:p,error:profileError}=await db.from('musician_profiles').select('display_name,bio,roles,instruments,genres,available_for_gigs').eq('user_id',activeUser.id).maybeSingle();
  if(profileError){status('profileStatus','Profile error: '+profileError.message);return;}
- if(!p){status('profileStatus','Create and save your musician profile on Connect first.');return;}
- $('name').value=p.display_name||'';$('bio').value=p.bio||'';
- for(const option of $('roles').options)option.selected=(p.roles||[]).includes(option.value);
- $('instruments').value=(p.instruments||[]).join(', ');$('genres').value=(p.genres||[]).join(', ');
- $('gigStatus').checked=!!p.available_for_gigs;
+ if(!p){status('profileStatus','Save your musician profile in Connect first. Your public draft is created automatically.');return;}
+ $('profileName').textContent=p.display_name||'Artist';
+ $('profileBio').textContent=p.bio||'';
+ const details=[['Roles',(p.roles||[]).map(x=>x.replaceAll('_',' '))],['Instruments',p.instruments||[]],['Genres',p.genres||[]]];
+ $('profileDetails').replaceChildren();
+ for(const [label,items] of details){if(!items.length)continue;const row=document.createElement('p');const name=document.createElement('strong');name.textContent=label+': ';row.append(name,document.createTextNode(items.join(', ')));$('profileDetails').append(row);}
+ if(p.available_for_gigs){const gig=document.createElement('p');gig.textContent='Available for gigs';$('profileDetails').append(gig);}
+ status('profileStatus','These details are synchronized from Connect.');
  const {data:page,error:pageError}=await db.from('artist_pages').select('slug,published,requested_publication').eq('user_id',activeUser.id).maybeSingle();
  if(pageError){status('publishStatus','Page error: '+pageError.message);return}
  artistPage=page;
@@ -69,11 +65,6 @@ async function load(){
  $('publish').disabled=page.published;
 }
 $('signOut').addEventListener('click',async()=>{await db.auth.signOut();activeUser=null;artistPage=null;await load()});
-$('profileForm').addEventListener('submit',async e=>{e.preventDefault();if(!activeUser)return;const name=$('name').value.trim();if(name.length<2)return status('profileStatus','Artist name must contain at least two characters.');
-$('saveProfile').disabled=true;status('profileStatus','Saving to Connect…');
-const payload={display_name:name,bio:$('bio').value.trim(),roles:Array.from($('roles').selectedOptions,o=>o.value),instruments:labels($('instruments').value.split(',')),genres:labels($('genres').value.split(',')),available_for_gigs:$('gigStatus').checked,updated_at:new Date().toISOString()};
-const {error}=await db.from('musician_profiles').update(payload).eq('user_id',activeUser.id);
-status('profileStatus',error?'Save failed: '+error.message:'Saved to Connect and synchronized with your artist page.');$('saveProfile').disabled=false;if(!error)await load()});
 $('saveSlug').addEventListener('click',async()=>{if(!activeUser||!artistPage||artistPage.published)return;const slug=$('pageSlug').value.trim().toLowerCase();if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)||slug.length<3||slug.length>90)return status('publishStatus','Use 3–90 lowercase letters, numbers and hyphens.');
 $('saveSlug').disabled=true;const {error}=await db.from('artist_pages').update({slug}).eq('user_id',activeUser.id);
 status('publishStatus',error?'Address not saved: '+error.message:'Page address saved.');$('saveSlug').disabled=false;if(!error)await load()});
