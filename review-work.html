@@ -17,13 +17,13 @@ label{display:block;margin-top:14px;font-weight:700}video.media,audio.media{disp
 footer{text-align:center;border-top:1px solid #3d6470;padding:25px;color:#c2d9df}
 </style></head><body>
 <header><div class="wrap"><strong>INTENTIONAL NOISE CONNECT · MODERATION</strong><a href="show-your-work.html">← Show Your Work</a></div></header>
-<main class="wrap"><h1>Review music and video previews</h1><p class="muted">Authorized moderators only. Listen or watch, then approve for the artist's selected audience or reject with a reason. Every decision is logged. Moderators cannot approve their own submissions.</p>
+<main class="wrap"><h1>Complaints and content controls</h1><p class="muted">Moderator access only. Artists share their work directly. If someone reports a violation, review the recording and take it offline when necessary. All takedowns are logged.</p>
 <div id="login" class="panel" hidden><h2>Sign in to Connect</h2><p>Use your existing Connect account. No separate reviewer password.</p><a class="button" href="auth.html?next=%2Freview-work.html">Sign in through Connect</a></div>
 <div id="denied" class="panel" hidden><h2>Moderator access required</h2><p>Your musician account is working, but review privileges are restricted to designated moderators.</p><a href="show-your-work.html">Return to Show Your Work</a></div>
 <div id="work" hidden>
-<div class="panel"><div class="actions"><strong id="count">Checking submissions…</strong><button type="button" id="reload" class="subtle">Refresh review queue</button></div><p class="muted">KING and future submissions stay private until a moderator approves them. The selected audience determines visibility after approval.</p></div>
-<section><h2 class="sectionTitle">Awaiting review</h2><div id="pendingList"></div></section>
-<section><h2 class="sectionTitle">Approved previews</h2><div id="approvedList"></div></section>
+<div class="panel"><div class="actions"><strong id="count">Checking submissions…</strong><button type="button" id="reload" class="subtle">Refresh review queue</button></div><p class="muted">Artists select public or signed-in member visibility. Take Offline immediately blocks new access through Connect. Previously shared or downloaded copies cannot be recalled.</p></div>
+<section><h2 class="sectionTitle">Complaints</h2><p id="reportCount">Checking reports…</p><div id="reportList"></div></section><section><h2 class="sectionTitle">Pending legacy items</h2><div id="pendingList"></div></section>
+<section><h2 class="sectionTitle">Shared previews — Take Offline controls</h2><div id="approvedList"></div></section>
 </div>
 <p id="status" role="status" aria-live="polite">Checking your Connect session…</p>
 </main><footer>© 2026 Intentional Noise · <a href="https://intentionalnoise.band/">Artist websites</a></footer>
