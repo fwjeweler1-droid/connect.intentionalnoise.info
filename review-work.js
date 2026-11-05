@@ -13,6 +13,7 @@ async function load(){
   setVisible('login',false);setVisible('denied',!moderator);setVisible('work',moderator);
   if(!moderator){status('Only designated moderators can review uploaded work.');return}
   await loadQueue();
+  await loadReports();
 }
 async function loadQueue(){
   if(!moderator)return;
@@ -27,7 +28,24 @@ async function loadQueue(){
   for(const row of pending)render(row,$('pendingList'));
   if(!approved.length){const p=document.createElement('p');p.textContent='No approved previews yet.';$('approvedList').append(p)}
   for(const row of approved)render(row,$('approvedList'));
-  status('Review queue loaded. Files are stored privately until approved.');
+  status('Queue loaded. Shared works can be taken offline immediately if a complaint is substantiated.');
+}
+async function loadReports(){
+ if(!moderator)return;
+ const {data,error}=await db.from('connect_clip_reports').select('id,clip_id,reason,status,created_at').eq('status','open').order('created_at',{ascending:false}).limit(100);
+ const root=$('reportList');if(!root)return;root.replaceChildren();
+ if(error){status('Could not load reports: '+error.message);return}
+ $('reportCount').textContent=(data||[]).length+' open complaints';
+ if(!data?.length){const empty=document.createElement('p');empty.textContent='No complaints have been submitted.';root.append(empty);return}
+ for(const report of data){
+  const row=document.createElement('article');row.className='card';
+  const heading=document.createElement('h3');heading.textContent='Reported recording';row.append(heading);
+  const reason=document.createElement('p');reason.textContent=report.reason;row.append(reason);
+  const when=document.createElement('p');when.className='small';when.textContent='Received '+new Date(report.created_at).toLocaleString();row.append(when);
+  const clipButton=document.createElement('button');clipButton.className='subtle';clipButton.textContent='Find and review recording';clipButton.type='button';
+  clipButton.addEventListener('click',()=>{const node=document.querySelector('[data-clip-id="'+report.clip_id+'"]');if(node){node.scrollIntoView({behavior:'smooth',block:'center'});node.style.outline='2px solid #ffe4a8'}else{status('Recording is already offline or has been removed.')}});
+  row.append(clipButton);root.append(row);
+ }
 }
 async function media(row,wrap){
  const {data,error}=await db.storage.from('connect-clips').createSignedUrl(row.file_path,600);
@@ -37,7 +55,7 @@ async function media(row,wrap){
  wrap.append(el);
 }
 function render(row,root){
- const card=document.createElement('article');card.className='card';
+ const card=document.createElement('article');card.className='card';card.dataset.clipId=row.id;
  const header=document.createElement('div');header.className='cardhead';
  const title=document.createElement('h3');title.textContent=row.title;
  const tag=document.createElement('span');tag.className='tag';tag.textContent=row.status==='pending'?'Awaiting review':'Approved';
@@ -54,9 +72,9 @@ function render(row,root){
   approve.addEventListener('click',()=>review(row.id,'approved',note.value,approve));
   actions.append(approve);
  }else{
-  const p=document.createElement('p');p.textContent='Previously approved. You can revoke it if it violates the rules.';card.append(p);
+  const p=document.createElement('p');p.textContent='Currently shared to the artist\'s chosen audience. Use Take Offline if it violates the rules.';card.append(p);
  }
- const reject=document.createElement('button');reject.className='danger';reject.type='button';reject.textContent=row.status==='approved'?'Revoke approval':'Reject';
+ const reject=document.createElement('button');reject.className='danger';reject.type='button';reject.textContent=row.status==='approved'?'Take Offline':'Reject';
  reject.addEventListener('click',()=>review(row.id,'rejected',note.value,reject));actions.append(reject);
  root.append(card);
 }
@@ -70,6 +88,6 @@ async function review(id,decision,note,button){
  status('Review saved: '+data+'.');
  await loadQueue();
 }
-$('reload').addEventListener('click',loadQueue);
+$('reload').addEventListener('click',async()=>{await loadQueue();await loadReports()});
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_IN'||event==='SIGNED_OUT')setTimeout(load,0)});
 await load();
