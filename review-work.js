@@ -11,7 +11,7 @@ async function load(){
   const {data, error}=await db.rpc('is_connect_moderator');
   moderator=!error&&data===true;
   setVisible('login',false);setVisible('denied',!moderator);setVisible('work',moderator);
-  if(!moderator){status('Only designated moderators can review uploaded work.');return}
+  if(!moderator){$('accountStatus').textContent='Signed in as '+(user.email||'a Connect member')+'. Use the designated owner account to moderate.';status(error?'Moderator check failed: '+error.message:'This account does not have moderation privileges.');return}
   await loadQueue();
   await loadReports();
 }
@@ -88,6 +88,7 @@ async function review(id,decision,note,button){
  status('Review saved: '+data+'.');
  await loadQueue();
 }
+$('switchAccount').addEventListener('click',async()=>{const {error}=await db.auth.signOut();if(error){status('Could not sign out: '+error.message);return;}location.assign('auth.html?next=%2Freview-work.html')});
 $('reload').addEventListener('click',async()=>{await loadQueue();await loadReports()});
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_IN'||event==='SIGNED_OUT')setTimeout(load,0)});
 await load();
