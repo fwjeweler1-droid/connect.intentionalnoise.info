@@ -89,9 +89,9 @@ function setMethod(){
 function inferKind(file){
  if(!file)return null;
  const type=(file.type||'').toLowerCase(),name=(file.name||'').toLowerCase();
- if(type.startsWith('video/')||/\\.(mp4|mov|webm)$/.test(name))return 'reel';
- if(type.startsWith('audio/')||/\\.(mp3|m4a|wav)$/.test(name))return 'track';
- if(type.startsWith('image/')||/\\.(png|jpe?g|webp)$/.test(name))return $('mediaKind').value==='logo'?'logo':'artwork';
+ if(type.startsWith('video/')||/\.(mp4|mov|webm)$/.test(name))return 'reel';
+ if(type.startsWith('audio/')||/\.(mp3|m4a|wav)$/.test(name))return 'track';
+ if(type.startsWith('image/')||/\.(png|jpe?g|webp)$/.test(name))return $('mediaKind').value==='logo'?'logo':'artwork';
  return null;
 }
 function updateFileAccept(){
