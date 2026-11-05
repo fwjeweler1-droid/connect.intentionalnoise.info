@@ -86,14 +86,34 @@ function setMethod(){
  show('uploadArea',upload);show('linkArea',!upload);
  updateFileAccept();preview();
 }
-function updateFileAccept(){$('mediaFile').accept=extensions[$('mediaKind').value];$('fileLabel').textContent='Drag a '+readableKind[$('mediaKind').value].toLowerCase()+' here, or click to select';$('mediaFile').value='';preview()}
+function inferKind(file){
+ if(!file)return null;
+ const type=(file.type||'').toLowerCase(),name=(file.name||'').toLowerCase();
+ if(type.startsWith('video/')||/\\.(mp4|mov|webm)$/.test(name))return 'reel';
+ if(type.startsWith('audio/')||/\\.(mp3|m4a|wav)$/.test(name))return 'track';
+ if(type.startsWith('image/')||/\\.(png|jpe?g|webp)$/.test(name))return $('mediaKind').value==='logo'?'logo':'artwork';
+ return null;
+}
+function updateFileAccept(){
+ $('mediaFile').accept='.png,.jpg,.jpeg,.webp,.mp3,.m4a,.wav,.mp4,.mov,.webm,image/*,audio/*,video/*';
+ $('fileLabel').textContent='Drop artwork, music or a video Reel here, or click to select';
+ const file=$('mediaFile').files?.[0];
+ if(file)updatePreviewContent(file);
+}
+function autoSelectKind(file){
+ const kind=inferKind(file);
+ if(kind){$('mediaKind').value=kind;$('fileLabel').textContent='Detected '+readableKind[kind]+': drop another file or click to change';}
+ else {$('fileLabel').textContent='Unrecognized file format: choose an image, audio file or video.';}
+ return kind;
+}
 function updatePreviewContent(file){
  if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null}
  const area=$('preview');area.replaceChildren();
  if(!file){status('fileName','No file selected');return}
- status('fileName',file.name+' · '+(file.size/1024/1024).toFixed(1)+' MB');
+ const kind=autoSelectKind(file);
+ status('fileName',file.name+' · '+(file.size/1024/1024).toFixed(1)+' MB'+(kind?' · '+readableKind[kind]+' detected':' · Unsupported type'));
+ if(!kind)return;
  previewUrl=URL.createObjectURL(file);
- const kind=$('mediaKind').value;
  const elem=kind==='logo'||kind==='artwork'?document.createElement('img'):kind==='reel'?document.createElement('video'):document.createElement('audio');
  elem.src=previewUrl;elem.className='media-preview';
  if(kind==='reel'||kind==='track'){elem.controls=true;elem.preload='metadata'}
@@ -161,7 +181,7 @@ async function publish(visible){
  await refresh();
 }
 $('mediaMethod').addEventListener('change',setMethod);
-$('mediaKind').addEventListener('change',updateFileAccept);
+$('mediaKind').addEventListener('change',()=>{const file=$('mediaFile').files?.[0];if(file){autoSelectKind(file);updatePreviewContent(file)}else updateFileAccept();});
 $('mediaFile').addEventListener('change',()=>updatePreviewContent($('mediaFile').files?.[0]));
 $('mediaUrl').addEventListener('change',preview);
 $('dropZone').addEventListener('dragover',e=>{e.preventDefault();$('dropZone').classList.add('dragging')});
