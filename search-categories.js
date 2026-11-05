@@ -22,6 +22,6 @@ if (category === 'musician' && roles.some(r=>['musician','vocalist','guitar','ba
 return !!patterns[category]?.test([...(profile.instruments||[]),...roles,profile.bio||''].join(' '));
 }
 export function safeSearchReturn(raw, origin) {
-try { const url = new URL(raw,origin); return url.origin===origin && ['/search.html','/gig-requests.html'].includes(url.pathname) ? url.pathname+url.search : ''; } catch { return ''; }
+try { const url = new URL(raw,origin); return url.origin===origin && ['/search.html','/gig-requests.html','/band-page.html'].includes(url.pathname) ? url.pathname+url.search : ''; } catch { return ''; }
 }
 
