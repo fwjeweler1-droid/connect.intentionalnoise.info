@@ -21,7 +21,7 @@ function printRows(rows,isOwner){
   const info=document.createElement('p');info.className='muted';
   info.textContent=(row.media_type==='audio'?'Audio':'Video')+' · '+Number(row.duration_seconds).toFixed(0)+' sec · '+(row.audience==='members'?'Connect members':'Public')+(isOwner?' · '+(row.status==='pending'?'Awaiting review':row.status==='approved'?'Approved':'Needs changes'):'');
   card.append(name,info);
-  if(row.status==='approved'){createPlayer(row,card)}
+  if(row.status==='approved'||isOwner){createPlayer(row,card)}
   else if(isOwner){
     const p=document.createElement('p');p.textContent=row.status==='pending'?'Your work is stored privately for content review.':(row.review_note||'This submission needs a correction.');card.append(p);
   }
