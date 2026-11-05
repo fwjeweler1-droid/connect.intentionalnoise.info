@@ -85,13 +85,19 @@ $('uploadForm').addEventListener('submit',async e=>{
  }catch(err){if(path)await db.storage.from('connect-clips').remove([path]);note('Could not save: '+(err.message||'Please try again.'))}
  finally{uploading=false;await loadClips();setCounter()}
 });
+async function loadModeratorLink(){
+ const link=$('reviewLink');if(!link)return;link.hidden=true;
+ try{const {data,error}=await db.rpc('is_connect_moderator');if(!error&&data===true)link.hidden=false}catch(e){}
+}
 async function start(){
  const {data:{user},error}=await db.auth.getUser();member=error?null:user;
  show('guest',!member&&!viewingOther);show('editor',!!member&&!viewingOther);show('publicHeader',viewingOther);
  if(viewingOther){await loadClips();note('Only reviewed works permitted for your audience appear here.');return}
- if(!member){note('Sign in through Connect to share work.');return}
+ if(!member){const link=$('reviewLink');if(link)link.hidden=true;note('Sign in through Connect to share work.');return}
  const {data:profile}=await db.from('musician_profiles').select('display_name').eq('user_id',member.id).maybeSingle();
  $('heading').textContent=(profile?.display_name||'My')+' · Show my work';
+ const share=$('shareLink');if(share){share.href='show-your-work.html?member='+encodeURIComponent(member.id);share.hidden=false}
+ await loadModeratorLink();
  await loadClips();note('Free for members. A maximum of five audio/video previews, each 60 seconds or less.');
 }
 db.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_IN'||ev==='SIGNED_OUT')setTimeout(start,0)});
