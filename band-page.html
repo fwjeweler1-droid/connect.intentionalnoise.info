@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manage My Artist Page | Intentional Noise Connect</title>
+<meta name="description" content="Manage your public Intentional Noise artist page using your existing Connect account.">
+<style>
+:root{color-scheme:dark;font-family:system-ui,Segoe UI,Arial,sans-serif;background:#090807;color:#f8eddf}*{box-sizing:border-box}body{margin:0}
+header{background:linear-gradient(120deg,#080808,#302518);padding:20px;border-bottom:1px solid #ad905c}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.wrap{max-width:900px;margin:auto;padding:0 20px}h1,h2,h3{font-family:Georgia,serif;color:#ffe2ac}h1{margin-top:25px}
+p{line-height:1.6;color:#e0d5c1}a{color:#f1d5a3}main{padding:10px 0 60px}
+.panel{background:linear-gradient(145deg,#2b241b,#12100e);border:1px solid #a88e60;border-radius:14px;padding:24px;margin:20px 0}
+label{display:block;font-weight:750;margin:16px 0 7px}input,textarea,select{font:inherit;width:100%;padding:12px;background:#151310;color:white;border:1px solid #b49b6b;border-radius:8px}
+textarea{min-height:100px}.check{display:flex;align-items:flex-start;gap:10px;font-weight:500;line-height:1.5}.check input{width:auto;margin-top:5px}
+button,.button{border:1px solid #e3bf87;border-radius:9px;padding:11px 15px;color:#160f09;background:linear-gradient(#f0d7a4,#b68c50);font:inherit;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}
+button:disabled{opacity:.5;cursor:wait}.secondary{color:#ffe6b9;background:#292015}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
+.note{background:#282017;border-left:3px solid #dbb57d;padding:13px 16px}.status{min-height:1.5em;color:#ffe1a7;white-space:pre-wrap}
+.hidden{display:none!important}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.roles{min-height:198px}
+@media(max-width:620px){.grid{grid-template-columns:1fr}}footer{border-top:1px solid #68563c;text-align:center;padding:20px;color:#bea987}
+</style></head><body><header><div class="wrap"><strong>INTENTIONAL NOISE CONNECT · ARTIST PAGE MANAGER</strong><a href="/">← Artist Showcases</a></div></header>
+<main class="wrap"><h1>Your music. Your public page.</h1><p>You are using <strong>your existing Connect account</strong>. Artist profiles, instruments and roles come from Connect; only your approved public information appears on .band.</p>
+<nav class="panel" aria-label="Profile and page navigation" style="display:flex;gap:10px;flex-wrap:wrap"><a class="button secondary" id="myPublicPageNav" aria-disabled="true" href="artists.html">1. Public view of my band page</a><a class="button" href="band-page.html">2. Edit my public band page</a><a class="button secondary" href="auth.html#profile">3. Edit my Connect page</a><p id="publicPageNavNote" style="width:100%;margin:0">Sign in to see your published band page.</p></nav>
+<section class="panel" id="signInPanel"><h2>Connect sign-in</h2><p>One membership. Sign in through Connect once; return here automatically to manage your public artist page.</p><a class="button" href="auth.html?next=%2Fband-page.html">Continue with Connect</a></section>
+<section class="hidden" id="editor">
+<div class="panel"><div class="actions"><button type="button" id="signOut" class="secondary">Sign out</button><a class="button secondary" href="https://connect.intentionalnoise.info/search.html">Find collaborators on Connect ↗</a></div><p id="memberEmail"></p><h2>Your Connect musician profile</h2><p>Changes saved here also update your Connect musician information. Only publicly published pages appear in .band's artist directory.</p>
+<form id="profileForm"><label for="name">Artist or band name</label><input id="name" maxlength="80" minlength="2" required>
+<label for="bio">About your music</label><textarea id="bio" maxlength="2000"></textarea>
+<label for="roles">Roles — hold Ctrl (or Command) to select multiple on a computer</label>
+<select id="roles" class="roles" multiple><option value="musician">Musician</option><option value="sound_engineer">Sound engineer</option><option value="band">Band</option><option value="vocalist">Vocalist</option><option value="guitar">Guitarist</option><option value="bass">Bassist</option><option value="drums">Drummer</option><option value="keys">Keyboard player</option><option value="producer">Producer</option><option value="songwriter">Songwriter</option></select>
+<div class="grid"><div><label for="instruments">Instruments (comma-separated)</label><input id="instruments" maxlength="300" placeholder="Kazoo, guitar, piano"></div><div><label for="genres">Genres (comma-separated)</label><input id="genres" maxlength="300" placeholder="Rock, country, gospel"></div></div>
+<label class="check"><input type="checkbox" id="gigStatus"> Available for gigs</label><button type="submit" id="saveProfile">Save musician details</button><p id="profileStatus" role="status" class="status"></p></form></div>
+<div class="panel"><h2>Your public .band showcase</h2><p>Every Connect musician gets a private draft. You choose when to make a text-only artist page public; no duplicate registration or administrator setup is needed.</p>
+<label for="pageSlug">Your page address (lowercase letters, numbers, hyphens)</label><input id="pageSlug" pattern="[a-z0-9]+(-[a-z0-9]+)*" minlength="3" maxlength="90"><p>Addresses are unique. To change yours after publishing, unpublish it first.</p><button id="saveSlug" class="secondary" type="button">Save page address</button>
+<p><strong>Publication status: </strong><span id="pageStatus">Private draft</span></p><div id="publicLink" class="hidden"><p>Your artist page: <a id="publicAnchor" target="_blank" rel="noopener noreferrer">View my public artist page ↗</a></p></div>
+<div class="note"><strong>Media and content rules:</strong> Lawful music, performances, videos and related artwork only. No nudity, sexually explicit content, harassment, hateful abuse, graphic violence, or illegal activity. You must own or have permission to use all material. Public images, video and storage links require additional review and cannot be posted with this text-only switch.</div>
+<label class="check"><input type="checkbox" id="agree"> I confirm that my public name and biography follow the rules, and I want this information accessible to anyone on the internet.</label>
+<div class="actions"><button id="publish" type="button">Publish my page</button><button id="unpublish" class="secondary" type="button">Unpublish my page</button></div><p id="publishStatus" class="status" role="status"></p></div>
+<div class="panel"><h2>Artist logo and promotional Reel</h2><p>Intentional Noise's logo is the default. A replacement artist logo and up-to-60-second Reel must be submitted for review before appearing publicly. Media upload and review are not yet activated; these controls do not claim to upload files.</p><a class="button secondary" href="https://connect.intentionalnoise.info/show-your-work.html">Show your work on Connect ↗</a></div>
+</section></main><footer>© 2026 Intentional Noise LLC · <a href="https://intentionalnoise.info">About the network</a></footer>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0',{auth:{flowType:'pkce',detectSessionInUrl:true,autoRefreshToken:true,persistSession:true}});
+const $=id=>document.getElementById(id);
+let activeUser=null,artistPage=null;
+const labels=(items)=>Array.from(items).map(s=>s.trim()).filter(Boolean).slice(0,25);
+function show(id,yes){$(id).classList.toggle('hidden',!yes)}
+function status(id,msg){$(id).textContent=msg}
+async function load(){
+ const {data:{user},error}=await db.auth.getUser();activeUser=error?null:user;
+ show('signInPanel',!activeUser);show('editor',!!activeUser);
+ if(!activeUser)return;
+ $('memberEmail').textContent='Signed in: '+(activeUser.email||'Connect member');
+ const {data:p,error:profileError}=await db.from('musician_profiles').select('display_name,bio,roles,instruments,genres,available_for_gigs').eq('user_id',activeUser.id).maybeSingle();
+ if(profileError){status('profileStatus','Profile error: '+profileError.message);return;}
+ if(!p){status('profileStatus','Create and save your musician profile on Connect first.');return;}
+ $('name').value=p.display_name||'';$('bio').value=p.bio||'';
+ for(const option of $('roles').options)option.selected=(p.roles||[]).includes(option.value);
+ $('instruments').value=(p.instruments||[]).join(', ');$('genres').value=(p.genres||[]).join(', ');
+ $('gigStatus').checked=!!p.available_for_gigs;
+ const {data:page,error:pageError}=await db.from('artist_pages').select('slug,published,requested_publication').eq('user_id',activeUser.id).maybeSingle();
+ if(pageError){status('publishStatus','Page error: '+pageError.message);return}
+ artistPage=page;
+ if(!page){status('publishStatus','Save your Connect musician profile to generate your private artist page.');return}
+ $('pageSlug').value=page.slug;const navPublic=$('myPublicPageNav');navPublic.href=page.published?'https://intentionalnoise.band/public-artist.html?slug='+encodeURIComponent(page.slug):'artists.html';navPublic.setAttribute('aria-disabled',String(!page.published));$('publicPageNavNote').textContent=page.published?'View what visitors see of your published artist page.':'Publish your page below before the public-view link becomes available.';
+ $('pageStatus').textContent=page.published?'Published':'Private draft';
+ const url='https://intentionalnoise.band/public-artist.html?slug='+encodeURIComponent(page.slug);
+ $('publicAnchor').href=url;show('publicLink',page.published);
+ $('pageSlug').disabled=page.published;$('saveSlug').disabled=page.published;
+ $('unpublish').disabled=!page.published;
+ $('publish').disabled=page.published;
+}
+$('signOut').addEventListener('click',async()=>{await db.auth.signOut();activeUser=null;artistPage=null;await load()});
+$('profileForm').addEventListener('submit',async e=>{e.preventDefault();if(!activeUser)return;const name=$('name').value.trim();if(name.length<2)return status('profileStatus','Artist name must contain at least two characters.');
+$('saveProfile').disabled=true;status('profileStatus','Saving to Connect…');
+const payload={display_name:name,bio:$('bio').value.trim(),roles:Array.from($('roles').selectedOptions,o=>o.value),instruments:labels($('instruments').value.split(',')),genres:labels($('genres').value.split(',')),available_for_gigs:$('gigStatus').checked,updated_at:new Date().toISOString()};
+const {error}=await db.from('musician_profiles').update(payload).eq('user_id',activeUser.id);
+status('profileStatus',error?'Save failed: '+error.message:'Saved to Connect and synchronized with your artist page.');$('saveProfile').disabled=false;if(!error)await load()});
+$('saveSlug').addEventListener('click',async()=>{if(!activeUser||!artistPage||artistPage.published)return;const slug=$('pageSlug').value.trim().toLowerCase();if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)||slug.length<3||slug.length>90)return status('publishStatus','Use 3–90 lowercase letters, numbers and hyphens.');
+$('saveSlug').disabled=true;const {error}=await db.from('artist_pages').update({slug}).eq('user_id',activeUser.id);
+status('publishStatus',error?'Address not saved: '+error.message:'Page address saved.');$('saveSlug').disabled=false;if(!error)await load()});
+async function visibility(publicPage){if(!activeUser||!artistPage)return;if(publicPage&&!$('agree').checked)return status('publishStatus','Confirm the public-content rules first.');
+$('publish').disabled=true;$('unpublish').disabled=true;status('publishStatus',publicPage?'Publishing your text-only artist page…':'Taking your artist page offline…');
+const {data,error}=await db.rpc('set_my_artist_page_publication',{p_publish:publicPage,p_accept_rules:publicPage&&$('agree').checked});
+status('publishStatus',error?'Request failed: '+error.message:publicPage?'Your public artist page is published.':'Your page is no longer publicly listed.');
+await load();}
+$('publish').addEventListener('click',()=>visibility(true));$('unpublish').addEventListener('click',()=>visibility(false));
+db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){activeUser=null;artistPage=null;show('signInPanel',true);show('editor',false)}});
+await load();
+</script></body></html>
