@@ -7,7 +7,7 @@ let user=null,page=null,submissions=[],busy=false,previewUrl=null;
 const categories={logo:['image/png','image/jpeg','image/webp'],artwork:['image/png','image/jpeg','image/webp'],track:['audio/mpeg','audio/mp4','audio/x-m4a','audio/wav','audio/x-wav'],reel:['video/mp4','video/quicktime','video/webm']};
 const extensions={logo:'.png,.jpg,.jpeg,.webp',artwork:'.png,.jpg,.jpeg,.webp',track:'.mp3,.m4a,.wav',reel:'.mp4,.mov,.webm'};
 const readableKind={logo:'Artist logo',artwork:'Artwork',track:'Music track',reel:'Video Reel'};
-const publicLink=slug=>'https://intentionalnoise.band/public-artist.html?slug='+encodeURIComponent(slug);
+const publicLink=slug=>'https://intentionalnoise.band/'+encodeURIComponent(slug);
 function status(id,msg){setText(id,msg)}
 function escapeText(s){return String(s||'').slice(0,130)}
 function detailsSection(label,values){if(!Array.isArray(values)||values.length===0)return;const wrap=document.createElement('div');wrap.className='detail-row';const strong=document.createElement('strong');strong.textContent=label+': ';wrap.append(strong);wrap.append(document.createTextNode(values.join(', ')));$('details').append(wrap)}
