@@ -55,3 +55,7 @@ The project owner attested the following have been tested and **PASS**: UI behav
 The broader storage/product checklist remains open to the extent it calls for evidence of **additional specific scenarios not explicitly reported** (signed media access, the five-preview cap, duplication cancel/confirm, third-party provider privacy, publishing/unpublishing). Do not silently mark those individually passed.
 
 All TOTP enrollment, device login challenge, factor removal/recovery, AAL2 server enforcement, cross-account security, unfinished messaging/FROG and **explicit activation approval** remain unchecked. The feature flag must stay **false**.
+
+## FROG dependency update — 2026-11-08
+
+FROG source and backend implementation has been completed on `main` and recorded in `CHECKPOINT_FROG_2026-11-08.md`. It has **not** had new live logged-in user acceptance and project-wide moderation controls remain open. Before an eventual MFA release, sync/rebase the staging `auth.html` against current `main` so its older version does not overwrite the new FROG member-navigation link. Do not enable the MFA switch or merge the staging branch automatically.
