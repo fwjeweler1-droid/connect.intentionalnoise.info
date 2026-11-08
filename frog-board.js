@@ -3,6 +3,8 @@ const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable
 const $=id=>document.getElementById(id);
 const tell=(id,message)=>$(id).textContent=message;
 let me=null,myPage=null,myReleases=[],myPromo=null,sharedArt=[],editingRelease=null,busy=false;
+let memberDisplayName='Connect artist';
+const previewSnapshots={r:null,p:null},previewVersions={r:0,p:0};
 const artistPage=p=>'https://intentionalnoise.band/'+encodeURIComponent(p.slug);
 const https=v=>{
  if(!v)return null;
@@ -136,12 +138,59 @@ function displayPublicationNotice(){
  $('publishNotice').replaceChildren(elm('strong','Your artist page is public. FROG cards will appear only when you select Publish for each card.'));
 }
 const canPublish=()=>!!myPage?.published&&!!myPage?.approved_at;
+function previewSignature(prefix){
+ const form=$(prefix==='r'?'releaseForm':'promoForm');
+ return JSON.stringify([...form.querySelectorAll('input,select,textarea')]
+ .map(control=>[control.id,control.type==='checkbox'?control.checked:control.value]));
+}
+function clearPreview(prefix){
+ previewSnapshots[prefix]=null;previewVersions[prefix]++;
+ const area=$(prefix==='r'?'releasePreview':'promoPreview');
+ area.hidden=true;
+ $(prefix==='r'?'releasePreviewCard':'promoPreviewCard').replaceChildren();
+}
+async function showPreview(prefix){
+ if(!me||busy)return;
+ const isRelease=prefix==='r',form=$(isRelease?'releaseForm':'promoForm');
+ const status=isRelease?'releaseEditStatus':'promoEditStatus';
+ if(!form.reportValidity())return;
+ let row;
+ try{
+  if(isRelease){
+   const title=trim('rTitle',120),url=https(trim('rUrl',2048));
+   if(title.length<2||!url)throw Error('Enter a release title and a valid listening link.');
+   row={owner_id:me.id,title,description:trim('rDescription',650),
+    release_date:$('rDate').value||null,listening_url:url,...imageField('r')};
+  }else{
+   const title=trim('pTitle',120),url=https(trim('pUrl',2048));
+   if(title.length<2||!url)throw Error('Enter a card title and a valid destination link.');
+   row={owner_id:me.id,promo_type:$('pType').value,title,
+    description:trim('pDescription',650),destination_url:url,...imageField('p')};
+  }
+ }catch(e){tell(status,'Preview unavailable: '+e.message);return}
+ const version=++previewVersions[prefix],signature=previewSignature(prefix);
+ previewSnapshots[prefix]=null;
+ const area=$(isRelease?'releasePreview':'promoPreview');
+ area.hidden=true;
+ tell(status,'Preparing a private preview. Nothing has been published.');
+ try{
+  const imgs=await imagesFor([row]);
+  if(version!==previewVersions[prefix]||signature!==previewSignature(prefix))return;
+  const names=new Map([[me.id,{display_name:memberDisplayName,slug:myPage?.slug}]]);
+  $(isRelease?'releasePreviewCard':'promoPreviewCard')
+    .replaceChildren(postedCard(row,names,imgs,isRelease?'release':'promo'));
+  previewSnapshots[prefix]=signature;
+  area.hidden=false;area.scrollIntoView({behavior:'smooth',block:'nearest'});
+  tell(status,'Preview ready. Review it below; nothing has been published.');
+ }catch(e){tell(status,'Could not prepare preview: '+(e.message||e))}
+}
+
 function resetReleaseForm(){
  editingRelease=null;$('releaseForm').reset();
  $('releaseFormHeading').textContent='Add a release';
  $('saveRelease').textContent='Save release';
  $('cancelRelease').hidden=true;
- setImageMode('r');
+ setImageMode('r');clearPreview('r');
 }
 function setArtFields(prefix,row){
  $(prefix+'ImageMode').value=row.artwork_media_id?'saved':row.image_url?'link':'none';
@@ -154,7 +203,7 @@ function editRelease(row){
  $('rTitle').value=row.title;$('rDate').value=row.release_date||'';
  $('rDescription').value=row.description||'';$('rUrl').value=row.listening_url;
  $('rPublished').checked=row.is_published;setArtFields('r',row);
- $('saveRelease').textContent='Save changes';$('cancelRelease').hidden=false;
+ $('saveRelease').textContent='Save changes';$('cancelRelease').hidden=false;clearPreview('r');
  $('releaseFormHeading').scrollIntoView({behavior:'smooth',block:'start'});
  tell('releaseEditStatus','Editing '+row.title+'.');
 }
@@ -168,9 +217,14 @@ function renderMyReleases(){
   card.append(elm('p',(row.is_published?'Published':'Private draft')+' · '+imageLabel(row),'meta'));
   const actions=elm('div',null,'actions');
   const edit=elm('button','Edit','secondary');edit.type='button';edit.addEventListener('click',()=>editRelease(row));actions.append(edit);
-  const pub=elm('button',row.is_published?'Hide':'Publish','secondary');pub.type='button';
+  const pub=elm('button',row.is_published?'Hide':'Review & publish','secondary');pub.type='button';
   pub.addEventListener('click',async()=>{
-   if(!row.is_published&&!canPublish()){tell('releaseEditStatus','Publish your .band artist page first.');return}
+   if(!row.is_published){
+    if(!canPublish()){tell('releaseEditStatus','Publish your .band artist page first.');return}
+    editRelease(row);$('rPublished').checked=true;clearPreview('r');
+    tell('releaseEditStatus','Preview this release, then Save changes to publish it. Nothing has been published.');
+    return;
+   }
    pub.disabled=true;
    try{
     const {error}=await db.from('frog_releases').update({is_published:!row.is_published,updated_at:new Date().toISOString()}).eq('id',row.id).eq('owner_id',me.id);
@@ -190,6 +244,7 @@ function renderMyReleases(){
  if(!editingRelease&&myReleases.length>=5)tell('releaseEditStatus','Five releases saved. Edit or remove a listing to add another.');
 }
 function fillPromoForm(){
+ clearPreview('p');
  if(!myPromo){$('promoForm').reset();$('deletePromo').hidden=true;setImageMode('p');return}
  $('pType').value=myPromo.promo_type;$('pTitle').value=myPromo.title;
  $('pDescription').value=myPromo.description||'';$('pUrl').value=myPromo.destination_url;
@@ -206,7 +261,8 @@ async function loadOwner(){
   db.from('artist_media_submissions').select('id,title,kind').eq('user_id',me.id).eq('status','approved').in('kind',['artwork','logo']).order('created_at',{ascending:false}).limit(100)
  ]);
  for(const x of [profile,page,releases,promo,art])if(x.error)throw x.error;
- $('memberName').textContent='Signed in as '+(profile.data?.display_name||'Connect member')+'.';
+ memberDisplayName=profile.data?.display_name||'Connect member';
+ $('memberName').textContent='Signed in as '+memberDisplayName+'.';
  myPage=page.data||null;myReleases=releases.data||[];myPromo=promo.data||null;sharedArt=art.data||[];
  displayPublicationNotice();
  populateArtworkLists();
@@ -227,7 +283,14 @@ async function start(){
  }
  try{await loadOwner()}catch(e){tell('releaseEditStatus','Could not load your FROG cards: '+(e.message||e))}
 }
-for(const p of ['r','p'])$(p+'ImageMode').addEventListener('change',()=>setImageMode(p));
+for(const p of ['r','p']){
+ $(p+'ImageMode').addEventListener('change',()=>setImageMode(p));
+ const form=$(p==='r'?'releaseForm':'promoForm');
+ form.addEventListener('input',()=>clearPreview(p));
+ form.addEventListener('change',()=>clearPreview(p));
+}
+$('previewRelease').addEventListener('click',()=>showPreview('r'));
+$('previewPromo').addEventListener('click',()=>showPreview('p'));
 $('releaseForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!me||busy)return;
  const title=trim('rTitle',120),description=trim('rDescription',650),date=$('rDate').value||null;
@@ -238,6 +301,12 @@ $('releaseForm').addEventListener('submit',async e=>{
  let payload;
  try{payload={owner_id:me.id,title,description,release_date:date,listening_url:https(trim('rUrl',2048)),...imageField('r'),is_published:published,updated_at:new Date().toISOString()};if(!payload.listening_url)throw Error('Enter your listening link.')}
  catch(e){tell('releaseEditStatus',e.message);return}
+ if(published){
+  if(previewSnapshots.r!==previewSignature('r')){
+   tell('releaseEditStatus','Preview this exact version before publishing. Nothing was posted.');return;
+  }
+  if(!confirm('Publish this release exactly as previewed? It will become publicly visible on FROG.'))return;
+ }
  busy=true;$('saveRelease').disabled=true;tell('releaseEditStatus','Saving release…');
  try{
   const query=editingRelease?
@@ -259,6 +328,12 @@ $('promoForm').addEventListener('submit',async e=>{
  let payload;
  try{payload={owner_id:me.id,promo_type:$('pType').value,title:trim('pTitle',120),description:trim('pDescription',650),destination_url:https(trim('pUrl',2048)),...imageField('p'),is_published:published,updated_at:new Date().toISOString()};if(!payload.destination_url)throw Error('Enter a gig, tour or presale link.')}
  catch(e){tell('promoEditStatus',e.message);return}
+ if(published){
+  if(previewSnapshots.p!==previewSignature('p')){
+   tell('promoEditStatus','Preview this exact version before publishing. Nothing was posted.');return;
+  }
+  if(!confirm('Publish this gig, tour or presale exactly as previewed? It will become publicly visible on FROG.'))return;
+ }
  busy=true;$('savePromo').disabled=true;tell('promoEditStatus','Saving card…');
  try{
   const {error}=await db.from('frog_promos').upsert(payload,{onConflict:'owner_id'});
@@ -278,6 +353,6 @@ $('deletePromo').addEventListener('click',async()=>{
  finally{busy=false;$('deletePromo').disabled=false}
 });
 db.auth.onAuthStateChange(e=>{
- if(e==='SIGNED_OUT'){me=null;myPage=null;myReleases=[];myPromo=null;sharedArt=[];$('management').hidden=true;$('loginGate').hidden=false;}
+ if(e==='SIGNED_OUT'){me=null;myPage=null;myReleases=[];myPromo=null;sharedArt=[];clearPreview('r');clearPreview('p');$('management').hidden=true;$('loginGate').hidden=false;}
 });
 await start();
