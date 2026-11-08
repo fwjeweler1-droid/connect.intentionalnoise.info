@@ -12,6 +12,29 @@ async function createPlayer(row,parent){
  if(error||!data?.signedUrl){const p=document.createElement('p');p.textContent='Preview unavailable. '+(error?.message||'');parent.append(p);return}
  const el=document.createElement(row.media_type==='video'?'video':'audio');el.src=data.signedUrl;el.controls=true;el.preload='none';el.className='media';if(row.media_type==='video')el.playsInline=true;parent.append(el);
 }
+function editPreviewTitle(row,card,button){
+ if(uploading||card.querySelector('form.preview-title-editor'))return;
+ button.disabled=true;
+ const form=document.createElement('form');form.className='preview-title-editor';
+ form.style.cssText='margin-top:12px;padding:14px;border:1px solid #6b9da6;border-radius:9px';
+ const label=document.createElement('label');label.textContent='Change preview title';
+ const input=document.createElement('input');input.type='text';input.maxLength=120;input.required=true;input.value=row.title;
+ input.style.cssText='display:block;width:100%;margin-top:8px';
+ label.append(input);form.append(label);
+ const save=document.createElement('button');save.type='submit';save.textContent='Save title';
+ const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';cancel.className='alt';cancel.style.marginLeft='10px';
+ cancel.addEventListener('click',()=>{form.remove();button.disabled=false});
+ form.append(save,cancel);card.append(form);
+ form.addEventListener('submit',async event=>{
+  event.preventDefault();const title=input.value.trim();
+  if(!title||title.length>120){note('Enter a title between 1 and 120 characters.');return}
+  save.disabled=true;
+  const {data,error}=await db.from('connect_work_previews').update({title})
+   .eq('id',row.id).eq('user_id',member.id).eq('status','approved').select('id');
+  if(error||!data?.length){note('Could not update title: '+(error?.message||'Refresh and try again.'));save.disabled=false;return}
+  await loadClips();note('Preview title updated.');
+ });
+}
 function printRows(rows,isOwner){
  const root=$('clipList');root.replaceChildren();
  if(!rows.length){const empty=document.createElement('p');empty.className='muted';empty.textContent=isOwner?'No works yet. Add up to five audio/video previews.':'No approved work previews are available to your audience.';root.append(empty);return}
@@ -26,7 +49,13 @@ function printRows(rows,isOwner){
     const p=document.createElement('p');p.textContent=row.status==='pending'?'Your work is stored privately for content review.':(row.review_note||'This submission needs a correction.');card.append(p);
   }
   if(!isOwner&&row.status==='approved'){const btn=document.createElement('button');btn.type='button';btn.className='alt';btn.textContent='Report this work';btn.addEventListener('click',async()=>{const reason=prompt('Describe the problem with this recording (12 characters minimum):');if(reason===null)return;if(reason.trim().length<12){note('Please provide at least 12 characters.');return}btn.disabled=true;const {data,error}=await db.rpc('report_connect_clip',{p_clip_id:row.id,p_reason:reason.trim()});note(error?'Could not file report: '+error.message:(data||'Report received.'));btn.disabled=false});card.append(btn)}
-  if(isOwner){const btn=document.createElement('button');btn.type='button';btn.className='alt';btn.textContent='Remove this work';btn.addEventListener('click',async()=>{
+  if(isOwner){
+   if(row.status==='approved'){
+    const edit=document.createElement('button');edit.type='button';edit.className='alt';edit.textContent='Edit title';
+    edit.addEventListener('click',()=>editPreviewTitle(row,card,edit));card.append(edit);
+   }
+   const btn=document.createElement('button');btn.type='button';btn.className='alt';btn.textContent='Remove this work';btn.addEventListener('click',async()=>{
+    if(!confirm('Remove "'+row.title+'" from your preview slots? The hosted preview file will also be deleted.'))return;
     btn.disabled=true;note('Removing work…');
     const {error}=await db.from('connect_work_previews').delete().eq('id',row.id).eq('user_id',member.id);
     if(error){note(error.message);btn.disabled=false;return}
@@ -46,6 +75,18 @@ async function loadClips(){
  if(!viewingOther)setCounter();
  printRows(clips,!viewingOther);
  if(viewingOther){const {data:profile}=await db.from('artist_pages').select('display_name').eq('user_id',id).eq('published',true).maybeSingle();$('heading').textContent=profile?.display_name?profile.display_name+' · Work previews':'Musician work previews'}
+}
+const normalizeTitle=v=>String(v||'').toLowerCase().replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();
+async function findDuplicatePosts(title){
+ const [previews,artist]=await Promise.all([
+  db.from('connect_work_previews').select('title,status').eq('user_id',member.id).neq('status','rejected').limit(10),
+  db.from('artist_media_submissions').select('title,status').eq('user_id',member.id).neq('status','rejected').limit(100)
+ ]);
+ if(previews.error||artist.error)throw previews.error||artist.error;
+ const key=normalizeTitle(title),matches=[];
+ for(const row of previews.data||[])if(normalizeTitle(row.title)===key)matches.push('existing preview: '+row.title);
+ for(const row of artist.data||[])if(normalizeTitle(row.title)===key)matches.push('artist-page media: '+row.title);
+ return matches;
 }
 function checkDuration(file){
  return new Promise((resolve,reject)=>{const u=URL.createObjectURL(file);const el=document.createElement(file.type.startsWith('video/')?'video':'audio');el.preload='metadata';el.onloadedmetadata=()=>{URL.revokeObjectURL(u);resolve(el.duration)};el.onerror=()=>{URL.revokeObjectURL(u);reject(Error('Unable to read audio/video duration.'))};el.src=u;});
@@ -72,6 +113,16 @@ $('uploadForm').addEventListener('submit',async e=>{
  if(!$('rights').checked){note('Confirm you own or have permission to use the work and accept the content rules.');return}
  let dur;try{dur=await checkDuration(f)}catch(err){note(err.message);return}
  if(!Number.isFinite(dur)||dur<=0||dur>60){note('Each preview must be at most 60 seconds. Trim the work before uploading.');return}
+ let intentionalDuplicate=false;
+ try{
+  const matches=await findDuplicatePosts(title);
+  if(matches.length){
+   if(!confirm('POSSIBLE DUPLICATE POSTING\\n\\nThis work may already appear as:\\n'+matches.slice(0,8).join('\\n')+'\\n\\nDo you INTEND to share another copy? Select Cancel to review the existing item.')){
+    note('Duplicate posting cancelled. You can edit or remove an existing work below.');return;
+   }
+   intentionalDuplicate=true;
+  }
+ }catch(error){note('Could not check existing posts: '+(error.message||error)+'. Please try again.');return}
  uploading=true;setCounter();note('Saving your preview privately…');
  let path=null;
  try{
@@ -79,7 +130,7 @@ $('uploadForm').addEventListener('submit',async e=>{
   path=member.id+'/'+crypto.randomUUID()+ext;
   const {error:se}=await db.storage.from('connect-clips').upload(path,f,{contentType:f.type,upsert:false});
   if(se)throw se;
-  const row={user_id:member.id,title,media_type:f.type.startsWith('video/')?'video':'audio',file_path:path,mime_type:f.type,duration_seconds:Math.round(dur*100)/100,audience:$('audience').value};
+  const row={user_id:member.id,title,media_type:f.type.startsWith('video/')?'video':'audio',file_path:path,mime_type:f.type,duration_seconds:Math.round(dur*100)/100,audience:$('audience').value,intentional_duplicate:intentionalDuplicate};
   const {error:de}=await db.from('connect_work_previews').insert(row);
   if(de)throw de;
   $('uploadForm').reset();renderFile();note('Saved to your selected audience.');
