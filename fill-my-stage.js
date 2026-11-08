@@ -1,7 +1,9 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import {showBookingShare,hideBookingShare} from './booking-share.js';
 const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0');
 const $=id=>document.getElementById(id);
 const TAG='ineeda-gig-venue-form-v1';
+const sharedBookingId=(()=>{const id=new URLSearchParams(location.search).get('booking')||'';return /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id)?id:null})();
 let me=null,listed=false,myRequests=[],ownInterests=[],memberInterests=[],openRequests=[],editingId=null,step=0,busy=false;
 const state=id=>{const node=$(id);return node?node.value.trim():''};
 const label=(node,tag,value,cls)=>{const x=document.createElement(tag);x.textContent=value||'';if(cls)x.className=cls;node.append(x);return x};
@@ -132,14 +134,17 @@ $('requestForm').addEventListener('submit',async e=>{
    db.from('venue_booking_requests').update(d).eq('id',editingId).eq('owner_id',me.id).select('id'):
    db.from('venue_booking_requests').insert({...d,owner_id:me.id}).select('id');
   const {data,error}=await query;if(error)throw error;if(!data?.length)throw Error('No request was saved. Refresh and try again.');
+  const publishedId=data[0].id;
   resetEditor();await Promise.all([loadOwned(),loadPublic()]);
   setStatus('formStatus',d.status==='draft'?'Private draft saved.':'Booking offer posted. Musicians can now express interest.');
-  $('myBookings').scrollIntoView({behavior:'smooth',block:'start'});
+  if(d.status==='open')showBookingShare({...d,id:publishedId});
+  else{hideBookingShare();$('myBookings').scrollIntoView({behavior:'smooth',block:'start'});}
  }catch(error){setStatus('formStatus','Could not save booking: '+(error.message||error))}
  finally{busy=false;$('submitRequest').disabled=false}
 });
 function bookingCard(b,owner=false){
  const card=label(document.createDocumentFragment(),'article',null,'tile');
+ card.id='booking-'+b.id;
  label(card,'h3',b.venue_name+' — '+(words[b.act_type]||b.act_type));
  label(card,'p',[dateText(b.event_date),b.start_time?.slice(0,5)||'',b.city,b.region].filter(Boolean).join(' · '),'meta');
  label(card,'p',offer(b)+' · '+b.set_length_minutes+' minute set');
@@ -156,9 +161,16 @@ async function loadPublic(){
  const root=$('publicList');root.replaceChildren();
  if(error){setStatus('publicStatus','Unable to list gigs: '+error.message);return}
  openRequests=data||[];
+ if(sharedBookingId&&!openRequests.some(b=>b.id===sharedBookingId)){
+  const shared=await db.from('venue_booking_requests')
+   .select('id,owner_id,venue_name,venue_type,act_type,genre,event_date,start_time,set_length_minutes,city,region,country,budget_kind,budget_min,budget_max,sound_system,details,status')
+   .eq('id',sharedBookingId).eq('status','open').gte('event_date',today()).maybeSingle();
+  if(!shared.error&&shared.data)openRequests.unshift(shared.data);
+ }
  const applied=new Set((memberInterests||[]).map(v=>v.booking_id));
  for(const b of openRequests){
   const card=bookingCard(b);
+  if(sharedBookingId===b.id){card.classList.add('shared-booking');label(card,'span','Shared booking opportunity','tag')}
   if(me&&b.owner_id===me.id){label(card,'p','This is your own offer. Manage replies below.','hint')}
   else if(me&&listed){
    if(applied.has(b.id)){label(card,'p','You already expressed interest. See My booking conversations below.','hint')}
@@ -189,6 +201,11 @@ async function loadPublic(){
   root.append(card);
  }
  setStatus('publicStatus',openRequests.length+' current stage opening'+(openRequests.length===1?'':'s')+'.');
+ if(sharedBookingId){
+  const target=$('booking-'+sharedBookingId);
+  if(target)target.scrollIntoView({behavior:'smooth',block:'center'});
+  else setStatus('publicStatus','This booking is not publicly open. It may have been filled, cancelled, hidden or removed.');
+ }
  if(!openRequests.length)label(root,'p','No venues have posted a booking offer yet.','hint');
 }
 async function loadOwned(){
@@ -217,6 +234,10 @@ async function loadOwned(){
   const card=bookingCard(b,true),acts=label(card,'div',null,'actions');
   const edit=label(acts,'button','Edit','secondary');edit.type='button';
   edit.addEventListener('click',()=>fillForm(b));
+  if(b.status==='open'&&b.event_date>=today()){
+   const share=label(acts,'button','Social links','secondary');share.type='button';
+   share.addEventListener('click',()=>showBookingShare(b));
+  }
   for(const [act,text] of [['draft','Hide'],['open','Reopen'],['filled','Mark filled'],['cancelled','Cancel']]){
    if(act===b.status||(act==='open'&&b.event_date<today()))continue;
    const btn=label(acts,'button',text,'secondary');btn.type='button';
@@ -347,6 +368,6 @@ async function init(){
  if(me){await loadOwned();await loadMyInterests();await loadPublic()}
 }
 db.auth.onAuthStateChange(event=>{
- if(event==='SIGNED_OUT'){me=null;listed=false;myRequests=[];memberInterests=[];$('myBookings').hidden=true;$('myInterestArea').hidden=true;loadPublic().catch(()=>{})}
+ if(event==='SIGNED_OUT'){me=null;listed=false;myRequests=[];memberInterests=[];hideBookingShare();$('myBookings').hidden=true;$('myInterestArea').hidden=true;loadPublic().catch(()=>{})}
 });
 try{await init()}catch(e){setStatus('formStatus','Could not initialize the booking page: '+(e.message||e))}
