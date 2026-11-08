@@ -64,6 +64,10 @@ small,.hint{color:#bfd1d9;font-size:.86rem;line-height:1.5}
 .field-inline{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .field-inline input{width:20px}
 .empty{color:#b3c6ce}
+.preview-panel{margin:14px 0 24px;padding:15px;border:1px solid #7de1df;border-radius:12px;background:#102b36}
+.preview-panel .tile{margin:12px 0}
+.preview-panel strong{color:#b3ffe9}
+.preview-panel .hint{margin:6px 0 0}
 footer{border-top:1px solid #2b4655;color:#a9c1ca;padding:26px 0;font-size:.9rem}
 [hidden]{display:none!important}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #7de1df;outline-offset:4px}
@@ -136,8 +140,15 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
      <div id="rLinkArea" hidden><label for="rImageUrl">Direct image link (JPG, PNG or WebP)</label><input id="rImageUrl" type="url" maxlength="2048" placeholder="https://.../cover.jpg"></div>
      <p class="hint">Need to upload new artwork? <a href="/band-page.html#mediaForm">Add it to your existing artist page</a>, then return here. No duplicate upload needed.</p>
      <label><input id="rPublished" type="checkbox"> Publish this release on FROG</label>
-     <div class="actions"><button type="submit" id="saveRelease">Save release</button><button id="cancelRelease" type="button" class="secondary" hidden>Cancel edit</button></div>
+     <p class="hint">Preview your listing before publishing. Saving an unchecked listing keeps it private.</p>
+     <div class="actions"><button type="button" id="previewRelease" class="secondary">Preview release</button><button type="submit" id="saveRelease">Save release</button><button id="cancelRelease" type="button" class="secondary" hidden>Cancel edit</button></div>
     </form><p id="releaseEditStatus" class="status" role="status"></p>
+    <div id="releasePreview" class="preview-panel" role="region" aria-label="Release listing preview" hidden>
+     <strong>PREVIEW ONLY — NOT PUBLISHED</strong>
+     <p class="hint">This is how your release card will appear on FROG. Check its artwork, words and destination link.</p>
+     <div id="releasePreviewCard"></div>
+     <p class="hint">If you edit anything, preview again before publishing.</p>
+    </div>
    </section>
    <section class="panel" id="managePromo">
     <h2>My gig, tour or presale card</h2>
@@ -152,8 +163,15 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
      <div id="pLinkArea" hidden><label for="pImageUrl">Direct image link (JPG, PNG or WebP)</label><input id="pImageUrl" type="url" maxlength="2048" placeholder="https://.../gig-flyer.jpg"></div>
      <p class="hint">A link to an image-hosting page may not show the picture. Use a direct image URL or artwork previously shared from your artist page.</p>
      <label><input id="pPublished" type="checkbox"> Publish this promo on FROG</label>
-     <div class="actions"><button type="submit" id="savePromo">Save promotional card</button><button type="button" id="deletePromo" class="secondary" hidden>Remove card</button></div>
+     <p class="hint">Preview your listing before publishing. Saving an unchecked listing keeps it private.</p>
+     <div class="actions"><button type="button" id="previewPromo" class="secondary">Preview promotional card</button><button type="submit" id="savePromo">Save promotional card</button><button type="button" id="deletePromo" class="secondary" hidden>Remove card</button></div>
     </form><p id="promoEditStatus" class="status" role="status"></p>
+    <div id="promoPreview" class="preview-panel" role="region" aria-label="Promotional card preview" hidden>
+     <strong>PREVIEW ONLY — NOT PUBLISHED</strong>
+     <p class="hint">This is how your gig, tour or presale card will appear on FROG. Check its artwork, words and destination link.</p>
+     <div id="promoPreviewCard"></div>
+     <p class="hint">If you edit anything, preview again before publishing.</p>
+    </div>
    </section>
   </div>
   </details>
