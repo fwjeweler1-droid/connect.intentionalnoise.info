@@ -85,3 +85,9 @@ The project owner explicitly reported having **tested and passed** all of the fo
 This report **supersedes the earlier "no live testing evidence" notes for these exact six areas**. It does not imply that the assistant personally reproduced the tests. It does not establish two-member messaging, all duplicate-warning edge cases, cross-account attack tests, FROG cards, all three-site continuity, or MFA functionality.
 
 **MFA remains STAGED/OFF**, with server-side AAL2 enforcement, test-account TOTP enrollment/challenge/recovery and final explicit release approval still required. Do not merge the staging branch, enable Supabase MFA settings, or require existing members to enroll based on this report.
+
+## FROG implementation checkpoint — November 8, 2026
+
+FROG releases-and-gigs placeholder replaced with live-table source, public feeds and owner edit/publish controls. Added up to five release cards (database-enforced), one gig/presale promo card, artwork reuse/direct external HTTPS image links, and restored the missing `gig_requests` backend. Account navigation updated across `.info`, Connect and `.band`. Read-only RLS and transaction-rollback write tests passed; no test rows remain. **FROG real-browser acceptance and moderation/report controls remain pending.** Details: `CHECKPOINT_FROG_2026-11-08.md`.
+
+**Important branch hygiene:** MFA remains staged and switched OFF. The staged `auth.html` fork precedes the new FROG account-navigation link. Reconcile MFA staging with current `main` before any eventual approved MFA merge; never replace newer FROG navigation by taking an older staging copy wholesale.
