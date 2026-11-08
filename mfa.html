@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#101d28">
+<title>Account Security — Prepared, Not Enabled | Intentional Noise Connect</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#101d28;color:#f4f7f8}
+a{color:#7de1df}
+.wrap{max-width:850px;margin:auto;padding:25px}
+header{background:#142633;border-bottom:1px solid #2b4655}
+header .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-size:clamp(1.9rem,5vw,3rem)}
+p,li{line-height:1.6;color:#cbdae0}
+.panel{background:#172b38;border:1px solid #2c4a59;border-radius:16px;padding:25px;margin:24px 0}
+.warning{border-left:4px solid #eed398}
+label{display:block;font-weight:700;margin:15px 0 7px}
+input,select{display:block;width:100%;padding:12px;border:1px solid #78939e;border-radius:9px;background:#0d202b;color:white;font:inherit}
+button,.btn{display:inline-block;border:1px solid #7de1df;background:#7de1df;color:#0b2028;padding:12px 17px;border-radius:9px;text-decoration:none;cursor:pointer;font:inherit;font-weight:750;margin:8px 8px 8px 0}
+button.secondary{background:transparent;color:#e8fcfb;border-color:#78939e}
+button:disabled{opacity:.45;cursor:wait}
+.status{min-height:2em;color:#a4fff6;white-space:pre-wrap}
+.muted{color:#bcd1d9;font-size:.9rem}
+#qr{width:min(230px,100%);background:white;padding:10px;border-radius:10px;display:block;margin:16px 0}
+.secret{display:block;overflow-wrap:anywhere;background:#081a23;padding:13px;border:1px solid #54737d;border-radius:8px}
+.factor{padding:12px;border:1px solid #416373;border-radius:10px;margin:9px 0}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid #7de1df;outline-offset:3px}
+</style>
+</head>
+<body>
+<header><div class="wrap"><strong>INTENTIONAL NOISE <span style="color:#7de1df">CONNECT</span></strong><a href="auth.html#profile">My Connect account</a></div></header>
+<main class="wrap">
+<h1>Account security</h1>
+<section id="disabled" class="panel warning">
+<h2>Authenticator-app MFA is not enabled yet</h2>
+<p>The setup and sign-in workflow are prepared for testing. Account security settings are unchanged; no member can enroll through this page while the release gate is OFF.</p>
+<p>The existing Connect login remains available while the rest of the website is finished and verified.</p>
+<a class="btn" href="auth.html">Return to member access</a>
+</section>
+<div id="mfaApp" hidden>
+<section id="signInRequired" class="panel" hidden><h2>Sign in required</h2><p>Use your Connect account to manage its security.</p><a id="signInLink" class="btn" href="auth.html">Sign in</a></section>
+<section id="mfaControls" hidden>
+<div class="panel warning"><strong>Protect your access.</strong><p>Use a trusted authenticator app. Never share six-digit codes or the enrollment secret. Keep a recovery plan for device loss.</p></div>
+<section class="panel"><h2>Your authentication status</h2><p id="assurance"></p><p id="summary" class="muted"></p><div id="factors" aria-live="polite"></div></section>
+<section id="verifyPanel" class="panel" hidden>
+<h2>Confirm your sign-in</h2>
+<form id="verifyForm">
+<label for="factorSelect">Authenticator</label><select id="factorSelect" required></select>
+<label for="verificationCode">Six-digit code</label><input id="verificationCode" required autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6">
+<button id="verifyButton" type="submit">Verify and continue</button>
+</form>
+</section>
+<section id="enrollPanel" class="panel" hidden>
+<h2>Add an authenticator app</h2><p>Scan the QR code in your authenticator app, then enter the six-digit code it generates.</p>
+<button id="startEnroll" type="button">Start authenticator setup</button>
+<div id="enrollmentDetails" hidden>
+<img id="qr" alt="One-time authenticator enrollment QR code" hidden>
+<p class="muted">Or enter this setup secret manually. Do not share or save a screenshot.</p><code id="setupSecret" class="secret"></code>
+<form id="enrollVerifyForm"><label for="enrollCode">Code from your app</label>
+<input id="enrollCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+<button type="submit" id="finishEnroll">Confirm setup</button>
+<button type="button" class="secondary" id="cancelEnroll">Cancel setup</button></form>
+</div>
+</section>
+<section class="panel"><h2>Manage or remove authenticators</h2><p class="muted">Removing an active factor requires a session that has already completed second-factor verification. Losing your device may require a separate account recovery procedure.</p><div id="manageFactors"></div></section>
+<a id="continueLink" class="btn" href="auth.html" hidden>Continue to Connect</a>
+</section>
+</div>
+<p id="status" class="status" role="status" aria-live="polite"></p>
+</main>
+<footer class="wrap muted">© 2026 Intentional Noise · MFA prepared for controlled testing only</footer>
+<script type="module" src="./mfa-controller.js"></script>
+</body></html>
