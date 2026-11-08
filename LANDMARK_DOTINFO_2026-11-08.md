@@ -56,3 +56,15 @@
 5. Continue using *inspect → change one function → test → show → approve → lock*. Avoid broad redesign, duplicate outbound email, changes to music MPCC or other project records.
 
 **Return phrase:** “Sparky, resume DotInfo from `LANDMARK_DOTINFO_2026-11-08.md`.”
+
+
+## Addendum — MFA prepared, RELEASE DISABLED (November 8, 2026)
+
+User requested: **build Connect authenticator-app MFA, but do not enable until everything else works**.
+
+- Source prepared exclusively in GitHub branch `staging/mfa-totp-disabled`; production `main` login code and Supabase MFA configuration were not changed.
+- Staging artifacts: `mfa.html`, `mfa-controller.js`, `mfa-feature-flag.js` with `MFA_RELEASE_ENABLED=false`, staging-branch `auth.html` MFA challenge hook, and `MFA_RELEASE_GATE.md`.
+- Scope: TOTP enrollment, QR/secret display, six-digit verification, MFA login challenge, factor listing and removal. No active member factor was enrolled; Nerdly still has zero verified MFA factors at read-back.
+- Implementation verified only by repository read-back and JavaScript syntax checks; no MFA authenticated browser tests have been performed.
+- Release blockers: test all Connect workflows, 2-member messaging and artist media, device-loss recovery, test-account enrollment/login/unlock, and server-side AAL2 enforcement on protected operations. No merge, no enable, no automatic activation; explicit user approval required.
+- Source: https://github.com/fwjeweler1-droid/connect.intentionalnoise.info/tree/staging/mfa-totp-disabled
