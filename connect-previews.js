@@ -1,7 +1,7 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0',{auth:{flowType:'pkce',detectSessionInUrl:true,autoRefreshToken:true,persistSession:true}});
 const $=id=>document.getElementById(id),show=(id,yes)=>$(id).classList.toggle('hidden',!yes);
-let member=null,clips=[],uploading=false,previewObjectUrl=null;
+let member=null,clips=[],uploading=false,previewObjectUrl=null,artistTitles=new Set();
 const types=new Set(['audio/mpeg','audio/mp4','audio/x-m4a','audio/wav','audio/x-wav','video/mp4','video/quicktime','video/webm']);
 const memberParam=new URLSearchParams(location.search).get('member');
 const viewingOther=!!memberParam&&/^[0-9a-f]{8}-[0-9a-f-]{27,}$/.test(memberParam);
@@ -44,6 +44,11 @@ function printRows(rows,isOwner){
   const info=document.createElement('p');info.className='muted';
   info.textContent=(row.media_type==='audio'?'Audio':'Video')+' · '+Number(row.duration_seconds).toFixed(0)+' sec · '+(row.audience==='members'?'Connect members':'Public')+(isOwner?' · '+(row.status==='pending'?'Processing':row.status==='approved'?'Shared':'Taken offline'):'');
   card.append(name,info);
+  if(isOwner&&artistTitles.has(normalizeTitle(row.title))){
+   const duplicate=document.createElement('p');duplicate.className='muted';
+   duplicate.textContent='Also posted in your public artist media. Edit or remove one if the repeat was unintentional.';
+   card.append(duplicate);
+  }
   if(row.status==='approved'||isOwner){createPlayer(row,card)}
   else if(isOwner){
     const p=document.createElement('p');p.textContent=row.status==='pending'?'Your work is stored privately for content review.':(row.review_note||'This submission needs a correction.');card.append(p);
@@ -72,7 +77,12 @@ async function loadClips(){
  const {data,error}=await query;
  if(error){note('Could not load previews: '+error.message);return}
  clips=data||[];
- if(!viewingOther)setCounter();
+ if(!viewingOther){
+  const {data:artistMedia}=await db.from('artist_media_submissions')
+   .select('title').eq('user_id',member.id).neq('status','rejected').limit(100);
+  artistTitles=new Set((artistMedia||[]).map(v=>normalizeTitle(v.title)));
+  setCounter();
+ }
  printRows(clips,!viewingOther);
  if(viewingOther){const {data:profile}=await db.from('artist_pages').select('display_name').eq('user_id',id).eq('published',true).maybeSingle();$('heading').textContent=profile?.display_name?profile.display_name+' · Work previews':'Musician work previews'}
 }
