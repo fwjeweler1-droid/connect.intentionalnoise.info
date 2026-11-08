@@ -68,3 +68,20 @@ User requested: **build Connect authenticator-app MFA, but do not enable until e
 - Implementation verified only by repository read-back and JavaScript syntax checks; no MFA authenticated browser tests have been performed.
 - Release blockers: test all Connect workflows, 2-member messaging and artist media, device-loss recovery, test-account enrollment/login/unlock, and server-side AAL2 enforcement on protected operations. No merge, no enable, no automatic activation; explicit user approval required.
 - Source: https://github.com/fwjeweler1-droid/connect.intentionalnoise.info/tree/staging/mfa-totp-disabled
+
+## Acceptance update — User-reported PASS (2026-11-08)
+
+The project owner explicitly reported having **tested and passed** all of the following on the current Connect workflow:
+
+| Area | Recorded outcome | Basis |
+| --- | --- | --- |
+| UI behavior | PASS | User-tested; not witnessed by assistant |
+| Actual public media playback | PASS | User-tested; not witnessed by assistant |
+| Account login | PASS | User-tested; not witnessed by assistant |
+| Mobile experience | PASS | User-tested; not witnessed by assistant |
+| Save and replace flows | PASS | User-tested; not witnessed by assistant |
+| Deletion flows | PASS | User-tested; not witnessed by assistant |
+
+This report **supersedes the earlier "no live testing evidence" notes for these exact six areas**. It does not imply that the assistant personally reproduced the tests. It does not establish two-member messaging, all duplicate-warning edge cases, cross-account attack tests, FROG cards, all three-site continuity, or MFA functionality.
+
+**MFA remains STAGED/OFF**, with server-side AAL2 enforcement, test-account TOTP enrollment/challenge/recovery and final explicit release approval still required. Do not merge the staging branch, enable Supabase MFA settings, or require existing members to enroll based on this report.
