@@ -69,6 +69,10 @@ async function loadSubmissions(){
   if(item.status==='pending'){
    const share=document.createElement('button');share.type='button';share.className='secondary compact';share.textContent='Share this saved item';share.addEventListener('click',()=>sharePending(item,share));article.append(share);
   }
+  if(item.status==='approved'){
+   const edit=document.createElement('button');edit.type='button';edit.className='secondary compact';
+   edit.textContent='Edit title or source';edit.addEventListener('click',()=>editMedia(item,article,edit));article.append(edit);
+  }
   const cancel=document.createElement('button');cancel.type='button';cancel.className='secondary compact';cancel.textContent='Remove media';cancel.addEventListener('click',()=>removeSubmission(item,cancel));article.append(cancel);
   list.append(article);
  }
@@ -86,13 +90,63 @@ async function sharePending(item,button){
  }catch(e){status('mediaStatus','Could not share: '+e.message);button.disabled=false;}
  finally{busy=false}
 }
+function editMedia(item,article,button){
+ if(busy||article.querySelector('.inline-media-editor'))return;
+ button.disabled=true;
+ const form=document.createElement('form');form.className='inline-media-editor';
+ form.style.cssText='margin-top:14px;padding:14px;border:1px solid #6a9ba5;border-radius:9px';
+ const make=(tag,label,value,required=false)=>{
+  const wrapper=document.createElement('label');wrapper.textContent=label;
+  const input=document.createElement(tag);input.value=value||'';input.required=required;
+  input.style.cssText='display:block;width:100%;margin-top:6px;padding:11px;border-radius:8px;background:#0c202a;color:#fff;border:1px solid #78949e;font:inherit';
+  wrapper.append(input);form.append(wrapper);return input;
+ };
+ const title=make('input','Media title',item.title,true);title.maxLength=120;
+ const url=make('input',item.source_type==='link'?'External share link':'Optional: replace hosted upload with an HTTPS share link',item.external_url,item.source_type==='link');
+ url.type='url';url.placeholder='https://...';url.maxLength=2048;
+ const hint=document.createElement('p');hint.className='hint';
+ hint.textContent=item.source_type==='upload'?'Leave this blank to keep your uploaded file. If you enter a link, the hosted copy will be removed after the link is saved. Other previews are unaffected.':'Change only this public media link. Your private storage shortcut is not changed.';
+ form.append(hint);
+ const actions=document.createElement('div');actions.className='actions';
+ const save=document.createElement('button');save.type='submit';save.textContent='Save changes';
+ const cancel=document.createElement('button');cancel.type='button';cancel.className='secondary';cancel.textContent='Cancel';
+ cancel.addEventListener('click',()=>{form.remove();button.disabled=false});
+ actions.append(save,cancel);form.append(actions);article.append(form);
+ form.addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(busy||!user)return;
+  const t=title.value.trim(),link=url.value.trim(),replacing=item.source_type==='upload'&&!!link;
+  if(!t||t.length>120){status('mediaStatus','Enter a title up to 120 characters.');return}
+  let href=null;
+  if(link){try{const u=new URL(link);if(u.protocol!=='https:')throw Error();href=u.href}
+   catch{status('mediaStatus','Use a complete HTTPS share link.');return}}
+  if(item.source_type==='link'&&!href){status('mediaStatus','The shared media link cannot be empty.');return}
+  if(replacing&&!confirm('Replace this hosted upload with your external link and remove its hosted file? This does not remove the separate 60-second preview.'))return;
+  busy=true;save.disabled=true;
+  try{
+   const changes={title:t};
+   if(item.source_type==='link')changes.external_url=href;
+   if(replacing)Object.assign(changes,{source_type:'link',external_url:href,storage_path:null,mime_type:null,file_size:null});
+   const {data,error}=await db.from('artist_media_submissions').update(changes)
+    .eq('id',item.id).eq('user_id',user.id).eq('status','approved').select('id');
+   if(error)throw error;if(!data?.length)throw Error('This item was not updated. Please refresh.');
+   let cleanupError=null;
+   if(replacing&&item.storage_path){const cleanup=await db.storage.from('artist-review').remove([item.storage_path]);cleanupError=cleanup.error}
+   status('mediaStatus',cleanupError?'Changes saved, but the old hosted file could not be removed: '+cleanupError.message:'Media changes saved.');
+   await loadSubmissions();
+  }catch(error){status('mediaStatus','Could not save changes: '+(error.message||error));save.disabled=false}
+  finally{busy=false}
+ });
+}
 async function removeSubmission(item,button){
  if(busy||!user)return;
+ if(!confirm('Remove "'+item.title+'" from your artist page?'+(item.source_type==='upload'?' Its hosted file will also be deleted.':'')))return;
  busy=true;button.disabled=true;status('mediaStatus','Removing your media…');
  const {error}=await db.from('artist_media_submissions').delete().eq('id',item.id).eq('user_id',user.id);
  if(error){status('mediaStatus','Could not remove: '+error.message);button.disabled=false;busy=false;return}
- if(item.source_type==='upload'&&item.storage_path){await db.storage.from('artist-review').remove([item.storage_path])}
- busy=false;status('mediaStatus','Media removed.');await loadSubmissions();
+ let cleanup=null;
+ if(item.source_type==='upload'&&item.storage_path){const result=await db.storage.from('artist-review').remove([item.storage_path]);cleanup=result.error}
+ busy=false;status('mediaStatus',cleanup?'Media listing removed; hosted file cleanup failed: '+cleanup.message:'Media removed.');await loadSubmissions();
 }
 function setMethod(){
  const upload=$('mediaMethod').value==='upload';
@@ -146,6 +200,18 @@ function chooseFiles(files){const file=files?.[0];if(!file)return;const dt=new D
 function validMime(file,kind){return !!file&&categories[kind].includes(file.type)}
 function reelDuration(file){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file);const video=document.createElement('video');video.preload='metadata';video.onloadedmetadata=()=>{const d=video.duration;URL.revokeObjectURL(url);resolve(d)};video.onerror=()=>{URL.revokeObjectURL(url);reject(Error('This video cannot be checked. Use an MP4, MOV or WebM Reel.'))};video.src=url;});}
 function extension(file){const s=file.name.toLowerCase();const match=s.match(/\.[a-z0-9]{2,5}$/);return match?match[0]:'.bin'}
+const normalizedTitle=v=>String(v||'').toLowerCase().replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();
+async function duplicatePostingMatches(title,externalUrl){
+ const [artist,previews]=await Promise.all([
+  db.from('artist_media_submissions').select('title,external_url,status').eq('user_id',user.id).neq('status','rejected').limit(100),
+  db.from('connect_work_previews').select('title,status').eq('user_id',user.id).neq('status','rejected').limit(10)
+ ]);
+ if(artist.error||previews.error)throw artist.error||previews.error;
+ const sameTitle=normalizedTitle(title), matches=[];
+ for(const item of artist.data||[])if(normalizedTitle(item.title)===sameTitle||(externalUrl&&item.external_url===externalUrl))matches.push('artist-page media: '+item.title);
+ for(const item of previews.data||[])if(normalizedTitle(item.title)===sameTitle)matches.push('60-second preview: '+item.title);
+ return matches;
+}
 async function submitMedia(event){
  event.preventDefault();
  if(busy||!user||!page)return;
@@ -160,6 +226,14 @@ async function submitMedia(event){
   if(file.size>50*1024*1024||file.size===0){status('mediaStatus','Upload a nonempty file smaller than 50 MB.');return}
   if(kind==='reel'){try{const duration=await reelDuration(file);if(!Number.isFinite(duration)||duration>60||duration<=0){status('mediaStatus','Reels must be 60 seconds or shorter.');return}}catch(e){status('mediaStatus',e.message);return}}
  }
+ let intentionalDuplicate=false;
+ try{
+  const existing=await duplicatePostingMatches(title,method==='link'?urlObj.href:null);
+  if(existing.length){
+   if(!confirm('POSSIBLE DUPLICATE POSTING\\n\\nThis work may already be posted as:\\n'+existing.slice(0,8).join('\\n')+'\\n\\nDo you INTEND to post another copy? Select Cancel to review your existing media.')){status('mediaStatus','Duplicate posting cancelled. Edit or remove the existing version below if needed.');return}
+   intentionalDuplicate=true;
+  }
+ }catch(error){status('mediaStatus','Could not check for duplicate posts: '+(error.message||error)+'. Please try again.');return}
  busy=true;$('submitMedia').disabled=true;status('mediaStatus',method==='upload'?'Saving your media…':'Saving your link…');
  let path=null;
  try{
@@ -168,7 +242,7 @@ async function submitMedia(event){
    const {error}=await db.storage.from('artist-review').upload(path,file,{contentType:file.type,upsert:false});
    if(error)throw error;
   }
-  const row={user_id:user.id,kind,source_type:method,storage_path:path,external_url:method==='link'?urlObj.href:null,title, mime_type:method==='upload'?file.type:null,file_size:method==='upload'?file.size:null,status:'approved',rights_confirmed:true,rules_accepted:true};
+  const row={user_id:user.id,kind,source_type:method,storage_path:path,external_url:method==='link'?urlObj.href:null,title, mime_type:method==='upload'?file.type:null,file_size:method==='upload'?file.size:null,status:'approved',rights_confirmed:true,rules_accepted:true,intentional_duplicate:intentionalDuplicate};
   const {error}=await db.from('artist_media_submissions').insert(row);
   if(error)throw error;
   $('mediaForm').reset();setMethod();status('mediaStatus','Saved! Your '+readableKind[kind].toLowerCase()+' is ready for your public artist page. If your page is already public, it can appear there now.');await loadSubmissions();
@@ -205,4 +279,5 @@ $('saveSlug').addEventListener('click',saveSlug);
 $('publish').addEventListener('click',()=>publish(true));
 $('unpublish').addEventListener('click',()=>publish(false));
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_IN'||event==='SIGNED_OUT')setTimeout(refresh,0)});
+if(new URLSearchParams(location.search).get('source')==='link')$('mediaMethod').value='link';
 setMethod();await refresh();
