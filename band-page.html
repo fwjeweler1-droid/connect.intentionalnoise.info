@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Edit My Public Band Page | Intentional Noise Connect</title>
-<meta name="description" content="Upload music, artwork, and short Reels or submit links for review. Manage your public band page using your existing Intentional Noise Connect account.">
+<meta name="description" content="Share music, artwork, and short Reels or add secure external links. Manage your public band page using your existing Intentional Noise Connect account.">
 <style>
 :root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color-scheme:dark;background:#0c141b;color:#f0f6f8}
 *{box-sizing:border-box}body{margin:0}a{color:#8fe8e5}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #eacb8b;outline-offset:3px}
@@ -62,7 +62,7 @@ footer{border-top:1px solid #375968;text-align:center;padding:25px;color:#bed2d9
 <p class="hint">Your musician details are edited in Connect and appear here automatically. <a href="auth.html#profile">Change them here.</a></p>
 </section>
 <section class="panel" id="uploadPanel">
-<h2>Add music, artwork, or a Reel</h2><p>Upload a file from your computer or link content you already store elsewhere. Nothing appears to the public until it has been reviewed and approved.</p>
+<h2>Add music, artwork, or a Reel</h2><p>Upload a file from your computer or link content you already store elsewhere. Your media is yours to share. It appears on your artist page once you publish the page.</p>
 <form id="mediaForm">
 <label for="mediaKind">1. What are you adding?</label>
 <select id="mediaKind"><option value="artwork">Release or promotional artwork</option><option value="logo">My band / artist logo</option><option value="track">Music track</option><option value="reel">Promotional video Reel (up to 60 seconds)</option></select>
@@ -74,20 +74,20 @@ footer{border-top:1px solid #375968;text-align:center;padding:25px;color:#bed2d9
 </div>
 <div id="linkArea" class="hidden">
 <label for="mediaUrl">Paste a secure link (https://)</label><input id="mediaUrl" type="url" placeholder="https://your-storage-or-music-site.com/your-file" autocomplete="off">
-<p class="hint">The link must allow reviewers to access the submitted media. A link to private storage may need separate sharing permission. We won't copy your private storage files.</p>
+<p class="hint">Make sure your visitors have permission to open the shared item. A link to private storage may need separate sharing permission. We won't copy your private storage files.</p>
 </div>
 <label for="mediaTitle">3. Give it a title</label>
 <input id="mediaTitle" type="text" maxlength="120" placeholder="Example: My new single / Band logo" autocomplete="off" required>
 <div id="preview" aria-label="Media preview"></div>
-<div class="notice"><strong>Content and ownership rules:</strong> Music-related media only. No nudity, sexual content, hate, harassment, graphic violence, unlawful activity, or content you don't have permission to share. Files and links are kept in the review queue before any public use.</div>
+<div class="notice"><strong>Content and ownership rules:</strong> Music-related media only. No nudity, sexual content, hate, harassment, graphic violence, unlawful activity, or content you don't have permission to share. You can publish your work directly. Reported or rule-breaking content may be taken offline.</div>
 <label class="check"><input type="checkbox" id="mediaRules" required> I own or have permission to use this material, and it complies with the content rules.</label>
-<button id="submitMedia" type="submit">Save media for review</button>
+<button id="submitMedia" type="submit">Save and share media</button>
 <p id="mediaStatus" class="status" role="status" aria-live="polite"></p>
 </form>
 </section>
-<section class="panel" id="myMediaPanel"><h2>My submitted content</h2><p class="muted">Track what's waiting, approved, or needs changes. Pending submissions can be removed.</p><div id="submissionList"></div><p id="submissionsStatus" class="status" role="status"></p></section>
+<section class="panel" id="myMediaPanel"><h2>My submitted content</h2><p class="muted">Manage your shared media and any older saved items. You can remove your own media.</p><div id="submissionList"></div><p id="submissionsStatus" class="status" role="status"></p></section>
 <section class="panel" id="publishPanel"><h2>My public page</h2>
-<p>Every musician receives a private draft automatically. You decide when your name and biography are visible publicly; uploaded music, videos and logos go through the separate review process.</p>
+<p>Every musician receives a private draft automatically. You decide when your name and biography are visible publicly; you control which music, videos and logos you share, subject to the content rules.</p>
 <p><strong>Page status: </strong><span id="publicationStatus" class="state">Private draft</span></p>
 <p id="publicNote" class="muted"></p>
 <p><a id="publicUrl" href="#publishPanel" class="disabled-link" target="_blank" rel="noopener noreferrer">Your public link activates after publishing</a></p>
