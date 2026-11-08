@@ -32,6 +32,7 @@ button:disabled{opacity:.52;cursor:wait}.actions{display:flex;gap:10px;align-ite
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .tile{background:#10232f;border:1px solid #42606d;border-radius:11px;padding:16px;min-width:0}
 .tile h3{margin:0 0 7px;font-size:1.13rem;overflow-wrap:anywhere}
+.tile.shared-booking{border:2px solid #f1c783;box-shadow:0 0 0 2px #1b363f}
 .tile p{font-size:.94rem;margin:8px 0;overflow-wrap:anywhere}
 .tag{display:inline-block;font-weight:700;font-size:.78rem;letter-spacing:.02em;border:1px solid #77b2b1;padding:3px 8px;border-radius:100px;color:#b4fff0}
 .summary{background:#0c202b;border:1px solid #608391;border-radius:10px;padding:15px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65}
@@ -89,6 +90,22 @@ footer{border-top:1px solid #34505a;padding:26px 0;color:#adcad3}
  </fieldset>
  <div class="actions"><button id="previous" class="secondary" type="button" hidden>Back</button><button id="next" type="button">Continue</button><button id="submitRequest" type="submit" hidden>Post booking request</button><button id="cancelEdit" class="secondary" type="button" hidden>Cancel edit</button></div>
 </form><p class="status" id="formStatus" role="status" aria-live="polite"></p></section>
+
+<section class="panel" id="shareAfterPost" hidden aria-labelledby="shareHeading">
+ <div class="eyebrow">After you publish</div>
+ <h2 id="shareHeading">Share your booking</h2>
+ <p class="hint">Your booking is public on Connect. We have prepared links for your social accounts. Review each post before submitting it; we do not publish directly to your accounts.</p>
+ <div class="summary" id="shareCaption" aria-label="Social post preview"></div>
+ <div class="actions">
+  <button id="shareCopyLink" type="button">Copy booking link</button>
+  <button id="shareCopyText" type="button" class="secondary">Copy caption &amp; link</button>
+  <a id="shareFb" class="btn secondary" href="#" target="_blank" rel="noopener noreferrer">Facebook</a>
+  <a id="shareX" class="btn secondary" href="#" target="_blank" rel="noopener noreferrer">X</a>
+  <a id="shareThreads" class="btn secondary" href="#" target="_blank" rel="noopener noreferrer">Threads</a>
+  <a id="shareLinkedIn" class="btn secondary" href="#" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+ </div>
+ <p id="shareResult" class="status" role="status"></p>
+</section>
 
 <section class="panel" id="myBookings" hidden><h2>My requests &amp; replies</h2><p>Manage your offers and speak with artists who have expressed interest. Your sign-in email is not shown in public listings.</p><div id="ownerList"></div><p class="status" id="ownerStatus" role="status"></p></section>
 
