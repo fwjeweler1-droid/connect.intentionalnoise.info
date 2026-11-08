@@ -74,10 +74,10 @@ async function imagesFor(rows){
 }
 function artworkSlot(src,kind='release'){
  const box=elm('div',null,'art-slot');
- box.setAttribute('aria-label',kind==='release'?'Release artwork':'Gig or presale promotion image');
+ box.setAttribute('aria-label',kind==='release'?'Release artwork':'Gig, tour or presale promotion image');
  const fallback=()=>{box.replaceChildren(elm('span',kind==='release'?'♫':'♬'));};
  if(src){
-  const img=document.createElement('img');img.loading='lazy';img.alt=kind==='release'?'Release cover':'Gig or presale promo';
+  const img=document.createElement('img');img.loading='lazy';img.alt=kind==='release'?'Release cover':'Gig, tour or presale promo';
   img.referrerPolicy='no-referrer';img.onerror=fallback;img.src=src;box.append(img);
  }else fallback();
  return box;
@@ -92,11 +92,11 @@ function postedCard(row,names,imgs,type){
  const owner=names.get(row.owner_id);
  const subtitle=type==='release'?
   [owner?.display_name||'Connect artist',row.release_date||''].filter(Boolean).join(' · '):
-  [owner?.display_name||'Connect artist',row.promo_type==='presale'?'Presale':'Gig / performance'].join(' · ');
+  [owner?.display_name||'Connect artist',row.promo_type==='tour'?'Tour':row.promo_type==='presale'?'Presale':'Gig / performance'].join(' · ');
  content.append(elm('p',subtitle,'meta'));
  if(row.description)content.append(elm('p',row.description));
  const destinations=elm('div',null,'actions');
- try{destinations.append(link(type==='release'?'Listen / details':'View '+(row.promo_type==='presale'?'presale':'gig'),type==='release'?row.listening_url:row.destination_url));}catch{}
+ try{destinations.append(link(type==='release'?'Listen / details':'View '+(row.promo_type==='tour'?'tour':row.promo_type==='presale'?'presale':'gig'),type==='release'?row.listening_url:row.destination_url));}catch{}
  if(owner?.slug)try{destinations.append(link('Artist page',artistPage(owner)))}catch{}
  content.append(destinations);
  card.append(content);return card;
@@ -121,7 +121,7 @@ async function loadPublic(){
  for(const item of releases)releaseRoot.append(postedCard(item,names,imageMap,'release'));
  for(const item of promos)promoRoot.append(postedCard(item,names,imageMap,'promo'));
  if(!a.error){tell('releaseStatus',releases.length?'Showing '+releases.length+' published release listing'+(releases.length===1?'':'s')+'.':'No member releases published yet. Be the first to share your Ribbits!');}
- if(!b.error){tell('promoStatus',promos.length?'Showing '+promos.length+' gig or presale card'+(promos.length===1?'':'s')+'.':'No member gig/presale promotions published yet.');}
+ if(!b.error){tell('promoStatus',promos.length?'Showing '+promos.length+' promotional card'+(promos.length===1?'':'s')+'.':'No member promotions published yet.');}
 }
 function displayPublicationNotice(){
  if(!myPage?.published||!myPage?.approved_at){
@@ -257,13 +257,13 @@ $('promoForm').addEventListener('submit',async e=>{
  const published=$('pPublished').checked;
  if(published&&!canPublish()){tell('promoEditStatus','Publish your .band artist page first, or keep this a private draft.');return}
  let payload;
- try{payload={owner_id:me.id,promo_type:$('pType').value,title:trim('pTitle',120),description:trim('pDescription',650),destination_url:https(trim('pUrl',2048)),...imageField('p'),is_published:published,updated_at:new Date().toISOString()};if(!payload.destination_url)throw Error('Enter a gig or presale link.')}
+ try{payload={owner_id:me.id,promo_type:$('pType').value,title:trim('pTitle',120),description:trim('pDescription',650),destination_url:https(trim('pUrl',2048)),...imageField('p'),is_published:published,updated_at:new Date().toISOString()};if(!payload.destination_url)throw Error('Enter a gig, tour or presale link.')}
  catch(e){tell('promoEditStatus',e.message);return}
  busy=true;$('savePromo').disabled=true;tell('promoEditStatus','Saving card…');
  try{
   const {error}=await db.from('frog_promos').upsert(payload,{onConflict:'owner_id'});
   if(error)throw error;await refreshAll();
-  tell('promoEditStatus',published?'Gig or presale promo published.':'Promo saved as a private draft.');
+  tell('promoEditStatus',published?'Promotion published.':'Promo saved as a private draft.');
  }catch(e){tell('promoEditStatus','Could not save: '+(e.message||e))}
  finally{busy=false;$('savePromo').disabled=false}
 });
