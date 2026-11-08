@@ -55,6 +55,9 @@ async function loadSubmissions(){
  const {data,error}=await db.from('artist_media_submissions').select('id,title,kind,source_type,storage_path,external_url,status,review_note,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(75);
  if(error){status('submissionsStatus','Could not load your saved media: '+error.message);return}
  submissions=data||[];
+ const {data:previewRows}=await db.from('connect_work_previews')
+  .select('title').eq('user_id',user.id).neq('status','rejected').limit(10);
+ const previewTitles=new Set((previewRows||[]).map(v=>normalizedTitle(v.title)));
  const list=$('submissionList');list.replaceChildren();
  if(submissions.length===0){const p=document.createElement('p');p.className='muted';p.textContent='No media added yet. Add your first image, track or Reel above.';list.append(p);return}
  for(const item of submissions){
@@ -63,7 +66,8 @@ async function loadSubmissions(){
   const label=document.createElement('strong');label.textContent=item.title;
   const state=document.createElement('span');state.className='state '+(item.status==='approved'?'live':item.status==='rejected'?'rejected':'');state.textContent=item.status==='pending'?'Not shared yet':item.status==='approved'?(page?.published?'Shared on public page':'Ready for your public page'):'Taken offline';
   head.append(label,state);
-  const desc=document.createElement('p');desc.className='muted';desc.textContent=(readableKind[item.kind]||item.kind)+' · '+(item.source_type==='upload'?'Uploaded file':'Storage/website link');
+  const desc=document.createElement('p');desc.className='muted';desc.textContent=(readableKind[item.kind]||item.kind)+' · '+(item.source_type==='upload'?'Hosted upload':'Storage/website link');
+  if(previewTitles.has(normalizedTitle(item.title)))desc.textContent+=' · ALSO POSTED IN 60-SECOND PREVIEWS';
   article.append(head,desc);
   if(item.review_note){const p=document.createElement('p');p.textContent='Moderation note: '+item.review_note;article.append(p)}
   if(item.status==='pending'){
