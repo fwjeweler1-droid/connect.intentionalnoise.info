@@ -47,7 +47,7 @@ async function refresh(){
   nav.href=page.published?url:'#publishPanel';
   nav.classList.toggle('disabled-link',!page.published);
   nav.setAttribute('aria-disabled',String(!page.published));
-  setText('publicNote',page.published?'Your artist page is live. Visitors see approved material only.':'Your artist-page draft was created automatically from Connect. Publish when you are ready.');
+  setText('publicNote',page.published?'Your artist page is live. Visitors see the media you choose to share.':'Your artist-page draft was created automatically from Connect. Publish when you are ready.');
   await loadSubmissions();
  }catch(e){status('pageMessage','Unable to load your artist page: '+(e.message||'Please refresh.'))}
 }
@@ -56,30 +56,43 @@ async function loadSubmissions(){
  if(error){status('submissionsStatus','Could not load your saved media: '+error.message);return}
  submissions=data||[];
  const list=$('submissionList');list.replaceChildren();
- if(submissions.length===0){const p=document.createElement('p');p.className='muted';p.textContent='Nothing submitted yet. Add your first image, track, or Reel above.';list.append(p);return}
+ if(submissions.length===0){const p=document.createElement('p');p.className='muted';p.textContent='No media added yet. Add your first image, track or Reel above.';list.append(p);return}
  for(const item of submissions){
   const article=document.createElement('article');article.className='submission';
   const head=document.createElement('div');head.className='submission-head';
   const label=document.createElement('strong');label.textContent=item.title;
-  const state=document.createElement('span');state.className='state '+(item.status==='approved'?'live':item.status==='rejected'?'rejected':'');state.textContent=item.status==='pending'?'Awaiting review':item.status==='approved'?'Approved':'Needs changes';
+  const state=document.createElement('span');state.className='state '+(item.status==='approved'?'live':item.status==='rejected'?'rejected':'');state.textContent=item.status==='pending'?'Not shared yet':item.status==='approved'?(page?.published?'Shared on public page':'Ready for your public page'):'Taken offline';
   head.append(label,state);
   const desc=document.createElement('p');desc.className='muted';desc.textContent=(readableKind[item.kind]||item.kind)+' · '+(item.source_type==='upload'?'Uploaded file':'Storage/website link');
   article.append(head,desc);
-  if(item.review_note){const p=document.createElement('p');p.textContent='Review note: '+item.review_note;article.append(p)}
+  if(item.review_note){const p=document.createElement('p');p.textContent='Moderation note: '+item.review_note;article.append(p)}
   if(item.status==='pending'){
-   const cancel=document.createElement('button');cancel.type='button';cancel.className='secondary compact';cancel.textContent='Remove submission';cancel.addEventListener('click',()=>removeSubmission(item,cancel));article.append(cancel);
+   const share=document.createElement('button');share.type='button';share.className='secondary compact';share.textContent='Share this saved item';share.addEventListener('click',()=>sharePending(item,share));article.append(share);
   }
+  const cancel=document.createElement('button');cancel.type='button';cancel.className='secondary compact';cancel.textContent='Remove media';cancel.addEventListener('click',()=>removeSubmission(item,cancel));article.append(cancel);
   list.append(article);
  }
  status('submissionsStatus',submissions.length+' media submission'+(submissions.length===1?'':'s')+' saved.');
 }
+async function sharePending(item,button){
+ if(busy||!user||item.status!=='pending')return;
+ busy=true;button.disabled=true;status('mediaStatus','Sharing saved media…');
+ try{
+  const {data,error}=await db.from('artist_media_submissions').update({status:'approved'}).eq('id',item.id).eq('user_id',user.id).eq('status','pending').select('id');
+  if(error)throw error;
+  if(!data?.length)throw Error('This item could not be shared. Refresh and try again.');
+  status('mediaStatus','Saved item shared. It will appear when your artist page is public.');
+  await loadSubmissions();
+ }catch(e){status('mediaStatus','Could not share: '+e.message);button.disabled=false;}
+ finally{busy=false}
+}
 async function removeSubmission(item,button){
  if(busy||!user)return;
- busy=true;button.disabled=true;status('mediaStatus','Removing your pending submission…');
- const {error}=await db.from('artist_media_submissions').delete().eq('id',item.id).eq('user_id',user.id).eq('status','pending');
+ busy=true;button.disabled=true;status('mediaStatus','Removing your media…');
+ const {error}=await db.from('artist_media_submissions').delete().eq('id',item.id).eq('user_id',user.id);
  if(error){status('mediaStatus','Could not remove: '+error.message);button.disabled=false;busy=false;return}
  if(item.source_type==='upload'&&item.storage_path){await db.storage.from('artist-review').remove([item.storage_path])}
- busy=false;status('mediaStatus','Pending submission removed.');await loadSubmissions();
+ busy=false;status('mediaStatus','Media removed.');await loadSubmissions();
 }
 function setMethod(){
  const upload=$('mediaMethod').value==='upload';
@@ -127,7 +140,7 @@ function preview(){
  const file=$('mediaFile').files?.[0];
  if($('mediaMethod').value==='upload'){updatePreviewContent(file);return}
  const link=$('mediaUrl').value.trim();
- if(link){const p=document.createElement('p');p.textContent='Link submitted for review: '+link.slice(0,180);$('preview').append(p)}
+ if(link){const p=document.createElement('p');p.textContent='Link ready to share: '+link.slice(0,180);$('preview').append(p)}
 }
 function chooseFiles(files){const file=files?.[0];if(!file)return;const dt=new DataTransfer();dt.items.add(file);$('mediaFile').files=dt.files;updatePreviewContent(file)}
 function validMime(file,kind){return !!file&&categories[kind].includes(file.type)}
@@ -139,7 +152,7 @@ async function submitMedia(event){
  const kind=$('mediaKind').value,method=$('mediaMethod').value,title=$('mediaTitle').value.trim();
  const file=$('mediaFile').files?.[0],link=$('mediaUrl').value.trim();
  if(!title||title.length>120){status('mediaStatus','Enter a title (up to 120 characters).');return}
- if(!$('mediaRules').checked){status('mediaStatus','Confirm your rights and the content rules before submitting.');return}
+ if(!$('mediaRules').checked){status('mediaStatus','Confirm your rights and the content rules before sharing.');return}
  let urlObj=null;
  if(method==='link'){try{urlObj=new URL(link);if(urlObj.protocol!=='https:')throw Error('HTTPS required')}catch{status('mediaStatus','Paste a complete secure link beginning with https://');return}}
  else{
@@ -147,7 +160,7 @@ async function submitMedia(event){
   if(file.size>50*1024*1024||file.size===0){status('mediaStatus','Upload a nonempty file smaller than 50 MB.');return}
   if(kind==='reel'){try{const duration=await reelDuration(file);if(!Number.isFinite(duration)||duration>60||duration<=0){status('mediaStatus','Reels must be 60 seconds or shorter.');return}}catch(e){status('mediaStatus',e.message);return}}
  }
- busy=true;$('submitMedia').disabled=true;status('mediaStatus',method==='upload'?'Uploading privately for review…':'Saving link for review…');
+ busy=true;$('submitMedia').disabled=true;status('mediaStatus',method==='upload'?'Saving your media…':'Saving your link…');
  let path=null;
  try{
   if(method==='upload'){
@@ -155,11 +168,11 @@ async function submitMedia(event){
    const {error}=await db.storage.from('artist-review').upload(path,file,{contentType:file.type,upsert:false});
    if(error)throw error;
   }
-  const row={user_id:user.id,kind,source_type:method,storage_path:path,external_url:method==='link'?urlObj.href:null,title, mime_type:method==='upload'?file.type:null,file_size:method==='upload'?file.size:null,status:'pending',rights_confirmed:true,rules_accepted:true};
+  const row={user_id:user.id,kind,source_type:method,storage_path:path,external_url:method==='link'?urlObj.href:null,title, mime_type:method==='upload'?file.type:null,file_size:method==='upload'?file.size:null,status:'approved',rights_confirmed:true,rules_accepted:true};
   const {error}=await db.from('artist_media_submissions').insert(row);
   if(error)throw error;
-  $('mediaForm').reset();setMethod();status('mediaStatus','Saved privately. Your '+readableKind[kind].toLowerCase()+' is awaiting review—not public yet.');await loadSubmissions();
- }catch(e){if(path)await db.storage.from('artist-review').remove([path]);status('mediaStatus','Could not submit: '+(e.message||'Please try again.'))}
+  $('mediaForm').reset();setMethod();status('mediaStatus','Saved! Your '+readableKind[kind].toLowerCase()+' is ready for your public artist page. If your page is already public, it can appear there now.');await loadSubmissions();
+ }catch(e){if(path)await db.storage.from('artist-review').remove([path]);status('mediaStatus','Could not save: '+(e.message||'Please try again.'))}
  finally{busy=false;$('submitMedia').disabled=false}
 }
 async function saveSlug(){
@@ -175,7 +188,7 @@ async function publish(visible){
  if(busy||!page)return;
  if(visible&&!$('publishRules').checked){status('publishMessage','Accept the public profile rules to publish.');return}
  busy=true;$('publish').disabled=true;$('unpublish').disabled=true;
- status('publishMessage',visible?'Making your text profile public…':'Making your profile private…');
+ status('publishMessage',visible?'Publishing your artist page…':'Making your profile private…');
  const {error}=await db.rpc('set_my_artist_page_publication',{p_publish:visible,p_accept_rules:visible&&$('publishRules').checked});
  busy=false;status('publishMessage',error?'Publication failed: '+error.message:visible?'Your artist profile is now public.':'Your page is now private.');
  await refresh();
