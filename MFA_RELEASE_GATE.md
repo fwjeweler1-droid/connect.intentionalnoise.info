@@ -47,3 +47,11 @@ As of this checkpoint:
 
 ## Note on scope
 Current implementation is **prepared source, not proven security**. Production stays password-based with email confirmation. Existing members (including Nerdly) have NOT had factors added. Do not silently introduce compulsory MFA or override the account's consent. Keep personal account email, tokens and factor secrets out of all issue logs and checkpoints.
+
+## Acceptance update — User-tested site functions PASS (2026-11-08)
+
+The project owner attested the following have been tested and **PASS**: UI behavior; actual media playback; account login; mobile experience; save/replace flows; deletion flows. This is direct user acceptance evidence, **not assistant-observed browser testing**. Earlier statements describing these precise six areas as untested are superseded. These functional tests are distinct from MFA-specific functionality.
+
+The broader storage/product checklist remains open to the extent it calls for evidence of **additional specific scenarios not explicitly reported** (signed media access, the five-preview cap, duplication cancel/confirm, third-party provider privacy, publishing/unpublishing). Do not silently mark those individually passed.
+
+All TOTP enrollment, device login challenge, factor removal/recovery, AAL2 server enforcement, cross-account security, unfinished messaging/FROG and **explicit activation approval** remain unchecked. The feature flag must stay **false**.
