@@ -78,29 +78,28 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 <h1>What's new. Who's playing.</h1>
 <p class="intro">Independent artists, releases, gigs, and new opportunities—free to explore. Your public artist page and your Connect membership work together.</p>
 <div class="columns">
-<section class="panel" aria-labelledby="releases-title">
+<section class="panel" aria-labelledby="work-title">
  <div class="panel-heading">
   <img class="frog" src="/FROG_Official_IntentionalNoise_Info_Mascot_LOCKED.png" width="118" height="118" alt="Official FROG mascot">
-  <div><h2 id="releases-title">Releases</h2><p class="speech">Here's what's croakin'...</p><p class="speech">Show me your Ribbits!</p></div>
+  <div><h2 id="work-title">Looking for Work</h2><p class="speech">Ready for your next gig?</p></div>
  </div>
- <h3>Fresh music from our members</h3>
- <div id="releaseFeed" aria-live="polite"><p class="muted">Loading published releases…</p></div>
- <p id="releaseStatus" class="status" role="status"></p>
- <p class="footnote">Artists may share up to five release listings, with their own cover image, description and listening or presale link. The five free one-minute Connect previews are separate.</p>
+ <h3>Open gigs, auditions and music-work requests</h3>
+ <p class="muted">Musicians and bands: see who's looking for performers and collaborators.</p>
+ <a class="btn" href="/gig-requests.html">View gig requests</a>
 </section>
 <section class="panel" aria-labelledby="gigs-title">
+ <div class="tile" style="display:flex;gap:15px;align-items:center;flex-wrap:wrap;margin-top:0">
+  <img src="/Ineeda_Gig_Mascot_APPROVED_2026-11-08.png" alt="Ineeda Gig, mascot for venues booking musicians" width="118" height="118" loading="lazy" style="width:118px;height:118px;object-fit:contain;border-radius:10px">
+  <div style="flex:1;min-width:180px"><h3 style="margin:4px 0">Bars &amp; venues: need a band?</h3><p>Meet Ineeda Gig! Tell her what you're offering and invite independent musicians to fill your stage.</p><a class="btn" href="/fill-my-stage.html">Request a musician or band</a></div>
+ </div>
  <div class="panel-heading">
   <div class="barrel" aria-hidden="true"><svg viewBox="0 0 110 110" role="img"><path d="M24 45 Q55 38 86 45 L82 91 Q55 102 28 91 Z" fill="#956a35" stroke="#e8bb71" stroke-width="3"/><path d="M24 58Q55 66 86 58 M26 81Q55 90 84 81" fill="none" stroke="#e6c38b" stroke-width="4"/><g stroke="#d2e9df" stroke-width="3.4" fill="none" stroke-linecap="round"><path d="M38 47L31 9M31 9l-5 4m5-4 6 3M53 43L53 5M53 5l-6 8m6-8 6 8M70 47L78 11M78 11l-7 7m7-7 3 9"/></g></svg></div>
   <div><h2 id="gigs-title">Gigs</h2><p class="speech">Grab your gig!</p></div>
  </div>
  <h3>Find your next opportunity</h3>
- <div class="subgrid">
-  <div class="subcard"><div class="mini-illustration" role="img" aria-label="Cluster of frog gigs"><svg viewBox="0 0 85 76" aria-hidden="true"><g stroke="#d0eae2" stroke-width="4" fill="none" stroke-linecap="round"><path d="M14 66L28 18M28 18l-9 6m9-6 7 10M37 66L42 10m0 0-8 10m8-10 7 10M60 65L58 13m0 0-7 10m7-10 7 10M78 66L67 25m0 0-8 8m8-8 6 2"/></g></svg></div><h4>Find talent</h4><p>Musicians and bands available for gigs.</p><a class="btn secondary" href="/search.html?category=available_for_gigs&amp;distance=any">Find musicians</a></div>
-  <div class="subcard"><div class="mini-illustration" role="img" aria-label="Empty gig barrel"><svg viewBox="0 0 85 76" aria-hidden="true"><path d="M15 19Q43 10 70 19L65 66Q42 74 19 66Z" fill="#966833" stroke="#e1b66f" stroke-width="3"/><ellipse cx="42" cy="19" rx="27" ry="9" fill="#392b1b" stroke="#e1b66f" stroke-width="3"/><path d="M17 39Q42 48 68 39" stroke="#e1b66f" fill="none" stroke-width="4"/></svg></div><h4>Looking for?</h4><p>Open gigs, auditions and music-work requests.</p><a class="btn secondary" href="/gig-requests.html">View gig requests</a></div>
- </div>
- <div class="tile" style="display:flex;gap:15px;align-items:center;flex-wrap:wrap">
-  <img src="/Ineeda_Gig_Mascot_APPROVED_2026-11-08.png" alt="Ineeda Gig, mascot for venues booking musicians" width="102" height="102" loading="lazy" style="width:102px;height:102px;object-fit:cover;border-radius:10px">
-  <div style="flex:1;min-width:180px"><h3 style="margin:4px 0">Bars &amp; venues: need a band?</h3><p>Meet Ineeda Gig! Tell her what you're offering and invite independent musicians to fill your stage.</p><a class="btn" href="/fill-my-stage.html">Request a musician or band</a></div>
+ <div class="subcard">
+  <h4>Find talent</h4><p>Search musicians and bands who have marked themselves available for gigs.</p>
+  <a class="btn secondary" href="/search.html?category=available_for_gigs&amp;distance=any">Find musicians</a>
  </div>
  <h3>Gig &amp; presale promotions</h3>
  <div id="promoFeed" aria-live="polite"><p class="muted">Loading member promotions…</p></div>
@@ -108,6 +107,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
  <p class="footnote">Members can post one gig or presale promotional card at a time. This is separate from dated gig requests.</p>
 </section>
 </div>
+<details class="panel" style="margin-top:12px">
+ <summary style="cursor:pointer;font-weight:750;font-size:1.13rem">Member releases</summary>
+ <p class="muted">Fresh music from our members</p>
+ <div id="releaseFeed" aria-live="polite"><p class="muted">Loading published releases…</p></div>
+ <p id="releaseStatus" class="status" role="status"></p>
+ <p class="footnote">Artists may share up to five release listings, with their own cover image, description and listening or presale link. The five free one-minute Connect previews are separate.</p>
+</details>
 <section class="members" id="memberArea">
  <div id="loginGate" class="panel"><h2>Put your music or gig on FROG</h2><p class="muted">Sign in with your existing free Connect account to manage your own cards. No second registration.</p><a id="loginLink" class="btn" href="/auth.html">Sign in / join Connect</a></div>
  <div id="management" hidden>
