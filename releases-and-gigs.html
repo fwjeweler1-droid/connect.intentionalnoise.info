@@ -117,6 +117,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 <section class="members" id="memberArea">
  <div id="loginGate" class="panel"><h2>Put your music or gig on FROG</h2><p class="muted">Sign in with your existing free Connect account to manage your own cards. No second registration.</p><a id="loginLink" class="btn" href="/auth.html">Sign in / join Connect</a></div>
  <div id="management" hidden>
+  <details class="panel" id="memberEditor">
+   <summary style="cursor:pointer;font-size:1.2rem;font-weight:800;padding:8px 0">Manage My Listings</summary>
+   <p class="muted">Member tools — add or update your own releases, gig promotions and presales. Only published listings appear to the public.</p>
   <div class="panel"><h2>My FROG cards</h2><p id="memberName" class="muted"></p><div class="notice" id="publishNotice"></div><p class="hint">You control what appears publicly. A new listing is a private draft until you check Publish. Your public .band artist page must also be published.</p></div>
   <div class="edit-grid">
    <section class="panel" id="manageReleases">
@@ -153,6 +156,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
     </form><p id="promoEditStatus" class="status" role="status"></p>
    </section>
   </div>
+  </details>
  </div>
 </section>
 </main>
