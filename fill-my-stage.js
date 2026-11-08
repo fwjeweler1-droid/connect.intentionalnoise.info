@@ -19,14 +19,16 @@ function savedForm(){
  return obj;
 }
 function restoreForm(){
- try{const obj=JSON.parse(sessionStorage.getItem(TAG)||'null');if(!obj)return;
+ try{const obj=JSON.parse(sessionStorage.getItem(TAG)||'null');if(!obj)return false;
   for(const [id,v] of Object.entries(obj)){
    if(id==='confirmTerms')$('confirmTerms').checked=!!v;
    else if($(id)&&v!==null)$(id).value=String(v);
   }
   sessionStorage.removeItem(TAG);
- }catch{}
- changeBudget();
+  $('confirmTerms').checked=false;
+  changeBudget();
+  return true;
+ }catch{changeBudget();return false}
 }
 function rememberForm(){try{sessionStorage.setItem(TAG,JSON.stringify(savedForm()))}catch{}}
 function changeBudget(){
@@ -339,7 +341,7 @@ async function login(){
 }
 async function init(){
  $('eventDate').min=today();
- restoreForm();goToStep(0);
+ const resumed=restoreForm();goToStep(resumed?2:0);
  await login();
  await loadPublic();
  if(me){await loadOwned();await loadMyInterests();await loadPublic()}
