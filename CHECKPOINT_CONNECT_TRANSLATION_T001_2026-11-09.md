@@ -37,3 +37,14 @@ State: LIBRETRANSLATE CODE STAGED; EDGE FUNCTION v2 DEPLOYED; PROVIDER DISCONNEC
 - Without `LIBRETRANSLATE_URL`, translation fails closed. Unmerge/revert frontend if deployed.
 - If running, remove the endpoint secret or disable the host, leaving original chat intact.
 - Preserve the additive quota table and audit history unless an approved retention change is made.
+
+## 2026-11-09 Latest decision: prioritize working Google API path
+This section supersedes the earlier LibreTranslate provider proposal for T-001, retaining that alternative only as historical documentation.
+
+- Owner priority: working member translation with as little setup as possible. Google Cloud Translation Basic (v2) is selected for launch because hosting LibreTranslate on Railway requires a paid plan and additional server operation.
+- The preexisting Google function code has been restored on the draft branch. Supabase Edge Function `translate-message` v3 deployed and read back with `verify_jwt=true`. Participant-only RLS checks and server-only 20/user and 150/global request limits remain. Those application limits are non-atomic; a Google Cloud project quota is still advised.
+- Draft frontend UI text and optional translation controls were updated to disclose Google. No merge or public website feature activation occurred.
+- Required user-owned setup: create/link Google Cloud billing account; enable Cloud Translation API for the selected project; create API key restricted to the Cloud Translation API. Never paste key into chat or commit it in code.
+- Required security setup after user billing: add `GOOGLE_TRANSLATE_API_KEY` as Supabase Edge Function secret. Connector currently does not expose set-secret action; user must configure in Supabase dashboard or use an authorized CLI locally.
+- Verify backend availability, real two-account exchange/translation, unauthorized ID and signed-out denial, fallback/original preservation, and strict upstream quotas. Only then merge, deploy, and conduct browser acceptance.
+- Google Cloud charges are possible above its pricing credit; no claim of a hard $0 maximum. No Railway project or subscription was created.
