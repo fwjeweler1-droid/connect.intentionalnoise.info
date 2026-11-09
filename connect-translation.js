@@ -40,9 +40,7 @@ export function mountTranslationSettings(element, db) {
     translated.clear();
     try { localStorage.setItem(userLanguageKey,language); } catch (_) {}
     // Existing translations were for a different target language.
-    document.querySelectorAll(".translated-content").forEach(el=>el.remove());
-    document.querySelectorAll(".original-content").forEach(el=>el.hidden=false);
-    document.querySelectorAll(".translation-action").forEach(btn=>{btn.hidden=false;btn.textContent="Translate";btn.disabled=false;});
+    document.querySelectorAll(".bubble").forEach(el=>el.dispatchEvent(new Event("translation-language-changed")));
   });
   element.append(label,picker,hint,providerStatus);
   // Availability probe is non-blocking: inbox continues working even without translation.
@@ -63,6 +61,11 @@ export function enhanceIncomingBubble(element,row,db,userId) {
   feedback.className="muted";feedback.setAttribute("role","status");
   let currentText=null,showing=false;
   const messageText=element.querySelector(".original-content");
+  element.addEventListener("translation-language-changed",()=>{
+    currentText=null;showing=false;messageText.hidden=false;
+    const previous=element.querySelector(".translated-content");if(previous)previous.remove();
+    action.textContent="Translate";action.disabled=false;feedback.textContent="";
+  });
   action.addEventListener("click",async()=>{
     if (showing) {
       const existing=element.querySelector(".translated-content");
