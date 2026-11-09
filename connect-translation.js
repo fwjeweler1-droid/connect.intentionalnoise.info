@@ -41,6 +41,7 @@ export function mountTranslationSettings(element, db) {
     try { localStorage.setItem(userLanguageKey,language); } catch (_) {}
     // Existing translations were for a different target language.
     document.querySelectorAll(".translated-content").forEach(el=>el.remove());
+    document.querySelectorAll(".original-content").forEach(el=>el.hidden=false);
     document.querySelectorAll(".translation-action").forEach(btn=>{btn.hidden=false;btn.textContent="Translate";btn.disabled=false;});
   });
   element.append(label,picker,hint,providerStatus);
@@ -66,6 +67,7 @@ export function enhanceIncomingBubble(element,row,db,userId) {
     if (showing) {
       const existing=element.querySelector(".translated-content");
       if(existing) existing.remove();
+      messageText.hidden=false;
       showing=false;action.textContent="Show translation";return;
     }
     if(currentText && currentText.targetLanguage===language) {
@@ -102,10 +104,7 @@ export function enhanceIncomingBubble(element,row,db,userId) {
     showing=true;action.textContent="Show original";
     // The original is always retained in the DOM and is re-shown via the control.
     messageText.hidden=true;
-    action.onclick=()=>{
-      messageText.hidden=false;panel.remove();showing=false;
-      action.textContent="Show translation";action.onclick=null;
-    };
+
   }
   controls.append(action,feedback);element.append(controls);
 }
