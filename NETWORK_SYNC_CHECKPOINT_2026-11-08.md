@@ -76,7 +76,7 @@ There remain **two separate Connect request tables**: public future `venue_booki
 
 - **Current network checkpoint (this document):** `fwjeweler1-droid/connect.intentionalnoise.info/NETWORK_SYNC_CHECKPOINT_2026-11-08.md`
 - **Cross-repository machine-readable placement marker:** root `network-sync.json` (same checkpoint ID in the four network repositories and the separate `.com` reference repository)
-- **Library copy:** `/Projects/DotInfo/Network_Synchronization_Checkpoint_2026-11-08.md`
+- **Library checkpoint summary (links to this full record):** `/Projects/DotInfo/Network_Synchronization_Checkpoint_2026-11-08.md`
 - Historical approved checkpoints and original media remain unchanged; consult `LANDMARK_DOTINFO_2026-11-08.md`, `CHECKPOINT_INEEDA_GIG_BOOKING_2026-11-08.md` and `CHECKPOINT_FROG_2026-11-08.md` for their original scope.
 - Intentional Noise music/releases: **MPCC/Library retains authority**; do not substitute website manifest for `Music_Project_Command_Center.xlsx`.
 
