@@ -32,7 +32,7 @@ export function mountTranslationSettings(element, db) {
   }
   const hint=document.createElement("p");
   hint.className="muted";
-  hint.textContent="Translation is optional. Choose Translate on an incoming message. It is processed by our configured LibreTranslate server; the original stays unchanged.";
+  hint.textContent="Translation is optional. Choose Translate on an incoming message. It is processed by Google Cloud Translation only when you request it; the original stays unchanged.";
   const providerStatus=document.createElement("span");
   providerStatus.className="muted"; providerStatus.setAttribute("role","status");
   picker.addEventListener("change",()=>{
