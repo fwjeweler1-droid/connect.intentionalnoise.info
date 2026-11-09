@@ -1,4 +1,4 @@
-export const categories = [["gig_requests","Current gig requests"],["available_for_gigs","Available for gigs"],["all","Everyone"],["musician","Musician"],["sound_engineer","Sound engineer"],["band","Band"],["vocalist","Vocalist"],["guitar","Guitarist"],["bass","Bassist"],["drums","Drummer"],["keys","Keyboard player"],["producer","Producer"],["songwriter","Songwriter"]];
+export const categories = [["gig_requests","Current gig requests"],["available_for_gigs","Available for gigs"],["all","Everyone"],["musician","Musician"],["sound_engineer","Sound engineer"],["band","Band"],["vocalist","Vocalist"],["guitar","Guitarist"],["bass","Bassist"],["drums","Drummer"],["keys","Keyboard player"],["producer","Producer"],["songwriter","Songwriter"],["artist","Artist"],["videographer","Videographer"],["digital_creator","Digital Creator"]];
 const patterns = {
 musician: /musician|guitar|bass|drum|vocal|sing|keyboard|piano|instrument|songwrit|violin|cello|sax|trumpet|trombone|fiddle|banjo|mandolin|flute|clarinet|percussion/i,
 sound_engineer: /sound[ _-]?engineer|audio[ _-]?engineer|recording[ _-]?engineer|mixing|mastering|live sound|foh/i,
@@ -9,7 +9,10 @@ bass: /\bbass(?:ist)?\b/i,
 drums: /drum|percussion/i,
 keys: /keyboard|piano|pianist|organist|synth/i,
 producer: /produc/i,
-songwriter: /songwrit|composer|composition/i
+songwriter: /songwrit|composer|composition/i,
+artist: /\bartist\b|visual[ _-]?art|illustrat|painting|graphic[ _-]?design/i,
+videographer: /videograph|filmmak|cinematograph|video[ _-]?(?:product|shoot|edit)/i,
+digital_creator: /digital[ _-]?creat|content[ _-]?creat|digital[ _-]?media|social[ _-]?content/i
 };
 export function matchesCategory(profile, category) {
 if (category === 'all') return true;
