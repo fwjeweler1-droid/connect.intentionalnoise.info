@@ -1,0 +1,18 @@
+# Intentional Noise Connect — shared application backend and account portal
+
+**Current network checkpoint:** [IN-NET-2026-11-08-SYNC-01](NETWORK_SYNC_CHECKPOINT_2026-11-08.md)  
+**Machine-readable placement marker:** [network-sync.json](network-sync.json)
+
+Connect is the single source for member registration, artist/profile editing and publication, privacy controls, and existing booking records. The other public domains read or route to these workflows; they do **not** have separate account databases.
+
+- [Create musician/band/venue account](https://connect.intentionalnoise.info/auth.html)
+- [Edit Connect musician profile](https://connect.intentionalnoise.info/auth.html#profile)
+- [Approve/publicly publish artist showcase](https://connect.intentionalnoise.info/band-page.html)
+- [Public directory here](https://connect.intentionalnoise.info/artists.html)
+- [IneedaGig booking hub](https://ineedagig.net/)
+- [Venue operational form](https://connect.intentionalnoise.info/fill-my-stage.html)
+- [Member gig-request form](https://connect.intentionalnoise.info/gig-requests.html)
+
+**Privacy invariant:** New musician/band account gets a private profile and artist draft after verified sign-in. The public directory requires `artist_pages.published=true` plus `approved_at`; member profile listing is separate. Venue accounts need no musician profile. Account/email/session data is not duplicated across sites. MFA remains disabled by express direction.
+
+**Status:** Code committed and GitHub Pages deployed; real first-user signup, four-domain updates, venue/musician flow and security/abuse gates remain open. The older `LANDMARK_DOTINFO_2026-11-08.md` and function-level checkpoints preserve historical evidence; consult the newest network checkpoint for present cross-site context. Music authority stays with MPCC/Library.
