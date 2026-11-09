@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0",
+  "checkpoint_id": "IN-NET-2026-11-08-SYNC-01",
+  "checkpoint_date": "2026-11-08",
+  "state": "source-connected; GitHub Pages builds confirmed; live cross-account and four-site E2E pending",
+  "authoritative_checkpoint": "https://github.com/fwjeweler1-droid/connect.intentionalnoise.info/blob/main/NETWORK_SYNC_CHECKPOINT_2026-11-08.md",
+  "master_identity": "Connect Supabase Auth (one registration, no separate accounts at other sites)",
+  "source_tables": [
+    "public.musician_profiles",
+    "public.artist_pages"
+  ],
+  "publication_rule": "new private musician profile and artist draft on verified signup; member listing and public publication only by owner opt-in; public requires artist_pages.published and approved_at",
+  "sites": [
+    {
+      "domain": "intentionalnoise.info",
+      "repo": "fwjeweler1-droid/intentionalnoise.info",
+      "role": "information/community",
+      "public_profiles": "https://intentionalnoise.info/artists.html?slug=<slug>",
+      "member_profile_reader": true
+    },
+    {
+      "domain": "connect.intentionalnoise.info",
+      "repo": "fwjeweler1-droid/connect.intentionalnoise.info",
+      "role": "registration, account, privacy, publication, booking backend",
+      "public_profiles": "https://connect.intentionalnoise.info/artists.html?slug=<slug>",
+      "member_profile_reader": true
+    },
+    {
+      "domain": "intentionalnoise.band",
+      "repo": "fwjeweler1-droid/intentionalnoise.band",
+      "role": "artist showcases",
+      "public_profiles": "https://intentionalnoise.band/<slug>",
+      "member_profile_reader": true
+    },
+    {
+      "domain": "ineedagig.net",
+      "repo": "fwjeweler1-droid/ineedagig",
+      "role": "single public booking and gig-request hub",
+      "public_profiles": "https://ineedagig.net/artists.html?slug=<slug>",
+      "member_profile_reader": true
+    },
+    {
+      "domain": "intentionalnoise.com",
+      "repo": "fwjeweler1-droid/intentionalnoise.com",
+      "role": "adjacent music and release storefront, MPCC-governed",
+      "public_profiles": null,
+      "member_profile_reader": false
+    }
+  ],
+  "canonical_routes": {
+    "signup_musician": "https://connect.intentionalnoise.info/auth.html?role=musician",
+    "signup_band": "https://connect.intentionalnoise.info/auth.html?role=band",
+    "signup_venue": "https://connect.intentionalnoise.info/auth.html?role=venue",
+    "musician_editor": "https://connect.intentionalnoise.info/auth.html#profile",
+    "artist_publish": "https://connect.intentionalnoise.info/band-page.html",
+    "booking_hub": "https://ineedagig.net/",
+    "booking_venue_backend": "https://connect.intentionalnoise.info/fill-my-stage.html",
+    "booking_member_backend": "https://connect.intentionalnoise.info/gig-requests.html",
+    "booking_share_url_pattern": "https://ineedagig.net/?booking=<UUID>#opportunities"
+  },
+  "backend_boundaries": {
+    "venue_requests": "public.venue_booking_requests",
+    "member_only_requests": "public.gig_requests",
+    "venue_responses": "public.venue_booking_interests",
+    "private_booking_messages": "public.venue_booking_thread_messages",
+    "cross_origin_session_shared": false,
+    "automatic_social_account_publishing": false,
+    "user_consent_required_for_public_artist_page": true,
+    "site_sources_are_independently_deployed": true,
+    "mfa": "off by user instruction"
+  },
+  "validation": {
+    "database_policies_and_triggers": "inspected",
+    "github_pages_deployments": "success for four public profile network sites at checkpoint, not browser E2E",
+    "live_musician_signup": "pending",
+    "profile_sync_four_sites": "pending actual four-browser acceptance",
+    "new_venue_booking_full_cycle": "pending",
+    "moderation_and_abuse_controls": "pending",
+    "outstanding_security_advisor": "privileged RPC scope and leaked-password protection"
+  },
+  "governing_records": {
+    "network_checkpoint": "NETWORK_SYNC_CHECKPOINT_2026-11-08.md in Connect repo and /Projects/DotInfo in Library",
+    "music": "Music_Project_Command_Center.xlsx remains authoritative for music and releases",
+    "originals": "Historical locked design and source assets preserved"
+  }
+}
