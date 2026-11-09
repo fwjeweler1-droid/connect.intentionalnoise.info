@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Browse independent musicians and bands with published artist profiles across Intentional Noise.">
+<title>Published Artists | Intentional Noise Connect</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;--bg:#101d28;--surface:#172b38;--border:#365765;--mint:#7de1df;--muted:#bad0d7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f3f7f8}a{color:var(--mint)}
+header{border-bottom:1px solid var(--border);background:#142633}
+.wrap{max-width:1090px;width:calc(100% - 36px);margin:auto}
+nav{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px 0;flex-wrap:wrap}
+nav a{text-decoration:none;font-weight:750}nav .name{font-size:1.17rem;color:#f3f7f8}
+main{padding:44px 0 68px}h1{font-size:clamp(2.3rem,6vw,3.8rem);margin:12px 0}h2{font-size:1.35rem}
+.eyebrow{font-size:.78rem;color:var(--mint);letter-spacing:.14em;text-transform:uppercase;font-weight:800}
+.lead{font-size:1.12rem;color:var(--muted);max-width:730px;line-height:1.7}
+.actions{display:flex;gap:11px;flex-wrap:wrap;align-items:center;margin:18px 0}
+.button,button{display:inline-flex;align-items:center;text-decoration:none;border:1px solid var(--mint);border-radius:9px;padding:12px 16px;background:var(--mint);font:inherit;font-weight:750;color:#10232c;cursor:pointer;min-height:44px}
+.button.alt{background:transparent;color:#dff7f6;border-color:#88a6b0}
+input{border:1px solid #7f9aa5;background:#0c202b;color:white;border-radius:9px;padding:12px 14px;font:inherit;min-height:44px;max-width:460px;width:100%}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:22px 0}
+.card{min-width:0;border:1px solid var(--border);border-radius:15px;background:var(--surface);padding:19px}
+.card h2{margin:12px 0 7px;overflow-wrap:anywhere}.card p{line-height:1.55;overflow-wrap:anywhere;color:#c7d8dd}
+.pill{display:inline-block;font-size:.75rem;font-weight:800;color:#0e2b30;background:var(--mint);border-radius:40px;padding:5px 10px}
+.photo{width:72px;height:72px;object-fit:contain;border-radius:12px;display:block;background:#233d4a}
+.profile{border:1px solid var(--border);background:var(--surface);border-radius:17px;padding:24px;max-width:800px}
+.profile .photo{width:110px;height:110px}.profile h2{font-size:2rem;margin:12px 0}.field{padding:6px 0}.field strong{color:#e6fcf8}
+.status{min-height:1.4em;color:#bbf8eb}footer{color:#abc2cb;border-top:1px solid var(--border);padding:24px 0}
+[hidden]{display:none!important}:focus-visible{outline:3px solid var(--mint);outline-offset:4px}
+@media(max-width:800px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.cards{grid-template-columns:1fr}main{padding:30px 0 50px}}
+</style></head>
+<body><header><nav class="wrap"><a class="name" href="https://connect.intentionalnoise.info/">Intentional Noise Connect</a><div class="actions"><a href="https://connect.intentionalnoise.info/">Connect home</a><a href="https://ineedagig.net/">Bookings</a><a href="https://connect.intentionalnoise.info/auth.html?role=musician">Join as a musician</a></div></nav></header>
+<main class="wrap">
+<div class="eyebrow">Connected creators</div><h1>Published artists</h1>
+<p class="lead">Discover artists who have chosen to publish their profiles. Private account information stays in Connect. One Connect account powers the same published profile on this site, IneedaGig, IntentionalNoise.info, and IntentionalNoise.band.</p>
+<div class="actions"><input type="search" id="filter" aria-label="Filter artists" placeholder="Search artist, instrument or genre" maxlength="100"><a class="button alt" href="https://connect.intentionalnoise.info/auth.html?role=musician">Create a free artist account</a></div>
+<p class="status" id="status" role="status" aria-live="polite">Loading published profiles…</p>
+<div id="cards" class="cards"></div>
+<div id="profile" class="profile" hidden aria-label="Published artist profile"></div>
+<p class="lead">Artist pages remain private until the owner explicitly publishes them. No private drafts or account email addresses appear here.</p>
+</main><footer><div class="wrap">© 2026 Intentional Noise · <a href="https://intentionalnoise.band/artists.html">Public artist showcases</a> · <a href="https://ineedagig.net/">IneedaGig</a></div></footer>
+<script>
+(function(){
+'use strict';
+const API='https://xyudcdgjyormlokwhfoi.supabase.co/rest/v1/artist_pages';
+const KEY='sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0';
+const $=id=>document.getElementById(id);
+let artists=[];
+function el(tag,txt,cls){const node=document.createElement(tag);if(txt!==undefined)node.textContent=txt;if(cls)node.className=cls;return node}
+function setStatus(text){$('status').textContent=text}
+function link(text,url,cls='button alt'){const a=el('a',text,cls);a.href=url;return a}
+function artistUrl(p){return 'https://intentionalnoise.band/'+encodeURIComponent(p.slug)}
+function profileUrl(p){return location.pathname+'?slug='+encodeURIComponent(p.slug)}
+function photo(p){if(!p.logo_url||!/^https:\/\//i.test(p.logo_url))return null;const img=el('img');img.src=p.logo_url;img.referrerPolicy='no-referrer';img.alt=p.display_name+' artwork';img.loading='lazy';img.className='photo';img.onerror=()=>img.remove();return img}
+function detailLine(root,label,value){if(!value)return;const d=el('p',null,'field');d.append(el('strong',label+': '),document.createTextNode(value));root.append(d)}
+function card(p){
+ const box=el('article',null,'card');const img=photo(p);if(img)box.append(img);
+ box.append(el('h2',p.display_name));
+ if(p.available_for_gigs)box.append(el('span','Available for gigs','pill'));
+ if(p.bio)box.append(el('p',p.bio.slice(0,180)));
+ if((p.genres||[]).length)box.append(el('p','Genres: '+p.genres.slice(0,6).join(', ')));
+ const acts=el('div',null,'actions');acts.append(link('View profile',profileUrl(p)),link('Artist showcase',artistUrl(p)));box.append(acts);
+ return box;
+}
+function showProfile(p){
+ $('cards').hidden=true;$('filter').hidden=true;
+ const root=$('profile');root.replaceChildren();
+ const img=photo(p);if(img)root.append(img);
+ root.append(el('h2',p.display_name));
+ if(p.available_for_gigs)root.append(el('span','Available for gigs','pill'));
+ detailLine(root,'About',p.bio);
+ detailLine(root,'Instruments',(p.instruments||[]).join(', '));
+ detailLine(root,'Genres',(p.genres||[]).join(', '));
+ detailLine(root,'Roles',(p.roles||[]).join(', '));
+ const acts=el('div',null,'actions');acts.append(link('View full artist showcase',artistUrl(p)),link('Find booking opportunities','https://ineedagig.net/'),link('All published artists',location.pathname));root.append(acts);
+ root.hidden=false;
+ setStatus('Public artist profile · automatically synchronized from Connect.');
+}
+function render(){
+ const query=$('filter').value.trim().toLowerCase();
+ const matches=artists.filter(p=>[p.display_name,p.bio,...(p.roles||[]),...(p.instruments||[]),...(p.genres||[])].join(' ').toLowerCase().includes(query));
+ const root=$('cards');root.replaceChildren(...matches.map(card));
+ setStatus(matches.length?matches.length+' published artist'+(matches.length===1?'':'s')+' shown.':'No published profiles match this search.');
+}
+async function load(){
+ try{
+  const slug=new URLSearchParams(location.search).get('slug');
+  if(slug&&(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)||slug.length>90)){setStatus('Artist page not available.');return}
+  const query=new URLSearchParams({select:'slug,display_name,bio,logo_url,roles,instruments,genres,available_for_gigs',published:'eq.true',approved_at:'not.is.null',order:'display_name.asc',limit:slug?'1':'100'});
+  if(slug)query.set('slug','eq.'+slug);
+  const res=await fetch(API+'?'+query.toString(),{headers:{apikey:KEY,Accept:'application/json'},cache:'no-store'});
+  if(!res.ok)throw Error('Published directory unavailable ('+res.status+').');
+  const data=await res.json();if(!Array.isArray(data))throw Error('Unexpected directory response.');
+  artists=data;
+  if(slug){if(artists.length)showProfile(artists[0]);else setStatus('This artist page is private or not published.');return}
+  render();
+ }catch(error){setStatus('Could not load artist profiles: '+error.message)}
+}
+$('filter').addEventListener('input',render);
+load();
+})();
+</script></body></html>
