@@ -1,6 +1,6 @@
 # Connect message translation — T-001 (LibreTranslate)
 Date: November 9, 2026
-State: LIBRETRANSLATE CODE STAGED; BACKEND DISABLED UNTIL HTTPS SERVICE CONFIGURED; NOT USER-ACCEPTED
+State: LIBRETRANSLATE CODE STAGED; EDGE FUNCTION v2 DEPLOYED; PROVIDER DISCONNECTED UNTIL HTTPS SERVICE CONFIGURED; NOT USER-ACCEPTED
 
 ## Decision
 - Google Cloud Translation is removed from this feature's staged frontend and Edge Function implementation.
