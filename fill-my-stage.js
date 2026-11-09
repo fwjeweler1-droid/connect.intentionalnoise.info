@@ -39,7 +39,7 @@ function changeBudget(){
  $('budgetMin').required=kind!=='quotes';$('budgetMax').required=kind==='range';
 }
 $('budgetKind').addEventListener('change',changeBudget);
-$('loginFromWizard').href='/auth.html?next='+encodeURIComponent('/fill-my-stage.html');
+$('loginFromWizard').href='/auth.html?role=venue&next='+encodeURIComponent('/fill-my-stage.html');
 function requestedData(){
  const kind=state('budgetKind');
  let min=kind==='quotes'?null:Number(state('budgetMin'));
