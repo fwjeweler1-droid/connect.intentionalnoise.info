@@ -32,7 +32,7 @@ export function mountTranslationSettings(element, db) {
   }
   const hint=document.createElement("p");
   hint.className="muted";
-  hint.textContent="Translation is optional. Choose Translate on an incoming message. Its text will be processed by Google Cloud Translation; your original is unchanged.";
+  hint.textContent="Translation is optional. Choose Translate on an incoming message. It is processed by our configured LibreTranslate server; the original stays unchanged.";
   const providerStatus=document.createElement("span");
   providerStatus.className="muted"; providerStatus.setAttribute("role","status");
   picker.addEventListener("change",()=>{
@@ -46,7 +46,22 @@ export function mountTranslationSettings(element, db) {
   // Availability probe is non-blocking: inbox continues working even without translation.
   db.functions.invoke("translate-message",{method:"GET"})
     .then(({data,error})=>{
-      if (error || !data?.available) providerStatus.textContent="Translation service is not configured yet; original messages remain available.";
+      if (error || !data?.available) {
+        providerStatus.textContent="Translation service is not ready; original messages remain available.";
+        return;
+      }
+      if (Array.isArray(data.languages)) {
+        const supported=new Set(data.languages);
+        for (const option of picker.options) option.disabled=!supported.has(option.value);
+        if (!supported.has(language)) {
+          const first=Array.from(picker.options).find(option=>!option.disabled);
+          if (first) {
+            language=first.value;picker.value=language;translated.clear();
+            document.querySelectorAll(".bubble").forEach(el=>el.dispatchEvent(new Event("translation-language-changed")));
+          }
+        }
+      }
+      providerStatus.textContent="Translation server reachable. Translation is still optional.";
     }).catch(()=>{providerStatus.textContent="Translation service is unavailable; original messages remain available.";});
 }
 
