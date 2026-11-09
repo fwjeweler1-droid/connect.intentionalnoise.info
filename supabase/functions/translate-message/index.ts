@@ -1,7 +1,6 @@
 // Supabase Edge Function: authenticated, participant-scoped, on-demand chat translation.
 // No user-supplied arbitrary text: only existing messages visible under RLS may be translated.
-// LIBRETRANSLATE_URL (HTTPS endpoint) must be configured in Supabase secrets to enable requests.
-// LIBRETRANSLATE_API_KEY is optional for a protected/self-hosted instance.
+// GOOGLE_TRANSLATE_API_KEY must be configured in Supabase function secrets to enable requests.
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 
 const SITE = "https://connect.intentionalnoise.info";
@@ -20,37 +19,22 @@ const LANGUAGES = new Set([
 const REQ_LIMIT_USER = 20, REQ_LIMIT_GLOBAL = 150;
 const reply=(status:number, value:Record<string,unknown>)=>
   new Response(JSON.stringify(value),{status,headers:HEADERS});
-// HTTPS endpoint is configured server-side only, never supplied by a browser user.
-function libreBase(): URL|null {
-  try {
-    const raw=Deno.env.get("LIBRETRANSLATE_URL")?.trim();
-    if(!raw) return null;
-    const url=new URL(raw.endsWith("/")?raw:raw+"/");
-    if(url.protocol!=="https:"||url.username||url.password||url.search||url.hash) return null;
-    return url;
-  }catch{return null;}
-}
-const providerTarget=(target:string)=>target==="zh-CN"?"zh":target;
+const decodeEntities=(s:string)=>s
+  .replace(/&#(x[0-9a-f]+|[0-9]+);/gi,(_,raw:string)=>{
+    const value=raw.toLowerCase().startsWith("x")?parseInt(raw.slice(1),16):parseInt(raw,10);
+    return Number.isFinite(value)&&value>0&&value<=0x10ffff ? String.fromCodePoint(value) : _;
+  })
+  .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&apos;/g,"'")
+  .replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&");
 
 Deno.serve(async (req:Request)=>{
   const origin=req.headers.get("origin");
   if(origin && origin!==SITE) return reply(403,{error:"Disallowed origin"});
   if(req.method==="OPTIONS") return new Response(null,{status:204,headers:HEADERS});
   if(req.method!=="GET" && req.method!=="POST") return reply(405,{error:"Method not allowed"});
-  const provider=libreBase();
-  if(req.method==="GET") {
-    if(!provider) return reply(200,{available:false,languages:[]});
-    try {
-      const response=await fetch(new URL("languages",provider),{signal:AbortSignal.timeout(6500)});
-      if(!response.ok) return reply(200,{available:false,languages:[]});
-      const listed=await response.json();
-      if(!Array.isArray(listed)) return reply(200,{available:false,languages:[]});
-      const codes=new Set(listed.map(item=>item?.code).filter(code=>typeof code==="string"));
-      const languages=[...LANGUAGES].filter(code=>codes.has(providerTarget(code)));
-      return reply(200,{available:languages.length>0,languages});
-    }catch{return reply(200,{available:false,languages:[]});}
-  }
-  if(!provider) return reply(503,{error:"Translation service is not configured"});
+  const googleKey=Deno.env.get("GOOGLE_TRANSLATE_API_KEY");
+  if(req.method==="GET") return reply(200,{available:!!googleKey});
+  if(!googleKey) return reply(503,{error:"Translation provider is not configured"});
   const jwt=(req.headers.get("authorization")||"").match(/^Bearer\s+(.+)$/i)?.[1];
   if(!jwt) return reply(401,{error:"Sign in required"});
   const projectUrl=Deno.env.get("SUPABASE_URL");
@@ -95,21 +79,19 @@ Deno.serve(async (req:Request)=>{
   if(writeErr) return reply(503,{error:"Translation quota unavailable"});
 
   try {
-    const apiKey=Deno.env.get("LIBRETRANSLATE_API_KEY")?.trim();
-    const upstream=await fetch(new URL("translate",provider),{
+    const upstream=await fetch("https://translation.googleapis.com/language/translate/v2?key="+encodeURIComponent(googleKey),{
       method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({q:message.body,source:"auto",target:providerTarget(data.targetLanguage as string),
-        format:"text",...(apiKey?{api_key:apiKey}:{})}),
+      body:JSON.stringify({q:message.body,target:data.targetLanguage,format:"text"}),
       signal:AbortSignal.timeout(12000)
     });
-    if(!upstream.ok) return reply(502,{error:"Translation service unavailable"});
+    if(!upstream.ok) return reply(502,{error:"Translation provider unavailable"});
     const json=await upstream.json();
-    const translatedText=json?.translatedText;
-    const sourceLanguage=json?.detectedLanguage?.language;
+    const translatedText=json?.data?.translations?.[0]?.translatedText;
+    const sourceLanguage=json?.data?.translations?.[0]?.detectedSourceLanguage;
     if(typeof translatedText!=="string"||!translatedText.trim())
-      return reply(502,{error:"Translation service returned no text"});
-    return reply(200,{translatedText,
+      return reply(502,{error:"Translation provider returned no text"});
+    return reply(200,{translatedText:decodeEntities(translatedText),
       sourceLanguage:typeof sourceLanguage==="string"?sourceLanguage:null,
       targetLanguage:data.targetLanguage});
-  }catch{return reply(502,{error:"Translation service unavailable"});}
+  }catch{return reply(502,{error:"Translation provider unavailable"});}
 });
