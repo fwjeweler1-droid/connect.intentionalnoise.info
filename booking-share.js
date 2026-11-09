@@ -8,7 +8,7 @@ const offer=row=>row.budget_kind==='quotes'?'Quotes welcome':row.budget_kind==='
 const acts={band:'a band',solo:'a solo musician',duo:'a duo',trio:'a trio',any:'live music'};
 let currentShare=null;
 export function bookingLink(id){
- return 'https://connect.intentionalnoise.info/fill-my-stage.html?booking='+encodeURIComponent(id)+'#openRequests';
+ return 'https://ineedagig.net/?booking='+encodeURIComponent(id)+'#opportunities';
 }
 export function hideBookingShare(){
  currentShare=null;
