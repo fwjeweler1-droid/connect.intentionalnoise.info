@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101d28">
+<meta name="description" content="Compare Chrome, Edge, Firefox and Safari webpage translation, including where the translated text is processed and how to translate a page.">
+<title>Browser translation choices | Intentional Noise Connect</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;--bg:#101d28;--panel:#172f37;--ink:#f4f7f8;--muted:#c1d8db;--line:#527b79;--mint:#8ee5d5}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 92% 0%,#24473e 0%,transparent 38%),var(--bg);color:var(--ink)}
+a{color:var(--mint)}a:focus-visible,summary:focus-visible{outline:3px solid var(--mint);outline-offset:4px}.wrap{width:min(960px,calc(100% - 36px));margin:auto}
+header{background:#142633;border-bottom:1px solid #44635e}header .wrap{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:18px 0}header strong{letter-spacing:.025em}header nav{display:flex;gap:16px;flex-wrap:wrap}
+main{padding:32px 0 65px}.eyebrow{color:var(--mint);font-size:.78rem;text-transform:uppercase;font-weight:850;letter-spacing:.1em}h1{font-size:clamp(2rem,5vw,3rem);line-height:1.12;margin:12px 0 10px}h2{font-size:1.4rem;margin:0 0 12px}p{line-height:1.6}.lead{max-width:750px;color:var(--muted);font-size:1.05rem}
+.notice{border-left:4px solid var(--mint);background:#1a363d;padding:16px 20px;margin:22px 0;border-radius:7px}.notice p{margin:8px 0;color:#e0f0ee}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:20px 0 27px}
+.browser{border:1px solid var(--line);background:var(--panel);border-radius:14px;overflow:hidden;min-width:0}
+.browser summary{cursor:pointer;padding:19px;list-style-position:inside;font-weight:800;font-size:1.15rem}
+.browser summary:hover{background:#20443c}.browser[open] summary{border-bottom:1px solid var(--line)}
+.browser .body{padding:0 19px 18px}.browser p{margin:10px 0;color:var(--muted)}.browser p strong{color:var(--ink)}
+where{display:block}.location{font-size:.9rem;color:#d4f2e8}.location strong{color:var(--mint)}
+.card-note{font-size:.9rem}.bottom{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:21px;margin-top:20px}.bottom p{margin:8px 0}
+.small{font-size:.86rem;color:var(--muted)}footer{border-top:1px solid #355462;color:var(--muted);padding:25px 0}
+@media(max-width:680px){.grid{grid-template-columns:1fr}.browser summary{padding:16px}.browser .body{padding:0 16px 16px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><strong>INTENTIONAL NOISE CONNECT</strong><nav aria-label="Navigation"><a href="/">Connect home</a><a href="/stay-in-control.html">Privacy controls</a></nav></div></header>
+<main class="wrap">
+<div class="eyebrow">Browser translation choices</div>
+<h1>Translate a webpage. Know where your text goes.</h1>
+<p class="lead">All four browsers below offer built-in translation for supported webpages. Tap or click your browser to see how it works and whether translation happens on your device or on a provider's servers.</p>
+<div class="notice"><strong>Privacy matters.</strong><p>Translation is controlled by your browser, not by Connect. Chrome, Edge and Safari generally use online translation services for webpages; Firefox processes its built-in translations on the device. Using cloud translation on a webpage containing private messages can transmit page text to the browser provider. No browser preference is collected here.</p></div>
+<section aria-labelledby="choices"><h2 id="choices">Choose your browser</h2>
+<div class="grid">
+<details class="browser"><summary>Google Chrome</summary><div class="body"><p class="location"><strong>Where:</strong> Google's online translation service</p><p><strong>Service:</strong> Google Translate. Built-in webpage translation normally needs an internet connection.</p><p><strong>How:</strong> Select Translate in the address bar or right-click the page and choose Translate to your preferred language. Manage languages in Chrome Settings.</p><p class="card-note">Separate experimental on-device AI translation features are not the same as Chrome's regular webpage Translate command.</p><a href="https://support.google.com/chrome/answer/173424" target="_blank" rel="noopener noreferrer">Google's instructions</a></div></details>
+<details class="browser"><summary>Microsoft Edge</summary><div class="body"><p class="location"><strong>Where:</strong> Microsoft's online translation service</p><p><strong>Service:</strong> Microsoft Translator. Built-in webpage translation normally needs internet access.</p><p><strong>How:</strong> Select the Translate icon in the address bar or accept the translation prompt. Configure preferred languages in Edge Settings.</p><p class="card-note">Use an up-to-date version of Edge. Supported languages and options vary by platform.</p><a href="https://support.microsoft.com/en-us/edge/use-microsoft-translator-in-microsoft-edge-browser" target="_blank" rel="noopener noreferrer">Microsoft's instructions</a></div></details>
+<details class="browser"><summary>Mozilla Firefox</summary><div class="body"><p class="location"><strong>Where:</strong> On your device</p><p><strong>Service:</strong> Firefox Translations. The language models download to the device; translation text does not go to Mozilla's servers.</p><p><strong>How:</strong> Choose Translate page from the toolbar or page menu. Download the required language pair when prompted. Supported languages may differ on mobile.</p><p class="card-note">Offline translation is possible after the needed language models are installed.</p><a href="https://support.mozilla.org/en-US/kb/website-translation" target="_blank" rel="noopener noreferrer">Mozilla's instructions</a></div></details>
+<details class="browser"><summary>Apple Safari</summary><div class="body"><p class="location"><strong>Where:</strong> Apple's servers for webpage translation</p><p><strong>Service:</strong> Safari webpage translation. Language detection happens on the device; Safari sends webpage contents to Apple when you request a translation.</p><p><strong>How:</strong> Open Safari's page menu and choose Translate Website, if offered.</p><p class="card-note">Supported languages and availability vary by device, country and region.</p><a href="https://support.apple.com/en-lamr/guide/safari/ibrw6ea421e3/mac" target="_blank" rel="noopener noreferrer">Apple's instructions</a> · <a href="https://www.apple.com/legal/privacy/data/en/safari/" target="_blank" rel="noopener noreferrer">Safari privacy details</a></div></details>
+</div></section>
+<section class="bottom" aria-labelledby="message-title"><h2 id="message-title">What about translating Connect messages?</h2><p>Connect's optional message-translation control is separate from your browser's built-in full-page translator. It is offered only if the browser supports the required on-device Translator API and language pair. Otherwise, no Connect translation request is made.</p><p>Do not assume a browser's <em>Translate webpage</em> command stays local. Check the processing location above before translating sensitive text.</p><p class="small">This guide explains browsers; selecting a browser here does not install, switch to, or activate that browser.</p></section>
+<p class="small">Background comparison: <a href="https://selecttranslate.com/blog/en/best-browser-for-translation-2026/" target="_blank" rel="noopener noreferrer">SelectTranslate's 2026 browser comparison</a>. Processing information cross-checked with each browser provider's published documentation.</p>
+</main>
+<footer><div class="wrap">© 2026 Intentional Noise · <a href="https://intentionalnoise.info/privacy.html">Network privacy notice</a> · <a href="/">Connect home</a></div></footer>
+</body></html>
