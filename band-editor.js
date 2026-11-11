@@ -10,6 +10,40 @@ const readableKind={logo:'Artist logo',artwork:'Artwork',track:'Music track',ree
 const publicLink=slug=>'https://intentionalnoise.band/'+encodeURIComponent(slug);
 function status(id,msg){setText(id,msg)}
 function escapeText(s){return String(s||'').slice(0,130)}
+function httpsImage(value){try{const u=new URL(value);return u.protocol==='https:'?u.href:null}catch{return null}}
+function portraitInitials(name){const words=String(name||'Artist').trim().split(/\s+/).filter(Boolean);return (words.length>1?words.slice(0,2).map(s=>s[0]).join(''):words[0].slice(0,2)).toUpperCase()}
+async function updateArtistPortrait(){
+ if(!page||!user)return;
+ const name=$('artistName').textContent;
+ $('artistPortraitInitials').textContent=portraitInitials(name);
+ const image=$('artistPortrait');
+ image.hidden=true;image.removeAttribute('src');
+ const logos=submissions.filter(x=>x.kind==='logo'&&x.status==='approved');
+ const art=submissions.filter(x=>x.kind==='artwork'&&x.status==='approved').reverse();
+ const choices=[...logos,{source_type:'link',external_url:page.logo_url},...art];
+ const urls=[];
+ for(const item of choices){
+  if(item.source_type==='link'){const src=httpsImage(item.external_url);if(src&&!urls.includes(src))urls.push(src)}
+  else if(item.source_type==='upload'&&item.storage_path){
+   const {data,error}=await db.storage.from('artist-review').createSignedUrl(item.storage_path,600);
+   if(!error&&data?.signedUrl&&!urls.includes(data.signedUrl))urls.push(data.signedUrl);
+  }
+ }
+ let index=0;
+ image.onload=()=>{image.hidden=false;$('artistPortraitNote').textContent='Saved image is ready. Public visitors see it only if your artist page is published.'};
+ image.onerror=()=>{image.hidden=true;if(index<urls.length)image.src=urls[index++];else $('artistPortraitNote').textContent='No viewable artist image yet. Add a photo or a publicly accessible image link below.'};
+ if(urls.length){$('artistPortraitNote').textContent='Checking your saved artist picture…';image.src=urls[index++];}
+ else $('artistPortraitNote').textContent='No artist image yet. Upload one or link your existing photo; until then the name initials are your default.';
+}
+function jumpToPortraitMedia(method){
+ $('mediaKind').value='logo';
+ $('mediaMethod').value=method;
+ $('mediaTitle').value='Artist profile image';
+ setMethod();
+ $('uploadPanel').scrollIntoView({behavior:'smooth',block:'start'});
+ const target=method==='upload'?'mediaFile':'mediaUrl';
+ $(target).focus({preventScroll:true});
+}
 function detailsSection(label,values){if(!Array.isArray(values)||values.length===0)return;const wrap=document.createElement('div');wrap.className='detail-row';const strong=document.createElement('strong');strong.textContent=label+': ';wrap.append(strong);wrap.append(document.createTextNode(values.join(', ')));$('details').append(wrap)}
 async function refresh(){
  try{
@@ -55,6 +89,7 @@ async function loadSubmissions(){
  const {data,error}=await db.from('artist_media_submissions').select('id,title,kind,source_type,storage_path,external_url,status,review_note,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(75);
  if(error){status('submissionsStatus','Could not load your saved media: '+error.message);return}
  submissions=data||[];
+ await updateArtistPortrait();
  const {data:previewRows}=await db.from('connect_work_previews')
   .select('title').eq('user_id',user.id).neq('status','rejected').limit(10);
  const previewTitles=new Set((previewRows||[]).map(v=>normalizedTitle(v.title)));
@@ -271,6 +306,8 @@ async function publish(visible){
  busy=false;status('publishMessage',error?'Publication failed: '+error.message:visible?'Your artist profile is now public.':'Your page is now private.');
  await refresh();
 }
+$('choosePortraitUpload').addEventListener('click',()=>jumpToPortraitMedia('upload'));
+$('choosePortraitLink').addEventListener('click',()=>jumpToPortraitMedia('link'));
 $('mediaMethod').addEventListener('change',setMethod);
 $('mediaKind').addEventListener('change',()=>{const file=$('mediaFile').files?.[0];if(file){autoSelectKind(file);updatePreviewContent(file)}else updateFileAccept();});
 $('mediaFile').addEventListener('change',()=>updatePreviewContent($('mediaFile').files?.[0]));
