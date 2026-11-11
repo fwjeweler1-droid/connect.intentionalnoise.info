@@ -37,3 +37,14 @@ Verified at source/database level: five input fields, form wiring, signout reset
 Connect's homepage (`index.html`), member search (`search.html`), and account page (`auth.html`) visibly direct venue owners to **IneedaGig.net as the preferred booking front door**. Three clearly labeled options are available without signing in: the [IneedaGig booking hub](https://ineedagig.net/), [published owner-approved artist showcases](https://ineedagig.net/artists.html), and [external nationwide performer booking sources](https://ineedagig.net/external-performers.html). The latter are outside acts, not verified Connect members or guaranteed bookings. Venue owners still register or sign in free on Connect to post/manage their own offers, use account-specific tools, or access private member-only search. The live Connect member search and Supabase RLS/authentication logic are unchanged. Do **not** imply all member profiles are public or that booking/payments/messaging are automatically completed. Route guidance and links only; no new artist accounts, private data reads, publishing permissions, or DB changes.
 
 Source-level checks should confirm that both public directories offer text search without auth, every Connect venue entry point links to the intended public source, member search stays gated, and the original venue-intake form remains present. GitHub Pages build and browser/mobile acceptance must be independently checked after deployment.
+
+## Two-choice mobile entry (November 11, 2026)
+
+At the **top of Connect's homepage and account page**, visitors see just two touch-friendly choices beneath “What are you looking for?”: **“I'm an artist / musician”** and **“I'm hiring”**. Buttons use the existing official FROG and Ineeda image assets (no replacement, new image, extra call-to-action or new signup system).
+
+- The homepage **artist** button links to `/auth.html?role=musician#auth`, jumping directly to the existing free signup/sign-in form. On the account page, the artist button uses `#auth` to scroll to the same form. No duplicate authentication form or account state.
+- **I'm hiring** routes directly to `https://ineedagig.net/`, the preferred booking hub. Public performer browsing is free; actual venue offer posting uses the existing Connect account workflow.
+- The homepage member-search form remains below the opening choices and still requires free sign-in to see owner-listed member details. The live account form, Supabase JS, private profiles, owner-only venue intake and booking workflows are unchanged.
+- Compact responsive layout displays the two options stacked on phone widths; desktop uses two columns. Verified both original image files exist in the repository and the HTML uses those exact filenames. Test actual iPhone/desktop touch and anchor scroll behavior after deployment.
+
+Don't add long sales copy, a third opening button, or a separate “venue register” form to the opening choice.
