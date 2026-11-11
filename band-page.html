@@ -42,6 +42,12 @@ summary{cursor:pointer;font-weight:750;color:#d3f7f4}
 #publicUrl{overflow-wrap:anywhere}
 footer{border-top:1px solid #375968;text-align:center;padding:25px;color:#bed2d9}
 @media(max-width:630px){.actions>.button,.actions>button{flex:1 1 210px}.wrap{padding:0 14px}.hero{padding:20px}}
+.portrait-layout{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:15px 0 19px}
+.portrait-frame{width:148px;height:148px;flex:0 0 148px;display:grid;place-items:center;overflow:hidden;border:2px solid #82beb7;border-radius:16px;background:linear-gradient(135deg,#225c58,#12252e)}
+.portrait-frame img{display:block;width:100%;height:100%;object-fit:cover}.portrait-frame img[hidden]{display:none}
+.portrait-frame span{font-size:2.5rem;color:#e5faf4;font-weight:900}
+.portrait-tools{flex:1 1 240px}.portrait-tools .actions{margin:10px 0}.portrait-tools p{margin:6px 0}
+@media(max-width:500px){.portrait-frame{width:112px;height:112px;flex-basis:112px}.portrait-frame span{font-size:2rem}}
 </style></head>
 <body>
 <header><div class="wrap"><span class="brand">INTENTIONAL NOISE <span style="color:#89e5df">CONNECT</span></span><a href="auth.html#profile">My musician profile</a></div></header>
@@ -59,6 +65,12 @@ footer{border-top:1px solid #375968;text-align:center;padding:25px;color:#bed2d9
 </nav>
 <section class="panel" id="profileSummary">
 <h2>My artist identity</h2>
+<div class="portrait-layout" aria-label="My artist picture">
+<div class="portrait-frame"><span id="artistPortraitInitials" aria-hidden="true">ART</span><img id="artistPortrait" alt="Current artist profile image" hidden></div>
+<div class="portrait-tools"><strong>My artist image</strong><p id="artistPortraitNote" class="hint">Loading your saved artist image…</p>
+<div class="actions"><button id="choosePortraitUpload" type="button" class="secondary compact">Upload an artist image</button><button id="choosePortraitLink" type="button" class="secondary compact">Use an image link</button></div>
+<p class="hint">Use a picture you own. The newest approved artist logo/photo is used first, then your saved image or first approved artwork. A private draft stays private.</p></div>
+</div>
 <h3 id="artistName">Loading…</h3><p id="artistBio"></p><div id="details"></div>
 <p class="hint">Your musician details are edited in Connect and appear here automatically. <a href="auth.html#profile">Change them here.</a> <a href="auth.html#artistBookingIntake">Answer the five venue-booking questions.</a></p>
 </section>
