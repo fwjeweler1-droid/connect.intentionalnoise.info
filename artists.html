@@ -45,13 +45,46 @@ input{border:1px solid #7f9aa5;background:#0c202b;color:white;border-radius:9px;
 const API='https://xyudcdgjyormlokwhfoi.supabase.co/rest/v1/artist_pages';
 const KEY='sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0';
 const $=id=>document.getElementById(id);
-let artists=[];
+let artists=[];const publishedLogos=new Map();
 function el(tag,txt,cls){const node=document.createElement(tag);if(txt!==undefined)node.textContent=txt;if(cls)node.className=cls;return node}
 function setStatus(text){$('status').textContent=text}
 function link(text,url,cls='button alt'){const a=el('a',text,cls);a.href=url;return a}
 function artistUrl(p){return 'https://intentionalnoise.band/'+encodeURIComponent(p.slug)}
 function profileUrl(p){return location.pathname+'?slug='+encodeURIComponent(p.slug)}
-function photo(p){if(!p.logo_url||!/^https:\/\//i.test(p.logo_url))return null;const img=el('img');img.src=p.logo_url;img.referrerPolicy='no-referrer';img.alt=p.display_name+' artwork';img.loading='lazy';img.className='photo';img.onerror=()=>img.remove();return img}
+function safeImage(url){try{const u=new URL(url);return u.protocol==='https:'?u.href:null}catch{return null}}
+function photo(p){
+ const urls=[...new Set([...(publishedLogos.get(p.slug)||[]),p.logo_url].map(safeImage).filter(Boolean))];
+ if(!urls.length){const fallback=el('span',String(p.display_name||'A').slice(0,2).toUpperCase(),'photo');fallback.style.cssText='display:grid;place-items:center;font-weight:850;font-size:1.4rem';return fallback}
+ const img=el('img');img.referrerPolicy='no-referrer';img.alt=p.display_name+' artist image';img.loading='lazy';img.className='photo';
+ let index=0;img.onerror=()=>{if(index<urls.length)img.src=urls[index++];else img.remove()};img.src=urls[index++];return img;
+}
+async function loadPortraits(profiles){
+ const ids=new Set(profiles.map(p=>p.slug)),names=new Map(profiles.map(p=>[p.user_id,p.slug]));
+ const params=new URLSearchParams({select:'user_id,kind,mime_type,source_type,storage_path,external_url,public_url,created_at',status:'eq.approved',rights_confirmed:'eq.true',rules_accepted:'eq.true',kind:'in.(logo,artwork)',order:'created_at.desc',limit:'1000'});
+ const root='https://xyudcdgjyormlokwhfoi.supabase.co';
+ try{
+  const r=await fetch(root+'/rest/v1/artist_media_submissions?'+params.toString(),{headers:{apikey:KEY,Accept:'application/json'},cache:'no-store'});if(!r.ok)return;
+  const rows=await r.json();if(!Array.isArray(rows))return;
+  const byOwner=new Map();
+  await Promise.all(rows.map(async x=>{
+   if(x.mime_type&&!x.mime_type.startsWith('image/'))return;
+   const slug=names.get(x.user_id);if(!slug||!ids.has(slug))return;
+   let url=safeImage(x.external_url||x.public_url);
+   if(x.source_type==='upload'&&x.storage_path){
+    try{
+     const r=await fetch(root+'/storage/v1/object/sign/artist-review/'+x.storage_path.split('/').map(encodeURIComponent).join('/'),{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:600}),cache:'no-store'});
+     if(r.ok){const d=await r.json(),relative=d.signedURL||d.signedUrl;url=safeImage(relative?.startsWith('https://')?relative:root+'/storage/v1'+(relative?.startsWith('/')?'':'/')+relative)}
+    }catch{url=null}
+   }
+   if(!url)return;const list=byOwner.get(slug)||[];list.push({url,kind:x.kind,time:Date.parse(x.created_at||'')||0});byOwner.set(slug,list);
+  }));
+  for(const [slug,entries] of byOwner){
+   const logo=entries.filter(v=>v.kind==='logo').sort((a,b)=>b.time-a.time).map(v=>v.url);
+   const artwork=entries.filter(v=>v.kind==='artwork').sort((a,b)=>a.time-b.time).map(v=>v.url);
+   publishedLogos.set(slug,[...new Set([...logo,...artwork])]);
+  }
+ }catch{}
+}
 function detailLine(root,label,value){if(!value)return;const d=el('p',null,'field');d.append(el('strong',label+': '),document.createTextNode(value));root.append(d)}
 function card(p){
  const box=el('article',null,'card');const img=photo(p);if(img)box.append(img);
@@ -86,12 +119,13 @@ async function load(){
  try{
   const slug=new URLSearchParams(location.search).get('slug');
   if(slug&&(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)||slug.length>90)){setStatus('Artist page not available.');return}
-  const query=new URLSearchParams({select:'slug,display_name,bio,logo_url,roles,instruments,genres,available_for_gigs',published:'eq.true',approved_at:'not.is.null',order:'display_name.asc',limit:slug?'1':'100'});
+  const query=new URLSearchParams({select:'user_id,slug,display_name,bio,logo_url,roles,instruments,genres,available_for_gigs',published:'eq.true',approved_at:'not.is.null',order:'display_name.asc',limit:slug?'1':'100'});
   if(slug)query.set('slug','eq.'+slug);
   const res=await fetch(API+'?'+query.toString(),{headers:{apikey:KEY,Accept:'application/json'},cache:'no-store'});
   if(!res.ok)throw Error('Published directory unavailable ('+res.status+').');
   const data=await res.json();if(!Array.isArray(data))throw Error('Unexpected directory response.');
   artists=data;
+  await loadPortraits(data);
   if(slug){if(artists.length)showProfile(artists[0]);else setStatus('This artist page is private or not published.');return}
   render();
  }catch(error){setStatus('Could not load artist profiles: '+error.message)}
