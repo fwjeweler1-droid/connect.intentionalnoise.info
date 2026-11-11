@@ -73,7 +73,7 @@ async function loadPortraits(profiles){
    if(x.source_type==='upload'&&x.storage_path){
     try{
      const r=await fetch(root+'/storage/v1/object/sign/artist-review/'+x.storage_path.split('/').map(encodeURIComponent).join('/'),{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:600}),cache:'no-store'});
-     if(r.ok){const d=await r.json(),relative=d.signedURL||d.signedUrl;url=safeImage(relative?.startsWith('https://')?relative:root+'/storage/v1'+(relative?.startsWith('/')?'':'/')+relative)}
+     if(r.ok){const d=await r.json(),relative=d.signedURL||d.signedUrl;if(typeof relative==='string'&&relative)url=safeImage(relative.startsWith('https://')?relative:root+'/storage/v1'+(relative.startsWith('/')?'':'/')+relative);else url=null}
     }catch{url=null}
    }
    if(!url)return;const list=byOwner.get(slug)||[];list.push({url,kind:x.kind,time:Date.parse(x.created_at||'')||0});byOwner.set(slug,list);
