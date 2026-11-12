@@ -1,4 +1,4 @@
-export const categories = [["gig_requests","Current gig requests"],["available_for_gigs","Available for gigs"],["all","Everyone"],["musician","Musician"],["sound_engineer","Sound engineer"],["music_instructor","Music instructor"],["band","Band"],["vocalist","Vocalist"],["violinist","Violinist"],["guitar","Guitarist"],["bass","Bassist"],["drums","Drummer"],["keys","Keyboard player"],["producer","Producer"],["songwriter","Songwriter"],["artist","Artist"],["videographer","Videographer"],["digital_creator","Digital Creator"]];
+export const categories = [["gig_requests","Current gig requests"],["available_for_gigs","Available for gigs"],["all","Everyone"],["musician","Musician"],["sound_engineer","Sound engineer"],["music_instructor","Instructor"],["band","Band"],["vocalist","Vocalist"],["violinist","Violinist"],["guitar","Guitarist"],["bass","Bassist"],["drums","Drummer"],["keys","Keyboard player"],["producer","Producer"],["songwriter","Songwriter"],["artist","Artist"],["videographer","Videographer"],["digital_creator","Digital Creator"]];
 const patterns = {
 musician: /musician|guitar|bass|drum|vocal|sing|keyboard|piano|instrument|songwrit|violin|cello|sax|trumpet|trombone|fiddle|banjo|mandolin|flute|clarinet|percussion/i,
 sound_engineer: /sound[ _-]?engineer|audio[ _-]?engineer|recording[ _-]?engineer|mixing|mastering|live sound|foh/i,
@@ -29,4 +29,5 @@ return !!patterns[category]?.test([...(profile.instruments||[]),...roles,profile
 export function safeSearchReturn(raw, origin) {
 try { const url = new URL(raw,origin); return url.origin===origin && ['/search.html','/gig-requests.html','/band-page.html','/review-work.html','/media-storage.html','/releases-and-gigs.html','/fill-my-stage.html'].includes(url.pathname) ? url.pathname+url.search : ''; } catch { return ''; }
 }
+
 
