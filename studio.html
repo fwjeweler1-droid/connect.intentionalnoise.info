@@ -23,7 +23,7 @@ async function loadTracks(){const {data,error}=await db.from('studio_tracks').se
 
 const audioTypes={mp3:'audio/mpeg',m4a:'audio/mp4',wav:'audio/wav'};
 const maxAudioBytes=50*1024*1024;
-const audioStem=name=>name.replace(/\\.[^.]+$/,'').trim();
+const audioStem=name=>name.replace(/\.[^.]+$/,'').trim();
 async function sha256File(file){
  const buffer=await file.arrayBuffer();
  const hash=await crypto.subtle.digest('SHA-256',buffer);
