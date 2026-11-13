@@ -1,5 +1,6 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 import {showBookingShare,hideBookingShare} from './booking-share.js';
+import {feedbackWidget,fetchAnsweredBookingFeedback,resolvedBookingDue} from './member-experience-feedback.js';
 const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0');
 const $=id=>document.getElementById(id);
 const TAG='ineeda-gig-venue-form-v1';
@@ -215,6 +216,10 @@ async function loadOwned(){
   .select('*').eq('owner_id',me.id).order('created_at',{ascending:false}).limit(100);
  if(error){setStatus('ownerStatus','Could not read your bookings: '+error.message);return}
  myRequests=data||[];
+ let answeredFeedback=new Set();
+ try{answeredFeedback=await fetchAnsweredBookingFeedback(db,me.id)}
+ catch(e){setStatus('ownerStatus','Booking feedback history unavailable: '+(e.message||e))}
+ let feedbackShown=false;
  const root=$('ownerList');root.replaceChildren();
  const ids=myRequests.map(x=>x.id);
  let replies=[];
@@ -279,6 +284,10 @@ async function loadOwned(){
     }else label(area,'p','This conversation has been closed.','hint');
    }
   }else label(card,'p','No musicians have responded yet.','hint');
+  if(!feedbackShown&&resolvedBookingDue(b,'venue')&&!answeredFeedback.has('venue:'+b.id)){
+   card.append(feedbackWidget(db,me.id,{context:'booking_resolved',bookingId:b.id,bookingSource:'venue',bookingOutcome:b.status}));
+   feedbackShown=true;
+  }
   root.append(card);
  }
  if(!myRequests.length)label(root,'p','You haven’t posted a request. Use the form above to get started.','hint');
