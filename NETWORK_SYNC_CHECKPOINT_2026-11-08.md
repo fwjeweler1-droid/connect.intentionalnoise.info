@@ -113,4 +113,33 @@ There remain **two separate Connect request tables**: public future `venue_booki
 
 **HOLD / HANDOFF:** By direct owner instruction, **pause further Studio work and testing**; the owner has one recruit and is moving to another project. Do not restart Studio checks, invitations, marketing or extra changes merely because pending gates remain. Resume only when asked.
 
-**Resume phrase:** “Sparky, resume Studio from `IN-CONNECT-STUDIO-2026-11-13-01`.”  
+**Resume phrase:** “Sparky, resume Studio from `IN-CONNECT-STUDIO-2026-11-13-01`.”
+
+---
+
+## November 13, 2026 — Studio album reconciliation and resumption
+
+**Latest landmark:** IN-CONNECT-STUDIO-2026-11-13-02
+**Status:** MPCC AND PRIVATE STUDIO SOURCE RECONCILED; LIVE NEW-CONTROL ACCEPTANCE PENDING.
+**Supersedes:** Earlier Nov. 13 Studio HOLD for work state only, by subsequent owner instruction to reconcile tracks, amend Studio and resume. Earlier observations remain valid.
+
+### Authoritative records
+
+- The SAME authoritative Music_Project_Command_Center.xlsx, Library ID libfile_c2221b6092bc8191922be8f3a37ff555, was overwritten in place and read back as version 146. New sheet Studio Album Links (27 album memberships), existing Reconciliation Log row 92.
+- MPCC album rosters: TGIK 18 candidate songs (sequence not locked), Tom's four owner-approved masters, Thanksgiving five-track approved CD lineup. Do You Get It Yet? appears intentionally on Tom's and Thanksgiving; never merge or automatically copy the audio, take, or album-specific approval. Words in Red / The Words in RED is a possible title variant, not an automatically validated identical recording.
+- Studio backend has TWO projects, TGIK and Thankful Thanksgiving Thank You, owned by different accounts. Tom's private Studio project has NOT been verified or invented. Existing working track records and private files were preserved without deletion or fabricated uploads.
+
+### Backend and UI amendments
+
+- Added private public.studio_album_roster in the existing Supabase project; 18 TGIK reference rows and five Thanksgiving reference rows. These are distinct from uploaded/studio_tracks rows. RLS: only project members can read their own roster; anon cannot read. Readback confirmed TGIK 18, Thanksgiving five, with one existing TGIK working track match and zero Thanksgiving lineup matches. The three pre-existing Thanksgiving test tracks remain intact.
+- Added non-null UUID studio_tracks.work_id plus per-project uniqueness. A musical work may be included in multiple albums, with distinct per-album track IDs, track order, notes, statuses, audio files, versions and master approvals.
+- The EXISTING Connect studio.html now displays the MPCC roster privately and shows which entries have a matching working Studio record. Only owners can add missing roster working entries under existing caps. Owners may include the same composition in ANOTHER PROJECT THEY OWN, sharing work_id but not copying recordings, approvals, links or private account information; other collaborators continue to use the proposal workflow.
+- GitHub commits bc8264214972005b8844f4251c2ff0841a8d04aa and c9842cab134c5e621375298b83dab51d02d359ae. Source and JavaScript parsing checks passed. Database roster RLS tests passed (five visible to owning account, zero to an unrelated account). A transaction-rolled-back shared-song insert passed; zero test projects or tracks remain.
+- Live GitHub Pages deployment revision, actual signed-in click-through, mobile UI and same-song owner interactions are STILL UNVERIFIED. Direct fetch of Connect site was DNS-blocked from the test environment; do not mistake that for site outage.
+
+### Resume point and approval boundaries
+
+Studio work RESUMES by direct owner instruction. Keep the earlier Nerdly file-save PASS and Tom-reported pCloud connection and Studio access PASS. Pending: actual live owner-edited track/roster actions, Tom's album ownership, cross-account negative checks and media playback; do not claim these tests passed.
+Do not automatically create all 18 TGIK working tracks (current account has a five-track free pilot cap) or fabricate missing audio. Do not create a Tom Studio project without verifying its owner. The existing MPCC is the only authoritative source for songs and release masters. No outreach, public publication, or automatic media upload was authorized.
+
+**Return phrase:** Sparky, resume from IN-CONNECT-STUDIO-2026-11-13-02.
