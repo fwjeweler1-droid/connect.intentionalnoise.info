@@ -346,7 +346,7 @@ $('verificationForm').addEventListener('submit',async event=>{
  isrc:$('verifyIsrc').value.trim().toUpperCase()||null,
  release_url:$('verifyUrl').value.trim()||null,evidence_details:$('verifyEvidence').value.trim()
  };
- if(!/^\\d{12,14}$/.test(fields.upc)){ $('verificationStatus').textContent='UPC/EAN must contain 12–14 digits.';return; }
+ if(!/^\d{12,14}$/.test(fields.upc)){ $('verificationStatus').textContent='UPC/EAN must contain 12–14 digits.';return; }
  $('verifySubmit').disabled=true;$('verificationStatus').textContent='Submitting evidence for review…';
  const {error}=await supabase.from('artist_verification_requests').insert(fields);
  if(error){$('verificationStatus').textContent='Request not saved: '+error.message;$('verifySubmit').disabled=false;return;}
