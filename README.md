@@ -1,7 +1,8 @@
 # Intentional Noise Connect — shared application backend and account portal
 
 **Current network checkpoint:** [IN-NET-2026-11-08-SYNC-01](NETWORK_SYNC_CHECKPOINT_2026-11-08.md)  
-**Machine-readable placement marker:** [network-sync.json](network-sync.json)
+**Machine-readable placement marker:** [network-sync.json](network-sync.json)  
+**Latest Private Studio landmark (November 13):** [IN-CONNECT-STUDIO-2026-11-13-01](NETWORK_SYNC_CHECKPOINT_2026-11-08.md#november-13-2026--private-studio-acceptance-landmark) — owner-confirmed file save; external collaborator-reported pCloud connection and Studio access; remaining tests pending, Studio on hold at owner's request.  
 
 Connect is the single source for member registration, artist/profile editing and publication, privacy controls, and existing booking records. The other public domains read or route to these workflows; they do **not** have separate account databases.
 
