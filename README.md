@@ -49,3 +49,17 @@ At the **top of Connect's homepage and account page**, visitors see just two tou
 - Compact responsive layout displays the two options stacked on phone widths; desktop uses two columns. Verified both original image files exist in the repository and the HTML uses those exact filenames. Test actual iPhone/desktop touch and anchor scroll behavior after deployment.
 
 Don't add long sales copy, a third opening button, or a separate “venue register” form to the opening choice.
+
+
+## Verification policy — pilot and post-pilot gates (November 13, 2026)
+
+**Current phase: PILOT. Verification is free whenever the applicable requirements are actually met.**
+This is an evidence-based trust designation, not a purchased badge. No verification charge is authorized; any future pricing decision requires separate approval.
+
+- **Artist, active pilot route:** documented release through an approved music distributor (currently DistroKid, CD Baby, TuneCore, Ditto Music, Amuse, ONErpm, UnitedMasters, LANDR and Symphonic Distribution). The reviewer must independently establish that the Connect claimant controls or is authorized for the corresponding distributor/release account. UPC/ISRC, retailer links, YouTube, and Spotify alone do **not** prove control. Authorized review and an auditable decision are required. This does **not** independently establish copyright ownership.
+- **Venue, post-pilot route — NOT ACTIVE:** earn verification by completing a genuine venue/artist booking contract through the existing site's/app's supported workflow. A contract submission or signature alone is insufficient: require fulfillment and evidence from both parties or independently verifiable completion; flag disputes for human review.
+- **Artist, additional post-pilot routes — NOT ACTIVE:** earn verification through a completed IneedaGig booking with corroborated fulfillment, **or** credible corroborated proof of an actual live performance. Evaluate evidence independently, reject invented or circular self-attestations, and require reviewer approval.
+- **RIS KEY provenance requirement:** record the member/profile identity, verification basis, applicable distributor release or booking/event identifiers, evidence references, reviewer, date, outcome, and revocation/appeal history; preserve evidence integrity and private data boundaries. A badge means only the specific approved condition was verified.
+- **Rollout gate:** pilot must pass real cross-account and fraud-attempt tests before enabling booking- or performance-based verification. Do not switch the future routes on by calendar alone; require the Captain's explicit authorization. Booking-contract completion and associated verification are **planned**, not asserted live capabilities today.
+
+This is the policy for the **existing** Connect/IneedaGig architecture, not a separate website, app, or review board.
