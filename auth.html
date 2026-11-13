@@ -63,7 +63,7 @@
 </form>
 <div id="venueIntakeStatus" class="status" role="status" aria-live="polite">Only your venue account can view these answers.</div>
 </section>
-</section><section class="panel" id="profile"><h2>Your talent / creator profile</h2><p class="instructor-shortcut"><button class="secondary" id="openTeachingProfile" type="button" hidden>Offer lessons as an instructor</button></p><nav class="profile-nav" aria-label="Your profile navigation"><a id="publicArtistLink" href="https://intentionalnoise.band/artists.html" target="_blank" rel="noopener noreferrer" aria-disabled="true">1. Public view of my band page</a><a href="band-page.html">2. Edit my public band page</a><a href="#profileForm">3. Edit my Connect page</a><small id="publicArtistStatus">Public view is available after you publish your artist page.</small></nav><div id="networkProfiles" class="profile-nav" hidden aria-label="My published profile links"></div><p class="hint">Your profile draft is created automatically after signup verification. Updates feed the same artist record across all four sites. You control whether to appear in member search and whether to publish a public artist page. Never put private contact details into a public biography.</p><form id="profileForm"><label for="display_name">Display name</label><input id="display_name" required minlength="2" maxlength="80"><label for="city">City (optional)</label><input id="city" maxlength="100"><label for="country">Country</label><select id="country" required><option value="">Select a country</option></select><div id="countryOtherWrap" hidden><label for="country_other">Other country (required)</label><input id="country_other" maxlength="100" autocomplete="off" disabled></div><label for="region">State / region</label><select id="region" required><option value="">Select a state / region</option></select><div id="regionOtherWrap" hidden><label for="region_other">Other state / region (required)</label><input id="region_other" maxlength="100" autocomplete="off" disabled></div><label for="profile_type">Profile type</label><select id="profile_type"><option value="musician">Individual / creator</option><option value="band">Band / group</option></select><label for="roles">Roles (choose all that apply)</label><select id="roles" multiple size="6"><option value="musician">Musician</option><option value="sound_engineer">Sound engineer</option><option value="band">Band</option><option value="vocalist">Vocalist</option><option value="violinist">Violinist</option><option value="guitar">Guitarist</option><option value="bass">Bassist</option><option value="drums">Drummer</option><option value="keys">Keyboard player</option><option value="producer">Producer</option><option value="songwriter">Songwriter</option><option value="artist">Artist</option><option value="videographer">Videographer</option><option value="digital_creator">Digital Creator</option></select><p class="hint">Choose your roles, then add instruments and specialties below.</p><label for="instruments">Instruments (comma-separated)</label><input id="instruments" maxlength="300"><label for="genres">Genres (comma-separated)</label><input id="genres" maxlength="300"><label for="bio">About your music</label><textarea id="bio" maxlength="2000" rows="4"></textarea><label><input id="available_for_gigs" type="checkbox" style="width:auto"> Available for gigs</label><label><input id="is_public" type="checkbox" style="width:auto"> List my profile for signed-in members</label><button type="submit" id="saveProfile">Save profile</button></form><div class="status" id="profileStatus" role="status" aria-live="polite"></div>
+</section><section class="panel" id="profile"><h2>Your talent / creator profile</h2><p class="instructor-shortcut"><button class="secondary" id="openTeachingProfile" type="button" hidden>Offer lessons as an instructor</button></p><nav class="profile-nav" aria-label="Your profile navigation"><a id="publicArtistLink" href="https://intentionalnoise.band/artists.html" target="_blank" rel="noopener noreferrer" aria-disabled="true">1. Public view of my band page</a><a href="band-page.html">2. Edit my public band page</a><a href="#profileForm">3. Edit my Connect page</a><small id="publicArtistStatus">Public view is available after you publish your artist page.</small></nav><div id="networkProfiles" class="profile-nav" hidden aria-label="My published profile links"></div><p class="hint">Your profile draft is created automatically after signup verification. Updates feed the same artist record across all four sites. You control whether to appear in member search and whether to publish a public artist page. Never put private contact details into a public biography.</p><form id="profileForm"><label for="display_name">Display name</label><input id="display_name" required minlength="2" maxlength="80"><label for="city">City (optional)</label><input id="city" maxlength="100"><label for="country">Country</label><select id="country" required><option value="">Select a country</option></select><div id="countryOtherWrap" hidden><label for="country_other">Other country (required)</label><input id="country_other" maxlength="100" autocomplete="off" disabled></div><label for="region">State / region</label><select id="region" required><option value="">Select a state / region</option></select><div id="regionOtherWrap" hidden><label for="region_other">Other state / region (required)</label><input id="region_other" maxlength="100" autocomplete="off" disabled></div><label for="profile_type">Profile type</label><select id="profile_type"><option value="musician">Individual / creator</option><option value="band">Band / group</option></select><label for="roles">Roles (choose all that apply)</label><select id="roles" multiple size="6"><option value="musician">Musician</option><option value="sound_engineer">Sound engineer</option><option value="music_instructor">Instructor — lessons</option><option value="band">Band</option><option value="vocalist">Vocalist</option><option value="violinist">Violinist</option><option value="guitar">Guitarist</option><option value="bass">Bassist</option><option value="drums">Drummer</option><option value="keys">Keyboard player</option><option value="producer">Producer</option><option value="songwriter">Songwriter</option><option value="artist">Artist</option><option value="videographer">Videographer</option><option value="digital_creator">Digital Creator</option></select><p class="hint">Choose your roles, then add instruments and specialties below.</p><label for="instruments">Instruments (comma-separated)</label><input id="instruments" maxlength="300"><label for="genres">Genres (comma-separated)</label><input id="genres" maxlength="300"><label for="bio">About your music</label><textarea id="bio" maxlength="2000" rows="4"></textarea><label><input id="available_for_gigs" type="checkbox" style="width:auto"> Available for gigs</label><label><input id="is_public" type="checkbox" style="width:auto"> List my profile for signed-in members</label><button type="submit" id="saveProfile">Save profile</button></form><div class="status" id="profileStatus" role="status" aria-live="polite"></div>
 <section aria-labelledby="bookingIntakeTitle" id="artistBookingIntake" style="margin-top:30px;padding-top:20px;border-top:1px solid #416373">
 <h2 id="bookingIntakeTitle">Five questions venues ask before booking</h2>
 <p class="hint">Build your booking-ready artist intake here. All answers are optional, editable, and <strong>private to your account</strong>. They are not automatically shared with venues or published across the four sites.</p>
@@ -150,7 +150,6 @@ async function loadArtistProfile(){
  $('is_public').checked=!!data?.is_public;
  $('profile_type').value=data?.profile_type==='band'?'band':'musician';
  for(const option of $('roles').options)option.selected=(data?.roles||[]).includes(option.value);
- $('openTeachingProfile').hidden=accountKind()!=='instructor'&&!(data?.roles||[]).includes('music_instructor');
  await refreshArtistLinks();await bookingIntake.load();
 }
 async function refresh(){
@@ -162,20 +161,33 @@ async function refresh(){
  $('profile').classList.remove('instructor-shortcut-only');
  $('instructorProfile').hidden=true;
  $('instructorPageLink').hidden=true;
+ $('openTeachingProfile').hidden=true;
  $('venueTools').hidden=!user||accountKind()!=='venue';
  if(!user){bookingIntake.reset();venueIntake.reset();return;}
  if(next){location.replace(next);return;}
  $('memberEmail').textContent=user.email||'';
- $('openTeachingProfile').hidden=accountKind()!=='instructor';
- $('artistPublishLink').hidden=accountKind()==='venue'||accountKind()==='instructor';
- if(accountKind()==='venue'){await venueIntake.load();return;}
+ if(accountKind()==='venue'){$('artistPublishLink').hidden=true;await venueIntake.load();return;}
  venueIntake.reset();
- if(accountKind()==='instructor'){
-   try{await ensureInstructorProfile();await loadInstructorProfile();$('instructorProfile').hidden=false;$('instructorPageLink').hidden=false;$('profile').classList.add('instructor-shortcut-only');$('profile').style.display='block';}
+ const [artistCheck,teacherCheck]=await Promise.all([
+   supabase.from('musician_profiles').select('user_id,roles').eq('user_id',user.id).maybeSingle(),
+   supabase.from('instructor_profiles').select('user_id').eq('user_id',user.id).maybeSingle()
+ ]);
+ if(artistCheck.error||teacherCheck.error){authNotice('Your profiles could not be checked: '+(artistCheck.error?.message||teacherCheck.error?.message),true);return;}
+ const instructor=accountKind()==='instructor'||(artistCheck.data?.roles||[]).includes('music_instructor')||!!teacherCheck.data;
+ const hasArtist=!!artistCheck.data;
+ $('openTeachingProfile').hidden=!instructor;
+ $('instructorPageLink').hidden=!instructor;
+ $('artistPublishLink').hidden=!hasArtist&&accountKind()==='instructor';
+ if(instructor){
+   try{await ensureInstructorProfile();await loadInstructorProfile();$('instructorProfile').hidden=false;}
    catch(e){authNotice('Signed in. Teaching profile needs attention: '+(e.message||e),true);}
+ }
+ if(accountKind()==='instructor'&&!hasArtist){
+   $('profile').classList.add('instructor-shortcut-only');
+   $('profile').style.display='block';
    return;
  }
- try{await ensurePrivateProfile();}catch(e){authNotice('Signed in. Your artist profile needs attention: '+(e.message||e),true);return;}
+ try{if(!hasArtist)await ensurePrivateProfile();}catch(e){authNotice('Signed in. Your artist profile needs attention: '+(e.message||e),true);return;}
  $('profile').style.display='block';
  await loadArtistProfile();
 }
@@ -249,7 +261,15 @@ async function authAction(type){
 }
 $('authForm').addEventListener('submit',e=>{e.preventDefault();authAction('register');});$('login').addEventListener('click',()=>authAction('login'));
 $('logout').addEventListener('click',async()=>{const {error}=await supabase.auth.signOut();if(error)status('profileStatus',error.message);else{status('authStatus','Signed out.');await refresh();}});
-$('profileForm').addEventListener('submit',async e=>{e.preventDefault();if(!user)return;const name=$('display_name').value.trim();if(name.length<2){status('profileStatus','Display name must be at least two characters.');return;}const split=k=>$(k).value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,25);let location;try{location=locationValues()}catch(error){status('profileStatus',error.message);return}const profile={user_id:user.id,display_name:name,city:$('city').value.trim(),region:location.region,country:location.country,bio:$('bio').value.trim(),profile_type:$('profile_type').value,roles:Array.from($('roles').selectedOptions,o=>o.value),instruments:split('instruments'),genres:split('genres'),available_for_gigs:$('available_for_gigs').checked,is_public:$('is_public').checked,updated_at:new Date().toISOString()};$('saveProfile').disabled=true;status('profileStatus','Saving…');const {error}=await supabase.from('musician_profiles').upsert(profile,{onConflict:'user_id'});status('profileStatus',error?'Save failed: '+error.message:'Profile saved'+(profile.is_public?' and listed for signed-in members.': ' privately.'));$('saveProfile').disabled=false;});
+$('profileForm').addEventListener('submit',async e=>{e.preventDefault();if(!user)return;const name=$('display_name').value.trim();if(name.length<2){status('profileStatus','Display name must be at least two characters.');return;}const split=k=>$(k).value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,25);let location;try{location=locationValues()}catch(error){status('profileStatus',error.message);return}const profile={user_id:user.id,display_name:name,city:$('city').value.trim(),region:location.region,country:location.country,bio:$('bio').value.trim(),profile_type:$('profile_type').value,roles:Array.from($('roles').selectedOptions,o=>o.value),instruments:split('instruments'),genres:split('genres'),available_for_gigs:$('available_for_gigs').checked,is_public:$('is_public').checked,updated_at:new Date().toISOString()};$('saveProfile').disabled=true;status('profileStatus','Saving…');const {error}=await supabase.from('musician_profiles').upsert(profile,{onConflict:'user_id'});if(error){status('profileStatus','Save failed: '+error.message);}
+else {
+ status('profileStatus','Profile saved'+(profile.is_public?' and listed for signed-in members.':' privately.'));
+ if(profile.roles.includes('music_instructor')){
+   try{await ensureInstructorProfile();$('openTeachingProfile').hidden=false;$('instructorPageLink').hidden=false;await loadInstructorProfile();$('instructorProfile').hidden=false;}
+   catch(err){status('profileStatus','Artist profile saved. Teaching setup needs attention: '+(err.message||err));}
+ }
+}
+$('saveProfile').disabled=false;});
 $('instructorForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!user)return;
  const name=$('teacher_name').value.trim();
@@ -269,7 +289,7 @@ $('openTeachingProfile').addEventListener('click',async()=>{
 });
 $('openArtistProfile').addEventListener('click',async()=>{
  if(!user||accountKind()==='venue')return;
- try{await ensurePrivateProfile(true);$('profile').classList.remove('instructor-shortcut-only');$('profile').style.display='block';await loadArtistProfile();$('profile').scrollIntoView({behavior:'smooth',block:'start'});}
+ try{await ensurePrivateProfile(true);$('profile').classList.remove('instructor-shortcut-only');$('profile').style.display='block';$('artistPublishLink').hidden=false;await loadArtistProfile();$('profile').scrollIntoView({behavior:'smooth',block:'start'});}
  catch(e){status('instructorStatus','Could not open separate artist profile: '+(e.message||e));}
 });
 $('accountKind').value=initialKind;document.querySelectorAll('[data-registration-kind]').forEach(link=>link.addEventListener('click',()=>{$('accountKind').value=link.dataset.registrationKind;}));setupLocations();await setupBotCheck();supabase.auth.onAuthStateChange(()=>{setTimeout(refresh,0);});await refresh();
