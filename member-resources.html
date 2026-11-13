@@ -24,6 +24,18 @@ main{padding:30px 0 70px}h1{font-size:clamp(2rem,5vw,3.1rem);margin:10px 0}
 .resource h3{margin:0 0 8px;font-size:1.13rem}.resource p{margin:5px 0 14px;color:#c5d6dd;line-height:1.52}
 .resource a{font-weight:700;overflow-wrap:anywhere}
 .steps article{border-top:1px solid #365363;padding:18px 0}
+.prep{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.prep-card{border:1px solid #496675;border-radius:11px;background:#112833;padding:15px}
+.prep-head{display:flex;align-items:flex-start;gap:10px;font-weight:750;cursor:pointer;line-height:1.35}
+.prep-head input{accent-color:#7de1df;width:19px;height:19px;flex:none;margin:2px 0 0}
+.prep-card p{color:#c5d6dd;line-height:1.52;font-size:.94rem;margin:10px 0}
+.prep-card a{font-size:.9rem}
+.featured{border:1px solid #71b5b3;border-radius:14px;background:#15333b;padding:20px}
+.featured h3{margin:0 0 9px}.featured li{margin:10px 0;line-height:1.55;color:#d2e4e6}
+.featured .link{display:inline-block;padding:12px 16px;background:#7de1df;color:#0c2027;border-radius:9px;font-weight:800;text-decoration:none;margin:10px 0}
+.featured .disclosure{font-size:.88rem;color:#c8dfe4;line-height:1.5}
+@media(max-width:700px){.prep{grid-template-columns:1fr}}
+
 .steps article:first-child{border-top:0}
 .steps h3{margin:0 0 12px}
 .steps ol{margin:0;padding-left:24px}
@@ -51,9 +63,15 @@ footer{padding:20px 0 35px;border-top:1px solid #2b4655;color:#aec3ca}
 <p class="muted">All services listed below are independent providers. Their plans, policies, fees, limits and availability may change. Connect does not automatically transfer files, register a domain, buy manufacturing services, or publish a release.</p>
 <div id="myPublicPage" hidden></div></section>
 <nav class="jump" aria-label="Resource sections">
-<a href="#guide">Setup guide</a><a href="#storage">Storage platforms</a>
-<a href="#distribution">Music distributors</a><a href="#physical">CD &amp; record production</a>
+<a href="#prepare">Before you begin</a><a href="#start-pcloud">Free music workspace</a><a href="#guide">Setup guide</a><a href="#storage">Storage platforms</a>
+<a href="#distribution">Music distributors</a><a href="#physical">CD &amp; record production</a><a href="#help-links">Setup help links</a>
 </nav>
+<section id="prepare" class="panel"><h2>Before you begin — what to have ready</h2>
+<p class="muted">Gather these as you go. You can create a free account first; most items can be added later. Check off each item you have ready (checks are temporary and are not uploaded).</p>
+<div class="prep" id="preparationItems"></div></section>
+<section id="start-pcloud" class="panel notice"><h2>Recommended: free-start music-only pCloud workspace</h2>
+<p class="muted">Just for your music work and sharing here. Keep organized production files, approved artwork, release records, and selected share links together. This is an optional external storage account, independent of your Connect login.</p>
+<div id="featuredPcloud"></div></section>
 <section id="guide" class="panel steps"><h2>Preferred workflow — step by step</h2><div id="guides"></div></section>
 <section id="storage" class="panel"><h2>Storage platforms</h2>
 <p class="muted">Choose one or more external providers. Keep original masters backed up; send only intentionally shared files and short previews to visitors.</p><div class="grid" id="storageItems"></div></section>
@@ -61,6 +79,9 @@ footer{padding:20px 0 35px;border-top:1px solid #2b4655;color:#aec3ca}
 <p class="muted">Distribution providers are separate from streaming platforms. Store your official release evidence for review if you request Verified Artist status.</p><div class="grid" id="distributionItems"></div></section>
 <section id="physical" class="panel"><h2>CD, vinyl and record production</h2>
 <p class="muted">Order physical manufacturing directly through a vendor. Review the artwork requirements, cost, quantity and sample proofs before paying.</p><div class="grid" id="physicalItems"></div></section>
+<section id="help-links" class="panel"><h2>Music, artwork and storage setup links</h2>
+<p class="muted">Official instructions and artist tools. Distribution services and music platforms have separate accounts and rules.</p>
+<div class="grid" id="setupLinks"></div></section>
 <section class="panel"><h2>Shortcuts</h2>
 <p><a href="/auth.html#profile">Edit my Connect profile</a> · <a href="/band-page.html">Publish my artist showcase</a> · <a href="/media-storage.html">Save my private storage choice</a> · <a href="/fill-my-stage.html">Venue booking requests</a></p>
 <p class="muted">Keep account passwords, confidential masters and private sharing links out of public profile fields.</p></section>
@@ -76,6 +97,9 @@ $('signIn').href='/auth.html?next='+encodeURIComponent('/member-resources.html')
 function clearResources(){
  $('memberContent').hidden=true;
  $('guides').replaceChildren();
+ $('preparationItems').replaceChildren();
+ $('featuredPcloud').replaceChildren();
+ $('setupLinks').replaceChildren();
  for(const target of Object.values(sectionTargets))$(target).replaceChildren();
  $('myPublicPage').replaceChildren();$('myPublicPage').hidden=true;
 }
@@ -89,8 +113,49 @@ function renderResource(item){
  const paragraph=document.createElement('p');paragraph.textContent=item.detail;
  card.append(title,paragraph);
  const url=safeUrl(item.url);
- if(url){const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open official website';card.append(link)}
+ if(url){
+  const link=document.createElement('a');link.href=url;link.target='_blank';
+  link.rel=item.resource_key==='storage-pcloud'?'noopener noreferrer sponsored':'noopener noreferrer';
+  link.textContent=item.resource_key==='storage-pcloud'?'Start free pCloud (referral)'
+    :item.resource_key?.startsWith('reference-')?'Open instructions / website':'Open provider website';
+  card.append(link)
+ }
  return card;
+}
+
+function renderPreparation(item){
+ const card=document.createElement('article');card.className='prep-card';
+ const name=document.createElement('label');name.className='prep-head';
+ const check=document.createElement('input');check.type='checkbox';check.setAttribute('aria-label','Ready: '+item.title);
+ const title=document.createElement('span');title.textContent=item.title;
+ name.append(check,title);
+ const copy=document.createElement('p');copy.textContent=item.detail;
+ card.append(name,copy);
+ const url=safeUrl(item.url);
+ if(url){const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Related help / setup';card.append(a)}
+ return card;
+}
+function renderFeaturedPcloud(item){
+ const card=document.createElement('article');card.className='featured';
+ const heading=document.createElement('h3');heading.textContent=item.title;
+ const steps=document.createElement('ol');
+ for(const line of item.detail.split('\n').map(x=>x.trim()).filter(Boolean)){
+  const row=document.createElement('li');row.textContent=line.replace(/^\d+\.\s*/,'');steps.append(row);
+ }
+ const link=document.createElement('a');
+ link.className='link';
+ link.href=safeUrl(item.url)||'https://www.pcloud.com/';
+ link.textContent='Create my free pCloud music workspace';
+ link.target='_blank';link.rel='noopener noreferrer sponsored';
+ const note=document.createElement('p');note.className='disclosure';
+ note.textContent='Referral disclosure: this signup invitation may give Intentional Noise free-storage referral credit. You can sign up directly, use an existing pCloud account, or choose any other storage service. Basic free storage is limited; paid upgrades are optional and billed by pCloud, not Connect.';
+ const help=document.createElement('p');help.className='disclosure';
+ help.append('Official setup help: ');
+ const info=document.createElement('a');info.href='https://help.pcloud.com/article/shared-links';info.target='_blank';info.rel='noopener noreferrer';info.textContent='Share selected files safely';
+ help.append(info,document.createTextNode(' · '));
+ const pricing=document.createElement('a');pricing.href='https://help.pcloud.com/article/plan-details';pricing.target='_blank';pricing.rel='noopener noreferrer';pricing.textContent='Review Basic free-plan limits';
+ help.append(pricing);
+ card.append(heading,steps,link,note,help);return card;
 }
 function renderGuide(item){
  const section=document.createElement('article');
@@ -113,13 +178,16 @@ async function load(){
  $('status').textContent='Loading your member resources…';
  try{
   const {data:items,error:queryError}=await db.from('connect_member_resources')
-   .select('section,title,detail,url,display_order').eq('is_active',true)
+   .select('resource_key,section,title,detail,url,display_order').eq('is_active',true)
    .order('display_order',{ascending:true}).limit(150);
   if(queryError)throw queryError;
   if(version!==refreshVersion)return;
   if(!items?.length)throw Error('The resource directory is currently empty.');
   for(const item of items){
-   if(item.section==='guide')$('guides').append(renderGuide(item));
+   if(item.resource_key?.startsWith('prepare-'))$('preparationItems').append(renderPreparation(item));
+   else if(item.resource_key==='featured-pcloud')$('featuredPcloud').append(renderFeaturedPcloud(item));
+   else if(item.resource_key?.startsWith('reference-'))$('setupLinks').append(renderResource(item));
+   else if(item.section==='guide')$('guides').append(renderGuide(item));
    else if(sectionTargets[item.section])$(sectionTargets[item.section]).append(renderResource(item));
   }
   $('memberContent').hidden=false;
