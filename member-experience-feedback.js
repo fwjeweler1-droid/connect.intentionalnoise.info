@@ -60,8 +60,9 @@ export function feedbackWidget(db,userId,{context,bookingId=null,bookingSource='
 
 export async function showNewMemberFollowUp(db,user,host){
  if(!host)return;
- host.querySelector('[data-feedback-context="new_member"]')?.remove();
- if(!user||!dueAfter(user.created_at,3)||Date.parse(user.created_at)<LAUNCH_TIME)return;
+ if(!user){host.querySelector('[data-feedback-context="new_member"]')?.remove();return;}
+ if(host.querySelector('[data-feedback-context="new_member"]'))return;
+ if(!dueAfter(user.created_at,3)||Date.parse(user.created_at)<LAUNCH_TIME)return;
  const {data,error}=await db.from('member_experience_feedback').select('id').eq('user_id',user.id).eq('context','new_member').limit(1);
  if(error||data?.length)return;
  host.append(feedbackWidget(db,user.id,{context:'new_member'}));
@@ -83,8 +84,8 @@ export function resolvedBookingDue(row,source='venue'){
 
 export async function showResolvedFollowUp(db,user,host){
  if(!host)return;
- host.querySelector('[data-feedback-context="booking_resolved"]')?.remove();
- if(!user)return;
+ if(!user){host.querySelector('[data-feedback-context="booking_resolved"]')?.remove();return;}
+ if(host.querySelector('[data-feedback-context="booking_resolved"]'))return;
  const [venue,gigs,answered]=await Promise.all([
   db.from('venue_booking_requests').select('id,status,event_date,updated_at').eq('owner_id',user.id).in('status',['filled','cancelled']).order('updated_at',{ascending:false}).limit(40),
   db.from('gig_requests').select('id,status,event_date,created_at').eq('owner_id',user.id).eq('status','filled').order('created_at',{ascending:false}).limit(40),
