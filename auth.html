@@ -128,7 +128,9 @@ async function ensureInstructorProfile(){
  const {data,error}=await supabase.from('instructor_profiles').select('user_id').eq('user_id',user.id).maybeSingle();
  if(error)throw error;
  if(data)return;
- let name=String(user.user_metadata?.display_name||'').trim().slice(0,80);
+ const {data:artist,error:artistError}=await supabase.from('musician_profiles').select('display_name').eq('user_id',user.id).maybeSingle();
+ if(artistError)throw artistError;
+ let name=String(artist?.display_name||user.user_metadata?.display_name||'').trim().slice(0,80);
  if(name.length<2)name='New instructor '+user.id.slice(0,8);
  const {error:created}=await supabase.from('instructor_profiles').insert({user_id:user.id,display_name:name,is_public:false});
  if(created&&created.code!=='23505')throw created;
@@ -136,7 +138,16 @@ async function ensureInstructorProfile(){
 async function loadInstructorProfile(){
  const {data,error}=await supabase.from('instructor_profiles').select('*').eq('user_id',user.id).maybeSingle();
  if(error){status('instructorStatus','Could not load teaching details: '+error.message);return;}
- const vals={teacher_name:data?.display_name||'',teacher_subjects:(data?.subjects||[]).join(', '),teacher_levels:(data?.student_levels||[]).join(', '),teacher_mode:data?.delivery_mode||'both',teacher_city:data?.city||'',teacher_region:data?.region||'',teacher_country:data?.country||'',teacher_availability:data?.lesson_availability||'',teacher_rates:data?.rate_details||'',teacher_bio:data?.bio||''};
+ let suggestedName=String(data?.display_name||'');
+ const generated=/^New instructor [0-9a-f]{8}$/i.test(suggestedName);
+ if(generated){
+   const {data:artist,error:artistError}=await supabase.from('musician_profiles').select('display_name').eq('user_id',user.id).maybeSingle();
+   if(!artistError&&String(artist?.display_name||'').trim().length>=2){
+     suggestedName=artist.display_name.trim().slice(0,80);
+     status('instructorStatus','Suggested your existing artist name. Edit it if your teaching name is different, then save your teaching profile.');
+   }
+ }
+ const vals={teacher_name:suggestedName,teacher_subjects:(data?.subjects||[]).join(', '),teacher_levels:(data?.student_levels||[]).join(', '),teacher_mode:data?.delivery_mode||'both',teacher_city:data?.city||'',teacher_region:data?.region||'',teacher_country:data?.country||'',teacher_availability:data?.lesson_availability||'',teacher_rates:data?.rate_details||'',teacher_bio:data?.bio||''};
  for(const [id,value] of Object.entries(vals))$(id).value=value;
  $('teacher_listed').checked=!!data?.is_public;
 }
