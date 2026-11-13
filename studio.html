@@ -104,7 +104,7 @@ function showStudioMasterPicker(area,track,versions,attached){
 }
 
 
-const studioTitleKey=t=>(t||'').normalize('NFKD').toLowerCase().replace(/[\\u0300-\\u036f]/g,'').replace(/[’']/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const studioTitleKey=t=>(t||'').normalize('NFKD').toLowerCase().replace(/[\u0300-\u036f]/g,'').replace(/[’']/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 async function loadRosterReference(currentTracks){
  const section=$('studioRosterPanel'),container=$('albumRoster');
  if(!section||!container)return;
