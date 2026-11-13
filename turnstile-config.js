@@ -1,5 +1,5 @@
-// Public Cloudflare Turnstile site key ONLY. This is intentionally empty until the
-// owner configures Turnstile in Cloudflare and the corresponding secret in
-// Supabase Auth > Bot and Abuse Protection. NEVER store the secret in GitHub.
-// Public site key enables the visible challenge; Supabase server-side enforcement\n// requires the matching private Cloudflare secret in Auth > Bot and Abuse Protection.
+// Public Cloudflare Turnstile site key ONLY. Safe to include in client code.
+// The matching Cloudflare Secret Key belongs ONLY in Supabase Auth's
+// Bot and Abuse Protection settings. Never store that secret in GitHub.
+// Turnstile is not server-enforced until that Supabase setting is enabled.
 export const TURNSTILE_SITE_KEY = '0x4AAAAAAF-8yh_o4RTF97C1';
