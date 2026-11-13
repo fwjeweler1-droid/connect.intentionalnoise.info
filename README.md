@@ -63,3 +63,15 @@ This is an evidence-based trust designation, not a purchased badge. No verificat
 - **Rollout gate:** pilot must pass real cross-account and fraud-attempt tests before enabling booking- or performance-based verification. Do not switch the future routes on by calendar alone; require the Captain's explicit authorization. Booking-contract completion and associated verification are **planned**, not asserted live capabilities today.
 
 This is the policy for the **existing** Connect/IneedaGig architecture, not a separate website, app, or review board.
+
+
+## Member and resolved-booking feedback (November 13, 2026)
+
+**Existing-site follow-up, voluntary and private.** Connected to `auth.html` and `fill-my-stage.js` via shared `member-experience-feedback.js`. There is no new Site/app or separate login.
+
+- **New Connect accounts created on/after November 13:** on a signed-in visit at least three days after account creation, offer one optional feedback prompt for ease of use, confusing steps, useful features and what worked.
+- **Venue booking requests:** when the owner marks a request **Filled**, ask for booking-process feedback on a later visit at least two days after the event date. If **Cancelled**, ask at least two days after the status change. One follow-up per request; this does not assert a show was performed or that a booking was contractually fulfilled.
+- **Member gig requests:** when an owner marks a request **Filled**, show the same optional feedback on a later signed-in visit at least two days after the event date. There is no inferred artist-to-venue pairing.
+- **Privacy and frequency:** answers live in private `public.member_experience_feedback`, with owner-only SELECT/INSERT permissions and database uniqueness for one account response and one response per resolved request. No public comments, no automatic verification badges, and no automatic emails. Members can submit suggestions or skip the prompt and are not repeatedly solicited for the same milestone.
+- **Moderation:** feedback remains available to authorized database administrators; no new admin dashboard is introduced. A future optional email follow-up requires verified delivery setup and member communication preferences before activation.
+- **Testing gate:** code and database structural checks are separate from signed-in browser acceptance; verify after deployment with a newly registered test member and controlled filled/cancelled request, ensuring privacy and no duplicate prompts.
