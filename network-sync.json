@@ -82,5 +82,22 @@
     "network_checkpoint": "NETWORK_SYNC_CHECKPOINT_2026-11-08.md in Connect repo and /Projects/DotInfo in Library",
     "music": "Music_Project_Command_Center.xlsx remains authoritative for music and releases",
     "originals": "Historical locked design and source assets preserved"
+  },
+  "latest_studio_landmark": {
+    "id": "IN-CONNECT-STUDIO-2026-11-13-01",
+    "date": "2026-11-13",
+    "authority": "NETWORK_SYNC_CHECKPOINT_2026-11-08.md#november-13-2026--private-studio-acceptance-landmark",
+    "status": "owner-reported Nerdly save pass; Tom-reported pCloud connection and private Studio access pass; other gates pending",
+    "code_commit_refs": [
+      "5c99edc04a01f37a8912fbf0c606e94db18c6036",
+      "d47722ce210a75c80011ffb892839208893ce85c"
+    ],
+    "studio_save": "pass, owner-reported",
+    "tom_pcloud_connection": "pass, Tom-reported through owner",
+    "tom_studio_access": "pass, Tom-reported through owner",
+    "tom_playback_upload_edit_authorization": "unverified",
+    "cross_account_security_and_live_deployment": "unverified",
+    "work_state": "paused by owner, resume only on request",
+    "note": "Studio working records only; no MPCC or public member/site authority changed"
   }
 }
