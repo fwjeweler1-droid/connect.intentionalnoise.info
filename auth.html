@@ -113,6 +113,7 @@ import {safeSearchReturn} from './search-categories.js';
 import {setupLocations,loadLocations,locationValues} from './location-options.js';
 import {setupVenueBookingIntake} from './venue-booking-intake.js';
 import {setupArtistBookingIntake} from './artist-booking-intake.js';
+import {showNewMemberFollowUp,showResolvedFollowUp} from './member-experience-feedback.js';
 const query=new URLSearchParams(location.search);
 const next=safeSearchReturn(query.get('next')||'',location.origin);
 const initialKind=['musician','band','venue','instructor'].includes(query.get('role'))?query.get('role'):'musician';
@@ -210,9 +211,15 @@ async function refresh(){
  $('instructorPageLink').hidden=true;
  $('openTeachingProfile').hidden=true;
  $('venueTools').hidden=!user||accountKind()!=='venue';
- if(!user){bookingIntake.reset();venueIntake.reset();return;}
+ if(!user){
+  $('signedIn').querySelectorAll('[data-feedback-context]').forEach(n=>n.remove());
+  bookingIntake.reset();venueIntake.reset();return;
+ }
  if(next){location.replace(next);return;}
  $('memberEmail').textContent=user.email||'';
+ // Quiet, opt-out-friendly follow-ups on a later visit; never email automatically.
+ void showNewMemberFollowUp(supabase,user,$('signedIn')).catch(()=>{});
+ void showResolvedFollowUp(supabase,user,$('signedIn')).catch(()=>{});
  if(accountKind()==='venue'){$('artistPublishLink').hidden=true;await venueIntake.load();return;}
  venueIntake.reset();
  const [artistCheck,teacherCheck]=await Promise.all([
