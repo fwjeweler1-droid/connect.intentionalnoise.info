@@ -20,17 +20,18 @@ export function feedbackWidget(db,userId,{context,bookingId=null,bookingSource='
  : 'Your request has been marked resolved. Tell us what worked or did not work. This does not confirm a show took place.');
  description.style.margin='0 0 12px';
  const form=el('form');
- const ratingLabel=el('label','How easy was the experience?');ratingLabel.htmlFor='feedbackEase';
- const rating=el('select');rating.id='feedbackEase';rating.style.cssText='width:100%;padding:10px;margin:6px 0 12px';
+ const idPrefix='experience_'+context+'_'+(bookingId?bookingId.replace(/-/g,''):'account');
+ const ratingLabel=el('label','How easy was the experience?');ratingLabel.htmlFor=idPrefix+'_ease';
+ const rating=el('select');rating.id=idPrefix+'_ease';rating.style.cssText='width:100%;padding:10px;margin:6px 0 12px';
  for(const [value,text] of [['','Optional rating'],['5','Very easy (5)'],['4','Easy (4)'],['3','Okay (3)'],['2','Difficult (2)'],['1','Very difficult (1)']]){
   const option=el('option',text);option.value=value;rating.append(option);
  }
  form.append(ratingLabel,rating);
- const worked=addQuestion(form,'feedbackWorked','What worked well?',1000);
- const difficult=addQuestion(form,'feedbackDifficult','What was confusing or hard to use?',1000);
- const features=addQuestion(form,'feedbackFeatures','What feature or improvement would make this easier?',1500);
+ const worked=addQuestion(form,idPrefix+'_worked','What worked well?',1000);
+ const difficult=addQuestion(form,idPrefix+'_difficult','What was confusing or hard to use?',1000);
+ const features=addQuestion(form,idPrefix+'_features','What feature or improvement would make this easier?',1500);
  const submit=el('button','Send feedback');submit.type='submit';submit.style.marginRight='10px';
- const skip=el('button','Not now, thanks');skip.type='button';skip.className='secondary';
+ const skip=el('button','Skip this follow-up');skip.type='button';skip.className='secondary';
  const state=el('p','');state.setAttribute('role','status');state.style.minHeight='1.5em';
  form.append(submit,skip,state);
  const save=async skipped=>{
@@ -78,4 +79,22 @@ export function resolvedBookingDue(row,source='venue'){
  if(row.status==='cancelled')return dueAfter(row.updated_at,2);
  // A filled request is not proof of a completed show. Ask about the request only after the event.
  return dueAfter(row.event_date+'T12:00:00',2);
+}
+
+export async function showResolvedFollowUp(db,user,host){
+ if(!host)return;
+ host.querySelector('[data-feedback-context="booking_resolved"]')?.remove();
+ if(!user)return;
+ const [venue,gigs,answered]=await Promise.all([
+  db.from('venue_booking_requests').select('id,status,event_date,updated_at').eq('owner_id',user.id).in('status',['filled','cancelled']).order('updated_at',{ascending:false}).limit(40),
+  db.from('gig_requests').select('id,status,event_date,created_at').eq('owner_id',user.id).eq('status','filled').order('created_at',{ascending:false}).limit(40),
+  fetchAnsweredBookingFeedback(db,user.id)
+ ]);
+ const choices=[
+  ...(!venue.error?(venue.data||[]).map(b=>({...b,source:'venue'})):[]),
+  ...(!gigs.error?(gigs.data||[]).map(b=>({...b,source:'member_gig'})):[])
+ ].filter(b=>resolvedBookingDue(b,b.source)&&!answered.has(b.source+':'+b.id))
+ .sort((a,b)=>String(b.updated_at||b.event_date).localeCompare(String(a.updated_at||a.event_date)));
+ const next=choices[0];if(!next)return;
+ host.append(feedbackWidget(db,user.id,{context:'booking_resolved',bookingId:next.id,bookingSource:next.source,bookingOutcome:next.status}));
 }
