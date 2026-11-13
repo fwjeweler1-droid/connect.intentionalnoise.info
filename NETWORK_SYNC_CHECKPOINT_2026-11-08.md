@@ -80,4 +80,37 @@ There remain **two separate Connect request tables**: public future `venue_booki
 - Historical approved checkpoints and original media remain unchanged; consult `LANDMARK_DOTINFO_2026-11-08.md`, `CHECKPOINT_INEEDA_GIG_BOOKING_2026-11-08.md` and `CHECKPOINT_FROG_2026-11-08.md` for their original scope.
 - Intentional Noise music/releases: **MPCC/Library retains authority**; do not substitute website manifest for `Music_Project_Command_Center.xlsx`.
 
-**Resume marker:** “Sparky, resume four-site sync from IN-NET-2026-11-08-SYNC-01 — start with first-time signup and live booking acceptance.”  
+**Resume marker:** “Sparky, resume four-site sync from IN-NET-2026-11-08-SYNC-01 — start with first-time signup and live booking acceptance.”
+
+
+---
+
+## November 13, 2026 — Private Studio acceptance landmark
+
+**Landmark ID:** `IN-CONNECT-STUDIO-2026-11-13-01`  
+**Status:** **OWNER-REPORTED SAVE PASS; TOM-REPORTED PCLOUD CONNECTION + STUDIO ACCESS PASS; REMAINING FUNCTIONAL GATES PENDING**  
+**Scope:** The existing `https://connect.intentionalnoise.info/studio.html` private Studio only. This is an addendum to the existing network checkpoint, not a replacement checkpoint, MPCC, or parallel app.
+
+### Observed and owner-reported facts
+
+| Item | Outcome | Evidence and limitation |
+| --- | --- | --- |
+| Studio inline track editor and save feedback | Source fix committed and read back | `studio.html` now uses inline Edit song / Change status Save/Cancel; checks the returned saved row; displays errors beside the track. GitHub commit `5c99edc04a01f37a8912fbf0c606e94db18c6036`. |
+| Master choice for private recordings | Source fix committed and read back | Studio owner may select a private uploaded take or an external version link. Changes only the working Studio record; MPCC/public releases unaffected. GitHub commit `d47722ce210a75c80011ffb892839208893ce85c`. |
+| Nerdly Studio file save | **PASS — reported by project owner November 13** | Owner stated, “file save is working.” This confirms the tested save path; it is not a claim that every edit, upload or approval button has been tested. |
+| Tom pCloud connection | **PASS — reported by Tom through owner November 13** | Owner said Tom established a connection through pCloud. The precise provider operation was not independently observed; do not infer that all playback, transfers or providers pass. |
+| Tom Private Studio access | **PASS — reported by Tom through owner November 13** | Tom reached Studio. This is an access/connectivity test, not proof of his upload, edit, playback or permission boundaries. |
+| GitHub source readback and JavaScript syntax | **PASS for source checks** | Final `studio.html` read back after both commits; syntax parsing and expected-code checks passed. |
+| GitHub Pages deployment and live editor cross-account acceptance | **NOT independently established by these checks** | Owner-reported successful save is evidence the used Studio path worked, but build status, full public deployment coverage and two-role security tests were not independently confirmed. |
+
+### Open gates — preserve, do not overstate
+
+- Tom's private audio playback, upload, and any edit/submit permitted to his role, plus owner-only denial checks for other accounts.
+- End-to-end Studio master selection, track status/running order changes, and screen-level error handling on actual phone/desktop.
+- Signed-out and cross-account privacy checks; actual confirmation of published-page changes across the network remains governed by the earlier network gate.
+- Existing separate public Nerdly showcase media and the canonical music MPCC are untouched; private Studio tracks remain non-authoritative working records.
+- No external account credentials, private pCloud links, tokens or member media content were copied into GitHub notes.
+
+**HOLD / HANDOFF:** By direct owner instruction, **pause further Studio work and testing**; the owner has one recruit and is moving to another project. Do not restart Studio checks, invitations, marketing or extra changes merely because pending gates remain. Resume only when asked.
+
+**Resume phrase:** “Sparky, resume Studio from `IN-CONNECT-STUDIO-2026-11-13-01`.”  
