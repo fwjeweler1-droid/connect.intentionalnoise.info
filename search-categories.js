@@ -1,4 +1,4 @@
-export const categories = [["gig_requests","Current gig requests"],["available_for_gigs","Available for gigs"],["all","Everyone"],["musician","Musician"],["sound_engineer","Sound engineer"],["music_instructor","Instructor"],["band","Band"],["vocalist","Vocalist"],["violinist","Violinist"],["guitar","Guitarist"],["bass","Bassist"],["drums","Drummer"],["keys","Keyboard player"],["producer","Producer"],["songwriter","Songwriter"],["artist","Artist"],["videographer","Videographer"],["digital_creator","Digital Creator"]];
+export const categories = [["gig_requests","Current gig requests"],["available_for_gigs","Available for gigs"],["all","Everyone"],["musician","Musician"],["sound_engineer","Sound engineer"],["instructor","Instructor"],["band","Band"],["vocalist","Vocalist"],["violinist","Violinist"],["guitar","Guitarist"],["bass","Bassist"],["drums","Drummer"],["keys","Keyboard player"],["producer","Producer"],["songwriter","Songwriter"],["artist","Artist"],["videographer","Videographer"],["digital_creator","Digital Creator"]];
 const patterns = {
 musician: /musician|guitar|bass|drum|vocal|sing|keyboard|piano|instrument|songwrit|violin|cello|sax|trumpet|trombone|fiddle|banjo|mandolin|flute|clarinet|percussion/i,
 sound_engineer: /sound[ _-]?engineer|audio[ _-]?engineer|recording[ _-]?engineer|mixing|mastering|live sound|foh/i,
@@ -19,7 +19,7 @@ digital_creator: /digital[ _-]?creat|content[ _-]?creat|digital[ _-]?media|socia
 export function matchesCategory(profile, category) {
 if (category === 'all') return true;
 if (category === 'available_for_gigs') return profile.available_for_gigs === true;
-if (category === 'gig_requests' || category === 'music_instructor') return false;
+if (category === 'gig_requests' || category === 'instructor' || category === 'music_instructor') return false;
 const roles = profile.roles || [];
 if (roles.includes(category)) return true;
 if (category === 'band' && profile.profile_type === 'band') return true;
