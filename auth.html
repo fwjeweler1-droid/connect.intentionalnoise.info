@@ -120,7 +120,7 @@ async function ensurePrivateProfile(force=false){
  let artistName=String(user.user_metadata?.display_name||'').trim().slice(0,80);
  if(artistName.length<2)artistName='New member '+user.id.slice(0,8);
  const kind=accountKind();
- const {error:createError}=await supabase.from('musician_profiles').insert({user_id:user.id,display_name:artistName,profile_type:kind,roles:[kind==='band'?'band':user.user_metadata?.profile_role==='music_instructor'?'music_instructor':'musician'],is_public:false,available_for_gigs:false});
+ const {error:createError}=await supabase.from('musician_profiles').insert({user_id:user.id,display_name:artistName,profile_type:kind,roles:[kind==='band'?'band':'musician'],is_public:false,available_for_gigs:false});
  if(createError&&createError.code!=='23505')throw createError;
 }
 async function ensureInstructorProfile(){
