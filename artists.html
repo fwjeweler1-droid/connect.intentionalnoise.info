@@ -45,7 +45,7 @@ input{border:1px solid #7f9aa5;background:#0c202b;color:white;border-radius:9px;
 const API='https://xyudcdgjyormlokwhfoi.supabase.co/rest/v1/artist_pages';
 const KEY='sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0';
 const $=id=>document.getElementById(id);
-let artists=[];const publishedLogos=new Map();
+let artists=[];let verifiedArtistIds=new Set();const publishedLogos=new Map();
 function el(tag,txt,cls){const node=document.createElement(tag);if(txt!==undefined)node.textContent=txt;if(cls)node.className=cls;return node}
 function setStatus(text){$('status').textContent=text}
 function link(text,url,cls='button alt'){const a=el('a',text,cls);a.href=url;return a}
@@ -88,7 +88,7 @@ async function loadPortraits(profiles){
 function detailLine(root,label,value){if(!value)return;const d=el('p',null,'field');d.append(el('strong',label+': '),document.createTextNode(value));root.append(d)}
 function card(p){
  const box=el('article',null,'card');const img=photo(p);if(img)box.append(img);
- box.append(el('h2',p.display_name));
+ box.append(el('h2',p.display_name));if(verifiedArtistIds.has(p.user_id))box.append(el('span','Verified Artist','pill'));
  if(p.available_for_gigs)box.append(el('span','Available for gigs','pill'));
  if(p.bio)box.append(el('p',p.bio.slice(0,180)));
  if((p.genres||[]).length)box.append(el('p','Genres: '+p.genres.slice(0,6).join(', ')));
@@ -99,7 +99,7 @@ function showProfile(p){
  $('cards').hidden=true;$('filter').hidden=true;
  const root=$('profile');root.replaceChildren();
  const img=photo(p);if(img)root.append(img);
- root.append(el('h2',p.display_name));
+ root.append(el('h2',p.display_name));if(verifiedArtistIds.has(p.user_id))root.append(el('span','Verified Artist','pill'));
  if(p.available_for_gigs)root.append(el('span','Available for gigs','pill'));
  detailLine(root,'About',p.bio);
  detailLine(root,'Instruments',(p.instruments||[]).join(', '));
@@ -125,6 +125,7 @@ async function load(){
   if(!res.ok)throw Error('Published directory unavailable ('+res.status+').');
   const data=await res.json();if(!Array.isArray(data))throw Error('Unexpected directory response.');
   artists=data;
+  try{const proof=await fetch('https://xyudcdgjyormlokwhfoi.supabase.co/rest/v1/verified_artist_accounts?select=user_id&limit=1000',{headers:{apikey:KEY,Accept:'application/json'},cache:'no-store'});if(proof.ok){const rows=await proof.json();verifiedArtistIds=new Set((Array.isArray(rows)?rows:[]).map(x=>x.user_id));}}catch{verifiedArtistIds=new Set();}
   await loadPortraits(data);
   if(slug){if(artists.length)showProfile(artists[0]);else setStatus('This artist page is private or not published.');return}
   render();
