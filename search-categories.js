@@ -19,7 +19,7 @@ digital_creator: /digital[ _-]?creat|content[ _-]?creat|digital[ _-]?media|socia
 export function matchesCategory(profile, category) {
 if (category === 'all') return true;
 if (category === 'available_for_gigs') return profile.available_for_gigs === true;
-if (category === 'gig_requests') return false;
+if (category === 'gig_requests' || category === 'music_instructor') return false;
 const roles = profile.roles || [];
 if (roles.includes(category)) return true;
 if (category === 'band' && profile.profile_type === 'band') return true;
