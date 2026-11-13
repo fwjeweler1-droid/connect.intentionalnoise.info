@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101d28">
+<meta name="robots" content="noindex,nofollow">
+<title>Member Resources | Intentional Noise Connect</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;background:#101d28;color:#f4f7f8}a{color:#7de1df}
+.wrap{width:min(1060px,calc(100% - 36px));margin:auto}
+header{background:#142633;border-bottom:1px solid #2b4655}
+header .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;padding:19px 0}
+header strong{letter-spacing:.045em}header nav{display:flex;flex-wrap:wrap;gap:16px}
+main{padding:30px 0 70px}h1{font-size:clamp(2rem,5vw,3.1rem);margin:10px 0}
+.lead{color:#bed3dc;line-height:1.6;max-width:780px}
+.panel{background:#172b38;border:1px solid #2c4a59;border-radius:14px;padding:22px;margin:18px 0}
+.muted{color:#bdd1da}.notice{border-left:4px solid #7de1df}
+.jump{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0}
+.jump a,.btn{display:inline-block;border:1px solid #548a90;background:#143642;padding:10px 14px;border-radius:9px;text-decoration:none;color:#e7fffb;font-weight:750}
+.jump a:hover,.btn:hover{background:#21505b}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.resource{border:1px solid #456273;border-radius:12px;padding:17px;background:#112833}
+.resource h3{margin:0 0 8px;font-size:1.13rem}.resource p{margin:5px 0 14px;color:#c5d6dd;line-height:1.52}
+.resource a{font-weight:700;overflow-wrap:anywhere}
+.steps article{border-top:1px solid #365363;padding:18px 0}
+.steps article:first-child{border-top:0}
+.steps h3{margin:0 0 12px}
+.steps ol{margin:0;padding-left:24px}
+.steps li{margin:9px 0;color:#d2e0e4;line-height:1.6}
+.status{color:#cde7e7;min-height:24px}
+[hidden]{display:none!important}
+a:focus-visible{outline:3px solid #7de1df;outline-offset:3px}
+footer{padding:20px 0 35px;border-top:1px solid #2b4655;color:#aec3ca}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.panel{padding:17px}.jump a{flex:1 1 auto;text-align:center}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><strong>INTENTIONAL NOISE <span style="color:#7de1df">CONNECT</span></strong>
+<nav><a href="/auth.html">My account</a><a href="/media-storage.html">My storage</a><a href="/band-page.html">Artist editor</a><a href="https://ineedagig.net/">IneedaGig</a></nav></div></header>
+<main class="wrap">
+<h1>Member Resources</h1>
+<p class="lead">Practical links and instructions for setting up your account, publishing your artist profile, sharing work, distributing music, and manufacturing CDs or records. The directory is available only after Connect sign-in.</p>
+<section class="panel notice" id="signInGate" hidden>
+<h2>Members only</h2><p>Sign in with your existing Connect account to view the guides and provider directory. You do not need a separate account.</p>
+<a class="btn" id="signIn" href="/auth.html">Sign in / create an account</a>
+</section>
+<section class="panel" id="loading"><p id="status" class="status" role="status" aria-live="polite">Checking your membership…</p></section>
+<div id="memberContent" hidden>
+<section class="panel notice"><strong>Preferred order:</strong> Register → complete your private profile → arrange storage → review your public artist page → publish when ready → link your existing site/domain → choose distribution and physical manufacturing if needed.
+<p class="muted">All services listed below are independent providers. Their plans, policies, fees, limits and availability may change. Connect does not automatically transfer files, register a domain, buy manufacturing services, or publish a release.</p>
+<div id="myPublicPage" hidden></div></section>
+<nav class="jump" aria-label="Resource sections">
+<a href="#guide">Setup guide</a><a href="#storage">Storage platforms</a>
+<a href="#distribution">Music distributors</a><a href="#physical">CD &amp; record production</a>
+</nav>
+<section id="guide" class="panel steps"><h2>Preferred workflow — step by step</h2><div id="guides"></div></section>
+<section id="storage" class="panel"><h2>Storage platforms</h2>
+<p class="muted">Choose one or more external providers. Keep original masters backed up; send only intentionally shared files and short previews to visitors.</p><div class="grid" id="storageItems"></div></section>
+<section id="distribution" class="panel"><h2>Digital music distributors</h2>
+<p class="muted">Distribution providers are separate from streaming platforms. Store your official release evidence for review if you request Verified Artist status.</p><div class="grid" id="distributionItems"></div></section>
+<section id="physical" class="panel"><h2>CD, vinyl and record production</h2>
+<p class="muted">Order physical manufacturing directly through a vendor. Review the artwork requirements, cost, quantity and sample proofs before paying.</p><div class="grid" id="physicalItems"></div></section>
+<section class="panel"><h2>Shortcuts</h2>
+<p><a href="/auth.html#profile">Edit my Connect profile</a> · <a href="/band-page.html">Publish my artist showcase</a> · <a href="/media-storage.html">Save my private storage choice</a> · <a href="/fill-my-stage.html">Venue booking requests</a></p>
+<p class="muted">Keep account passwords, confidential masters and private sharing links out of public profile fields.</p></section>
+</div>
+</main>
+<footer><div class="wrap">© 2026 Intentional Noise · Member resources are private to signed-in members.</div></footer>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0');
+const $=id=>document.getElementById(id);
+const sectionTargets={storage:'storageItems',distribution:'distributionItems',physical:'physicalItems'};
+$('signIn').href='/auth.html?next='+encodeURIComponent('/member-resources.html');
+function clearResources(){
+ $('memberContent').hidden=true;
+ $('guides').replaceChildren();
+ for(const target of Object.values(sectionTargets))$(target).replaceChildren();
+ $('myPublicPage').replaceChildren();$('myPublicPage').hidden=true;
+}
+function safeUrl(value){
+ if(typeof value!=='string'||!value)return null;
+ try{const u=new URL(value);return u.protocol==='https:'?u.href:null}catch{return null}
+}
+function renderResource(item){
+ const card=document.createElement('article');card.className='resource';
+ const title=document.createElement('h3');title.textContent=item.title;
+ const paragraph=document.createElement('p');paragraph.textContent=item.detail;
+ card.append(title,paragraph);
+ const url=safeUrl(item.url);
+ if(url){const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open official website';card.append(link)}
+ return card;
+}
+function renderGuide(item){
+ const section=document.createElement('article');
+ const heading=document.createElement('h3');heading.textContent=item.title;
+ const list=document.createElement('ol');
+ for(const line of item.detail.split('\n').map(x=>x.trim()).filter(Boolean)){
+  const li=document.createElement('li');li.textContent=line;list.append(li);
+ }
+ section.append(heading,list);return section;
+}
+let refreshVersion=0;
+async function load(){
+ const version=++refreshVersion;clearResources();
+ $('loading').hidden=false;$('status').textContent='Checking your membership…';
+ const {data,error}=await db.auth.getUser();
+ if(version!==refreshVersion)return;
+ const user=error?null:data.user;
+ $('signInGate').hidden=!!user;
+ if(!user){$('loading').hidden=true;return}
+ $('status').textContent='Loading your member resources…';
+ try{
+  const {data:items,error:queryError}=await db.from('connect_member_resources')
+   .select('section,title,detail,url,display_order').eq('is_active',true)
+   .order('display_order',{ascending:true}).limit(150);
+  if(queryError)throw queryError;
+  if(version!==refreshVersion)return;
+  if(!items?.length)throw Error('The resource directory is currently empty.');
+  for(const item of items){
+   if(item.section==='guide')$('guides').append(renderGuide(item));
+   else if(sectionTargets[item.section])$(sectionTargets[item.section]).append(renderResource(item));
+  }
+  $('memberContent').hidden=false;
+  $('loading').hidden=true;
+  const {data:page}=await db.from('artist_pages').select('slug,published,approved_at').eq('user_id',user.id).maybeSingle();
+  if(version!==refreshVersion)return;
+  if(page?.slug&&page.published&&page.approved_at&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(page.slug)){
+   const link=document.createElement('a');
+   link.href='https://intentionalnoise.band/'+encodeURIComponent(page.slug);
+   link.textContent='My published artist link: '+link.href;
+   link.target='_blank';link.rel='noopener noreferrer';
+   const label=document.createElement('p');label.textContent='This is the address you can place on your own website or forward your domain to:';
+   $('myPublicPage').append(label,link);$('myPublicPage').hidden=false;
+  }
+ }catch(e){
+  if(version!==refreshVersion)return;
+  $('loading').hidden=false;$('status').textContent='Could not load member resources: '+(e.message||e);
+ }
+}
+db.auth.onAuthStateChange(event=>{
+ if(event==='SIGNED_OUT'){++refreshVersion;clearResources();$('loading').hidden=true;$('signInGate').hidden=false}
+ if(event==='SIGNED_IN')setTimeout(load,0);
+});
+await load();
+</script>
+</body></html>
