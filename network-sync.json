@@ -84,20 +84,41 @@
     "originals": "Historical locked design and source assets preserved"
   },
   "latest_studio_landmark": {
-    "id": "IN-CONNECT-STUDIO-2026-11-13-01",
+    "id": "IN-CONNECT-STUDIO-2026-11-13-02",
     "date": "2026-11-13",
-    "authority": "NETWORK_SYNC_CHECKPOINT_2026-11-08.md#november-13-2026--private-studio-acceptance-landmark",
-    "status": "owner-reported Nerdly save pass; Tom-reported pCloud connection and private Studio access pass; other gates pending",
-    "code_commit_refs": [
-      "5c99edc04a01f37a8912fbf0c606e94db18c6036",
-      "d47722ce210a75c80011ffb892839208893ce85c"
+    "authority": "NETWORK_SYNC_CHECKPOINT_2026-11-08.md#november-13-2026--studio-album-reconciliation-and-resumption",
+    "status": "resumed; private MPCC roster and cross-project song identity implemented; live updated controls unverified",
+    "canonical_mpcc": {
+      "library_file_id": "libfile_c2221b6092bc8191922be8f3a37ff555",
+      "version_id": "146",
+      "sheet": "Studio Album Links"
+    },
+    "album_memberships": {
+      "TGIK": 18,
+      "Toms": 4,
+      "Thanksgiving": 5,
+      "total": 27
+    },
+    "private_studio_roster_rows": {
+      "TGIK": 18,
+      "Thanksgiving": 5
+    },
+    "working_studio_status": {
+      "TGIK_title_match": 1,
+      "Thanksgiving_roster_title_matches": 0,
+      "Tom_studio_project": "not_verified"
+    },
+    "cross_album_work_example": "Do You Get It Yet? on Tom's and Thanksgiving CD; each album retains separate versions/approval",
+    "work_id_support": true,
+    "code_commits": [
+      "bc8264214972005b8844f4251c2ff0841a8d04aa",
+      "c9842cab134c5e621375298b83dab51d02d359ae"
     ],
-    "studio_save": "pass, owner-reported",
-    "tom_pcloud_connection": "pass, Tom-reported through owner",
-    "tom_studio_access": "pass, Tom-reported through owner",
-    "tom_playback_upload_edit_authorization": "unverified",
-    "cross_account_security_and_live_deployment": "unverified",
-    "work_state": "paused by owner, resume only on request",
-    "note": "Studio working records only; no MPCC or public member/site authority changed"
+    "rls_tests": "owner visible; unrelated account no access; anon denied",
+    "rollback_test": "same-work linked to another owner-owned album; zero test records persisted",
+    "nerdly_save": "PASS owner reported",
+    "tom_access": "PASS Tom reported through owner for pCloud and Studio",
+    "live_acceptance": "pending; deployment page inaccessible from testing environment",
+    "status_note": "Private references are not playable uploads; do not copy/overwrite approved audio; owner explicitly requested resume"
   }
 }
