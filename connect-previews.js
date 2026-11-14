@@ -7,10 +7,77 @@ const memberParam=new URLSearchParams(location.search).get('member');
 const viewingOther=!!memberParam&&/^[0-9a-f]{8}-[0-9a-f-]{27,}$/.test(memberParam);
 function note(msg){$('status').textContent=msg;}
 function setCounter(){ $('count').textContent=clips.length+' of 5 slots in use';$('save').disabled=clips.length>=5||uploading; }
+// Show a real frame from the video as its poster instead of an empty player.
+// Thumbnails remain in this browser session; we never change or expose the stored clip.
+const posterFallback='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(
+ '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">'+
+ '<defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#173b47"/><stop offset="1" stop-color="#0a202c"/></linearGradient></defs>'+
+ '<rect width="640" height="360" fill="url(#g)"/>'+
+ '<rect x="18" y="18" width="604" height="324" rx="20" fill="none" stroke="#609b9b" stroke-width="3"/>'+
+ '<circle cx="320" cy="164" r="49" fill="#7de1df"/>'+
+ '<path d="M305 139 L350 164 L305 189 Z" fill="#09232c"/>'+
+ '<text x="320" y="270" text-anchor="middle" font-family="system-ui,sans-serif" font-size="24" fill="#d0e7e8">VIDEO PREVIEW</text></svg>'
+);
+function addVideoPoster(player,source){
+ player.poster=posterFallback;
+ const helper=document.createElement('video');
+ helper.crossOrigin='anonymous';
+ helper.preload='auto';
+ helper.muted=true;
+ helper.playsInline=true;
+ helper.setAttribute('playsinline','');
+ helper.setAttribute('aria-hidden','true');
+ helper.tabIndex=-1;
+ helper.style.cssText='position:fixed;left:-10px;top:-10px;width:1px;height:1px;opacity:0;pointer-events:none';
+ let done=false,target=0;
+ const cleanup=()=>{
+  if(done)return;
+  done=true;
+  clearTimeout(timeout);
+  helper.pause();
+  helper.removeAttribute('src');
+  helper.remove();
+ };
+ const capture=()=>{
+  if(done||!helper.videoWidth||!helper.videoHeight||helper.readyState<2)return false;
+  try{
+   const canvas=document.createElement('canvas');
+   const scale=Math.min(1,640/helper.videoWidth,360/helper.videoHeight);
+   canvas.width=Math.max(1,Math.round(helper.videoWidth*scale));
+   canvas.height=Math.max(1,Math.round(helper.videoHeight*scale));
+   canvas.getContext('2d').drawImage(helper,0,0,canvas.width,canvas.height);
+   if(player.isConnected)player.poster=canvas.toDataURL('image/jpeg',0.84);
+   cleanup();
+   return true;
+  }catch(e){cleanup();return false;}
+ };
+ const timeout=setTimeout(cleanup,12000);
+ helper.addEventListener('loadedmetadata',()=>{
+  const duration=helper.duration;
+  target=Number.isFinite(duration)&&duration>0.4?Math.min(2,Math.max(0.2,duration*0.08)):0;
+  if(target){try{helper.currentTime=target;}catch(e){target=0;}}
+ });
+ helper.addEventListener('seeked',()=>{if(!capture())helper.addEventListener('loadeddata',capture,{once:true});},{once:true});
+ helper.addEventListener('loadeddata',()=>{if(!target)capture();});
+ helper.addEventListener('error',cleanup,{once:true});
+ document.body.append(helper);
+ helper.src=source;
+ helper.load();
+}
 async function createPlayer(row,parent){
  const {data,error}=await db.storage.from('connect-clips').createSignedUrl(row.file_path,120);
  if(error||!data?.signedUrl){const p=document.createElement('p');p.textContent='Preview unavailable. '+(error?.message||'');parent.append(p);return}
- const el=document.createElement(row.media_type==='video'?'video':'audio');el.src=data.signedUrl;el.controls=true;el.preload='none';el.className='media';if(row.media_type==='video')el.playsInline=true;parent.append(el);
+ const el=document.createElement(row.media_type==='video'?'video':'audio');
+ el.controls=true;
+ el.preload='none';
+ el.className='media';
+ if(row.media_type==='video'){
+  el.playsInline=true;
+  el.crossOrigin='anonymous';
+ }
+ el.src=data.signedUrl;
+ parent.append(el);
+ if(row.media_type==='video')addVideoPoster(el,data.signedUrl);
 }
 function editPreviewTitle(row,card,button){
  if(uploading||card.querySelector('form.preview-title-editor'))return;
