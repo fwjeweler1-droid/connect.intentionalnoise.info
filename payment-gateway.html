@@ -1,1 +1,76 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Optional Band Page — Payment Placeholder | Intentional Noise Connect</title><style>:root{font:18px/1.5 system-ui;color-scheme:dark}*{box-sizing:border-box}body{background:#101d28;color:#f4f7f8;margin:0}header,main,footer{width:min(820px,calc(100% - 32px));margin:auto;padding:24px}a{color:#7de1df}.panel{background:#172b38;border:1px solid #2c4a59;border-radius:15px;padding:26px}h1{line-height:1.2}strong{color:#7de1df}</style></head><body><header><a href="/">INTENTIONAL NOISE CONNECT</a></header><main><h1>Optional band webpage</h1><div class="panel"><h2>Payment gateway — demonstration only</h2><p>Proposed introductory option: <strong>$12 per year</strong> for a limited member band page. This is a planning placeholder, not an offer of an active paid subscription.</p><p><strong>No checkout is active. No payment information is collected.</strong> Free musician profiles, member search and contact remain separate from any optional webpage service.</p><p>Band-page URLs, external-domain forwarding, billing, cancellation, renewals and hosting limits are still being designed.</p><p><a href="/auth.html">Return to free member access</a> · <a href="/">Connect home</a></p></div></main><footer>© 2026 Intentional Noise · Demo only</footer></body></html>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#101d28">
+<title>One-Time Verification | Intentional Noise Connect</title>
+<style>
+:root{font:17px/1.6 system-ui,-apple-system,Segoe UI,sans-serif;color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;background:#101d28;color:#f4f7f8}header,main,footer{width:min(800px,calc(100% - 32px));margin:auto;padding:22px 0}
+a{color:#8cebe2}header a{font-weight:800;text-decoration:none}.panel{background:#172b38;border:1px solid #436375;border-radius:16px;padding:clamp(18px,4vw,30px);margin:20px 0}
+h1{font-size:clamp(1.9rem,5vw,2.6rem);line-height:1.15}h2{font-size:1.3rem}.lead{font-size:1.12rem;color:#c9dde3}.hint{font-size:.92rem;color:#bad0d8}.price{font-size:2.2rem;font-weight:900;color:#9cecd8}.price small{font-size:.92rem;color:#c5d4dd}
+button,.button{font:inherit;font-weight:750;padding:13px 18px;border:0;border-radius:10px;background:#8cebe2;color:#0d2630;cursor:pointer;display:inline-block;text-decoration:none}
+button:disabled{opacity:.55;cursor:wait}.notice{padding:14px 16px;background:#20394a;border-left:4px solid #8cebe2;border-radius:4px}
+ul{padding-left:22px}li{margin:6px 0}a:focus-visible,button:focus-visible{outline:3px solid #fff;outline-offset:4px}
+footer{font-size:.85rem;color:#a9c1ca}
+</style></head>
+<body><header><a href="/">INTENTIONAL NOISE · CONNECT</a></header>
+<main><h1>Verified Artist — one-time verification</h1>
+<p class="lead">Proof first. Authorized review second. One secure $12 payment third. No subscription.</p>
+<section class="panel"><h2>What the $12 protects</h2>
+<p class="price">$12.00 <small>USD · once per approved account</small></p>
+<p>When your distribution proof is approved and payment is confirmed, your account receives a permanent record guaranteeing that its <strong>current included account privileges remain free</strong> if base membership pricing changes later.</p>
+<ul><li>Free member account, private profile and visibility controls</li>
+<li>Current member search and gig-request access</li>
+<li>Up to five 60-second media previews and one preferred storage provider under current limits</li>
+<li>Current member resources and eligible owner-approved artist showcases</li>
+<li>Your existing private Studio privileges, if applicable, remain at their current eligibility and limits</li></ul>
+<p class="hint">This does not prepay or include new optional services introduced later, such as merchant websites, additional storage upgrades or third-party service fees. Safety rules and the availability of the underlying service still apply. Free registration and the existing free tier do not require this payment.</p>
+</section>
+<section class="panel"><h2>Your account status</h2><p id="status" class="notice" role="status" aria-live="polite">Checking your signed-in account…</p>
+<div id="actions" hidden><button id="checkout" type="button">Pay $12 securely — one time</button></div>
+<p id="receipt" class="hint" hidden></p>
+<p class="hint">Payment card details are entered only on the payment processor's secure checkout page. This site never asks you to type a credit-card number.</p>
+<p><a href="/auth.html">Sign in or return to my member profile</a> · <a href="https://intentionalnoise.info/privacy.html">Privacy</a></p>
+</section></main><footer>© 2026 Intentional Noise · Verification is optional; existing free access remains available.</footer>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
+const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0',{auth:{flowType:'pkce',detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+const status=document.getElementById('status'),actions=document.getElementById('actions'),receipt=document.getElementById('receipt'),pay=document.getElementById('checkout');
+const q=new URLSearchParams(location.search);
+async function load(){
+ actions.hidden=true;receipt.hidden=true;
+ const auth=await db.auth.getUser();
+ const user=auth.data?.user;
+ if(!user){status.textContent='Sign in to submit or review distribution proof before paying.';return;}
+ const [locked,verified,proof,payment]=await Promise.all([
+  db.from('connect_account_price_locks').select('locked_at,locked_features').eq('user_id',user.id).maybeSingle(),
+  db.from('verified_artist_accounts').select('verified_at').eq('user_id',user.id).maybeSingle(),
+  db.from('artist_verification_requests').select('status,review_note').eq('user_id',user.id).order('created_at',{ascending:false}).limit(1).maybeSingle(),
+  db.from('artist_verification_payments').select('status,paid_at,amount_cents,currency').eq('user_id',user.id).maybeSingle()
+ ]);
+ if(locked.error||verified.error||proof.error||payment.error){status.textContent='Could not verify the account state. Retry after signing in.';return;}
+ if(locked.data){status.textContent='Verified and price-locked. Your current included account features are guaranteed free. No further verification fee is due.';receipt.hidden=false;receipt.textContent='Guarantee recorded on '+new Date(locked.data.locked_at).toLocaleDateString()+'.';return;}
+ if(payment.data?.status==='paid'||verified.data){status.textContent='A prior verification was found. Your account record is being reconciled; no additional charge should be made.';return;}
+ const st=proof.data?.status;
+ if(st==='pending'){status.textContent='Distribution proof submitted. Authorized review is pending. No payment is requested yet.';return;}
+ if(st==='more_evidence'){status.textContent='Additional distribution evidence is required. '+(proof.data.review_note||'Please return to your profile.');return;}
+ if(st==='declined'){status.textContent='Distribution proof was declined. '+(proof.data.review_note||'Please submit eligible release evidence.');return;}
+ if(st!=='approved'){status.textContent='Submit distributor account and release evidence in your member profile first. Your free features remain available.';return;}
+ if(q.get('result')==='success')status.textContent='Checkout returned successfully. Payment confirmation is still being checked against the processor; only the signed confirmation will lock your privileges.';
+ else if(q.get('result')==='cancelled')status.textContent='Checkout was cancelled. No verification entitlement has been granted.';
+ else status.textContent='Your distribution proof has been approved. You may pay once to secure the current free-feature guarantee.';
+ actions.hidden=false;
+}
+pay.addEventListener('click',async()=>{
+ pay.disabled=true;status.textContent='Requesting secure checkout…';
+ try{
+  const result=await db.functions.invoke('start-verification-checkout',{body:{purpose:'one_time_verified_artist'}});
+  if(result.error)throw result.error;
+  if(result.data?.paid){await load();return;}
+  const url=result.data?.checkout_url;
+  if(typeof url!=='string'||!/^https:\/\/checkout\.stripe\.com\//i.test(url))throw Error(result.data?.error||'Secure checkout is not activated.');
+  location.assign(url);
+ }catch(e){status.textContent='Secure checkout could not be opened. No charge was made here. '+(e.message||'Contact support before trying again.');}
+ finally{pay.disabled=false;}
+});
+load();
+</script></body></html>
