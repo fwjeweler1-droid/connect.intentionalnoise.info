@@ -28,6 +28,7 @@ input{border:1px solid #7f9aa5;background:#0c202b;color:white;border-radius:9px;
 [hidden]{display:none!important}:focus-visible{outline:3px solid var(--mint);outline-offset:4px}
 @media(max-width:800px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.cards{grid-template-columns:1fr}main{padding:30px 0 50px}}
+.verified-icon{display:inline-block;width:1.18em;height:1.18em;object-fit:contain;vertical-align:middle;margin-left:.18em}
 </style><link rel="canonical" href="https://www.connect.intentionalnoise.info/artists.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Intentional Noise Connect"><meta property="og:title" content="Published Artists | Intentional Noise Connect"><meta property="og:description" content="Browse independent musicians and bands with published artist profiles across Intentional Noise."><meta property="og:url" content="https://www.connect.intentionalnoise.info/artists.html"><meta name="twitter:card" content="summary"></head>
 <body><header><nav class="wrap"><a class="name" href="https://www.connect.intentionalnoise.info/">Intentional Noise Connect</a><div class="actions"><a href="https://www.connect.intentionalnoise.info/">Connect home</a><a href="https://ineedagig.net/">Bookings</a><a href="https://www.connect.intentionalnoise.info/auth.html?role=musician">Join as a musician</a></div></nav></header>
 <main class="wrap">
@@ -86,9 +87,10 @@ async function loadPortraits(profiles){
  }catch{}
 }
 function detailLine(root,label,value){if(!value)return;const d=el('p',null,'field');d.append(el('strong',label+': '),document.createTextNode(value));root.append(d)}
+function verifiedName(name,userId){const h=el('h2',name);if(verifiedArtistIds.has(userId)){const badge=el('img');badge.src='https://connect.intentionalnoise.info/verified-artist-badge.svg';badge.alt='Verified Artist';badge.title='Verified Artist';badge.className='verified-icon';h.append(' ',badge);}return h;}
 function card(p){
  const box=el('article',null,'card');const img=photo(p);if(img)box.append(img);
- box.append(el('h2',p.display_name));if(verifiedArtistIds.has(p.user_id))box.append(el('span','Verified Artist','pill'));
+ box.append(verifiedName(p.display_name,p.user_id));
  if(p.available_for_gigs)box.append(el('span','Available for gigs','pill'));
  if(p.bio)box.append(el('p',p.bio.slice(0,180)));
  if((p.genres||[]).length)box.append(el('p','Genres: '+p.genres.slice(0,6).join(', ')));
@@ -99,7 +101,7 @@ function showProfile(p){
  $('cards').hidden=true;$('filter').hidden=true;
  const root=$('profile');root.replaceChildren();
  const img=photo(p);if(img)root.append(img);
- root.append(el('h2',p.display_name));if(verifiedArtistIds.has(p.user_id))root.append(el('span','Verified Artist','pill'));
+ root.append(verifiedName(p.display_name,p.user_id));
  if(p.available_for_gigs)root.append(el('span','Available for gigs','pill'));
  detailLine(root,'About',p.bio);
  detailLine(root,'Instruments',(p.instruments||[]).join(', '));
