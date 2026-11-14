@@ -256,7 +256,7 @@ async function refreshArtistLinks(){const {data:page,error}=await supabase.from(
 const pane=$('networkProfiles');pane.replaceChildren();pane.hidden=!page?.published||!!error;
 if(!pane.hidden){const slug=encodeURIComponent(page.slug);const links=[
  ['IntentionalNoise.info','https://intentionalnoise.info/artists.html?slug='+slug],
- ['Connect','https://connect.intentionalnoise.info/artists.html?slug='+slug],
+ ['Connect','https://www.connect.intentionalnoise.info/artists.html?slug='+slug],
  ['IntentionalNoise.band','https://intentionalnoise.band/'+slug],
  ['IneedaGig','https://ineedagig.net/artists.html?slug='+slug]
  ];const heading=document.createElement('strong');heading.textContent='My published profile on all four sites:';pane.append(heading);for(const [label,href] of links){const a=document.createElement('a');a.textContent=label;a.href=href;a.target='_blank';a.rel='noopener noreferrer';pane.append(a)}}}
