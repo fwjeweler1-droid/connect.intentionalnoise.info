@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Proof Review | Intentional Noise Connect</title><style>
+:root{font:16px/1.55 system-ui;color-scheme:dark}*{box-sizing:border-box}body{background:#101d28;color:#f5f9fa;margin:0}main,header,footer{width:min(940px,calc(100% - 32px));margin:auto;padding:22px 0}a{color:#8cebe2}article{border:1px solid #426575;background:#18303e;border-radius:12px;padding:20px;margin:20px 0}h1,h2{line-height:1.2}small{color:#b7ced6}.evidence{white-space:pre-wrap;overflow-wrap:anywhere}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}button{background:#8cebe2;border:0;color:#10242c;border-radius:9px;padding:12px 15px;font:inherit;font-weight:750;cursor:pointer}button.alt{background:#3a5360;color:white}textarea{width:100%;min-height:72px;padding:12px;background:#0b1d26;color:white;border:1px solid #6892a6;border-radius:8px}button:disabled{opacity:.55}
+</style></head><body><header><a href="/auth.html">← Connect member account</a></header><main><h1>Distributor proof review</h1><p>Authorized staff only. Approving proof enables the member's separate one-time verification checkout; it does not charge them or grant a badge before confirmed payment.</p><p id="status" role="status">Checking authorization…</p><div id="queue"></div></main><footer>© 2026 Intentional Noise · Private proof and reviewer decisions</footer>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
+const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0',{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true}});
+const $=id=>document.getElementById(id),node=(type,txt)=>{const el=document.createElement(type);if(txt!==undefined)el.textContent=String(txt);return el;};
+async function load(){
+ $('queue').replaceChildren();const u=await db.auth.getUser();
+ if(!u.data?.user){$('status').textContent='Sign in with an authorized reviewer account to view evidence.';return;}
+ const mod=await db.rpc('is_connect_moderator');
+ if(mod.error||mod.data!==true){$('status').textContent='Your account is not assigned as an authorized reviewer.';return;}
+ const list=await db.from('artist_verification_requests')
+ .select('id,user_id,artist_name,release_title,distributor,upc,isrc,release_url,evidence_details,status,created_at')
+ .in('status',['pending','more_evidence']).order('created_at',{ascending:true}).limit(100);
+ if(list.error){$('status').textContent='Unable to read the review queue.';return;}
+ $('status').textContent=(list.data||[]).length+' proof request(s) awaiting review.';
+ for(const p of list.data||[]){
+  const card=node('article'),h=node('h2',p.artist_name+' — '+p.release_title);
+  card.append(h,node('p','Distributor: '+p.distributor+' · UPC: '+p.upc+' · ISRC: '+(p.isrc||'not supplied')));
+  if(typeof p.release_url==='string'&&p.release_url.startsWith('https://')){const a=node('a','Submitted public release reference');a.href=p.release_url;a.target='_blank';a.rel='noopener noreferrer';card.append(a);}
+  card.append(node('p','Member evidence (private):'),node('p',p.evidence_details));
+  const reason=node('textarea');reason.placeholder='Reviewer note (required for decline or additional evidence)';reason.maxLength=500;
+  const actions=node('div');actions.className='actions';const msg=node('small','');
+  for(const [choice,label] of [['approved','Approve distribution proof'],['more_evidence','Request more evidence'],['declined','Decline proof']]){
+   const b=node('button',label);if(choice!=='approved')b.className='alt';
+   b.addEventListener('click',async()=>{
+    if(choice!=='approved'&&reason.value.trim().length<8){msg.textContent='Explain your decision in at least 8 characters.';return;}
+    if(choice==='approved'&&!confirm('Approve this distributor evidence? This will make the member eligible to pay $12 once.'))return;
+    for(const btn of actions.querySelectorAll('button'))btn.disabled=true;msg.textContent='Saving reviewer decision…';
+    const res=await db.rpc('review_artist_distribution_proof',{p_request_id:p.id,p_decision:choice,p_note:reason.value.trim()});
+    if(res.error){msg.textContent=res.error.message;for(const btn of actions.querySelectorAll('button'))btn.disabled=false;return;}
+    await load();
+   });actions.append(b);
+  }
+  card.append(reason,actions,msg);$('queue').append(card);
+ }
+}
+load();
+</script></body></html>
