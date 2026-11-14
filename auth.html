@@ -22,7 +22,12 @@
 </section>
 <section class="panel" id="auth"><h2>Sign in or create an account</h2><p class="hint">Already a member? Enter your existing email and password, then tap <strong>Sign in</strong>. New-account fields are only for first-time registration.</p><form id="authForm"><label for="email">Email address</label><input id="email" type="email" autocomplete="email" required maxlength="254"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required minlength="8"><details id="registrationOptions"><summary>New account setup (registration only)</summary><label for="accountKind">New account type (when registering)</label><select id="accountKind"><option value="musician">Musician / artist / creator</option><option value="instructor">Instructor</option><option value="band">Band / group</option><option value="venue">Venue / event organizer</option></select><label for="newDisplayName">Artist, instructor, band or venue name (new registration)</label><input id="newDisplayName" maxlength="80" autocomplete="organization" placeholder="Name for your private draft"><p class="hint">A name is needed when registering an artist, instructor or band. Existing members only need email and password to sign in.</p></details><div id="humanChallenge" hidden><div id="turnstileMount"></div><p class="hint">Security verification protects this community from automated signups.</p></div><div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label for="contact_homepage">Leave this field blank</label><input id="contact_homepage" tabindex="-1" autocomplete="off" name="contact_homepage"></div><div class="status" id="authStatus" role="status" aria-live="polite" aria-atomic="true"></div><button type="submit" id="register">Create free account</button><button type="button" class="secondary" id="login">Sign in</button></form><p class="hint">Use a unique password. After registering, check your inbox for the confirmation email. We never ask you to send us your password. New drafts remain private until you explicitly publish.</p></section>
 <section class="panel" id="signedIn"><h2>You're signed in</h2><p id="verifiedAccountName" class="verified-account-name" hidden></p><p class="studio-links"><a class="studio-direct" href="/studio.html">Open Private Album Studio</a><a class="studio-direct" id="instructorPageLink" href="#instructorProfile" hidden>Open my instructor page</a></p><p><a href="show-your-work.html">Show my work — 5 free audio/video previews (up to 60 seconds each)</a></p><p><a href="make-contact.html">Private member messages — free inbox</a></p><p><a href="media-storage.html">My Media &amp; Storage — private provider setup</a></p><p><a href="member-resources.html" target="_blank" rel="noopener noreferrer">Member resources — setup guide, storage, distribution &amp; CD/vinyl production</a></p>
-<p><a href="releases-and-gigs.html#memberArea">My FROG releases &amp; gig promo cards</a></p><p><a href="https://ineedagig.net/">IneedaGig™ — booking and gig requests</a></p><p><a href="band-page.html" id="artistPublishLink">Publish my artist page across four sites</a></p><p id="memberEmail"></p><button id="logout" class="secondary">Sign out</button></section>
+<p><a href="releases-and-gigs.html#memberArea">My FROG releases &amp; gig promo cards</a></p><p><a href="https://ineedagig.net/">IneedaGig™ — booking and gig requests</a></p><p><a href="band-page.html" id="artistPublishLink">Publish my artist page across four sites</a></p><aside id="founderOffer" hidden aria-label="Optional lifetime-free member offer" style="border:1px solid #527b6b;border-radius:12px;background:#17382f;padding:15px 17px;margin:18px 0">
+<p style="font-weight:800;font-size:1.12rem;margin:0 0 5px">Do you like the free stuff? For $12.00, you can keep it all for life 😉</p>
+<p class="hint" style="margin:0 0 10px">One-time, optional verification after proof approval locks in today's included free account privileges for life. Future optional paid add-ons are separate. You can keep using the free account without paying.</p>
+<a href="payment-gateway.html">See the $12 lifetime-free guarantee →</a>
+</aside>
+<p id="memberEmail"></p><button id="logout" class="secondary">Sign out</button></section>
 <section class="panel" id="instructorProfile" hidden aria-labelledby="instructorTitle">
 <h2 id="instructorTitle">My teaching services</h2>
 <p class="hint">Lessons are a separate service from gigs, bands, and performances. Your teaching listing stays private until you choose to list it for signed-in members. Keep private contact information out of the description.</p>
@@ -207,11 +212,24 @@ async function loadArtistProfile(){
  for(const option of $('roles').options)option.selected=(data?.roles||[]).includes(option.value);
  await refreshArtistLinks();await bookingIntake.load();await loadArtistVerification(data?.display_name||'');
 }
+async function showFounderOffer(memberId){
+ const offer=$('founderOffer');
+ offer.hidden=true;
+ if(!user||user.id!==memberId)return;
+ const [locked,paid,verified]=await Promise.all([
+  supabase.from('connect_account_price_locks').select('locked_at').eq('user_id',memberId).maybeSingle(),
+  supabase.from('artist_verification_payments').select('status').eq('user_id',memberId).maybeSingle(),
+  supabase.from('verified_artist_accounts').select('verified_at').eq('user_id',memberId).maybeSingle()
+ ]);
+ if(!user||user.id!==memberId||locked.error||paid.error||verified.error)return;
+ offer.hidden=!!(locked.data||paid.data?.status==='paid'||verified.data);
+}
 async function refresh(){
  const {data:{user:u},error}=await supabase.auth.getUser();
  user=error?null:u;
  $('auth').style.display=user?'none':'block';
  $('signedIn').style.display=user?'block':'none';
+ $('founderOffer').hidden=true;
  $('profile').style.display='none';
  $('profile').classList.remove('instructor-shortcut-only');
  $('instructorProfile').hidden=true;
@@ -236,6 +254,7 @@ async function refresh(){
  if(artistCheck.error||teacherCheck.error){authNotice('Your profiles could not be checked: '+(artistCheck.error?.message||teacherCheck.error?.message),true);return;}
  const instructor=accountKind()==='instructor'||(artistCheck.data?.roles||[]).includes('music_instructor')||!!teacherCheck.data;
  const hasArtist=!!artistCheck.data;
+ if(hasArtist)void showFounderOffer(user.id).catch(()=>{});
  $('openTeachingProfile').hidden=!instructor;
  $('instructorPageLink').hidden=!instructor;
  $('artistPublishLink').hidden=!hasArtist&&accountKind()==='instructor';
