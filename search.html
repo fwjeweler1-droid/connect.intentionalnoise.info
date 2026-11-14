@@ -20,6 +20,14 @@ import {categories,matchesCategory} from './search-categories.js';
 const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0');
 const $=id=>document.getElementById(id), params=new URLSearchParams(location.search);
 const requestedCategory=params.get('category')==='music_instructor'?'instructor':params.get('category');
+if(requestedCategory==='instructor'){
+  document.querySelector('h1').textContent='Find an Instructor';
+  document.querySelector('p.lead').textContent='Search instructors who have chosen to list teaching services for Connect members. You are looking for instruction, not registering to teach.';
+  const gate=document.getElementById('gate');
+  gate.querySelector('strong').textContent='Free member sign-in for instructor search.';
+  gate.querySelector('p').textContent='Use your existing Connect login to browse teaching profiles, or register for a free member account. This does not register you as an instructor; no payment is required.';
+  document.getElementById('signIn').textContent='Sign in to find instructors';
+}
 $('category').value=categories.some(([v])=>v===requestedCategory)?requestedCategory:'all';
 $('query').value=(params.get('q')||'').slice(0,100);
 if(['25','50','100','any'].includes(params.get('distance')))$('distance').value=params.get('distance');
