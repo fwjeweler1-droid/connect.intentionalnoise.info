@@ -66,16 +66,17 @@ for update to authenticated using (
 );
 
 -- Non-recursive membership policy: a member can read only their own membership.
+-- Membership alone grants no access: every rooms/messages policy separately requires admin-enabled pilot access.
+-- Host cannot inspect other tester access rows (own-row RLS), so invitation does not check invitee access.
 create policy "Pilot member reads own membership" on public.connect_fan_lab_members
 for select to authenticated using (
   member_id=(select auth.uid()) and exists (
     select 1 from public.connect_fan_lab_access a where a.user_id=(select auth.uid()) and a.enabled
   )
 );
-create policy "Pilot host adds enabled testers" on public.connect_fan_lab_members
+create policy "Pilot host invites members" on public.connect_fan_lab_members
 for insert to authenticated with check (
   exists (select 1 from public.connect_fan_lab_access a where a.user_id=(select auth.uid()) and a.enabled)
-  and exists (select 1 from public.connect_fan_lab_access a where a.user_id=member_id and a.enabled)
   and exists (select 1 from public.connect_fan_lab_rooms r where r.id=room_id and r.host_id=(select auth.uid()) and r.status='live')
 );
 
