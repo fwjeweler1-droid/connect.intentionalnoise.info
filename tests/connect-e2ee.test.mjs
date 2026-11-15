@@ -54,3 +54,51 @@ test('fail closed for invalid and excessive messages',async()=>{
  await assert.rejects(()=>mod.encryptMessage('x'.repeat(2001),alice,bob,A.keys,A.publicRecord,B.publicRecord),/Message must/);
  await assert.rejects(()=>mod.encryptMessage('x',alice,bob,A.keys,A.publicRecord,null),/Both participants/);
 });
+
+
+// Tiny IndexedDB test double; covers only the transactional methods the
+// cryptography module uses. Browser Safari/Chrome still require live tests.
+test('encrypted key backup unlocks on another device; wrong passphrase fails',async()=>{
+ const data=new Map(),db={
+  createObjectStore(n){data.set(n,new Map())},
+  transaction(name){const t={oncomplete:null,onerror:null};
+   t.objectStore=()=>({
+    get(id){const r={result:null,onsuccess:null,onerror:null};queueMicrotask(()=>{r.result=data.get(name).get(id);r.onsuccess?.()});return r},
+    put(value,id){data.get(name).set(id,value);queueMicrotask(()=>t.oncomplete?.())},
+    delete(id){data.get(name).delete(id);queueMicrotask(()=>t.oncomplete?.())}
+   });return t
+  },
+  close(){}
+ };
+ let initialized=false;
+ globalThis.indexedDB={open(){const request={result:db,onsuccess:null,onupgradeneeded:null,onerror:null};queueMicrotask(()=>{if(!initialized){initialized=true;request.onupgradeneeded?.()}request.onsuccess?.()});return request}};
+ const user='00000000-0000-4000-8000-000000000004',pass='a very long recovery passphrase with spaces';
+ const setup=await mod.createIdentity(user,pass);
+ assert.equal(await mod.localIdentity(user),null,'do not persist key before registration');
+ await mod.persistIdentity(user,setup.local);
+ const stored=await mod.localIdentity(user);
+ assert.equal(stored.signing.extractable,false);
+ assert.equal(stored.encryption.extractable,false);
+ await mod.clearLocal(user);
+ assert.equal(await mod.localIdentity(user),null);
+ await assert.rejects(()=>mod.restoreIdentity(user,'incorrect passphrase definitely long',setup.backup,setup.publicRecord),/Could not unlock key/);
+ assert.equal(await mod.localIdentity(user),null);
+ const recovered=await mod.restoreIdentity(user,pass,setup.backup,setup.publicRecord);
+ const packet=await mod.encryptMessage('Device recovery succeeded',user,bob,recovered,setup.publicRecord,B.publicRecord);
+ assert.equal(await mod.decryptMessage(packet,user,bob,bob,B.keys,setup.publicRecord),'Device recovery succeeded');
+});
+test('key substitution after trust on first use is rejected',async()=>{
+ const own='00000000-0000-4000-8000-000000000004';
+ const peer='00000000-0000-4000-8000-000000000002';
+ const pinned=await mod.pinPeer(own,peer,B.publicRecord);
+ assert.equal(typeof pinned,'string');
+ await assert.rejects(()=>mod.pinPeer(own,peer,C.publicRecord),/identity changed/);
+});
+test('checkout and chat page never contain a plaintext fallback in the new send handler',async()=>{
+ const html=await readFile(new URL('../make-contact.html',import.meta.url),'utf8');
+ assert.match(html,/encrypted_payload=await e2ee\.encryptMessage/);
+ assert.match(html,/body:'\[Encrypted message\]',encrypted_payload/);
+ assert.match(html,/Plaintext fallback is disabled/);
+ assert.doesNotMatch(html,/insert\(\{sender_id:user\.id,recipient_id:peer,body:message\}\)/);
+ assert.doesNotMatch(html,/src="\/local-translate\.js"/);
+});
