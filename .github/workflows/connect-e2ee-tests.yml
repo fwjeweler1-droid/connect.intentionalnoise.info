@@ -1,0 +1,24 @@
+name: Connect E2EE cryptography tests
+on:
+  push:
+    branches: [feature/connect-e2ee-one-to-one]
+  pull_request:
+    paths:
+      - connect-e2ee.js
+      - make-contact.html
+      - tests/connect-e2ee.test.mjs
+      - supabase/migrations/20261115_connect_e2ee_one_to_one.sql
+jobs:
+  crypto:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check encryption module syntax
+        run: node --check connect-e2ee.js
+      - name: Round-trip and tamper rejection tests
+        run: node --test tests/connect-e2ee.test.mjs
