@@ -77,7 +77,11 @@ alter table public.connect_direct_messages
 
 -- Remove an incorrectly-permissive "block override" policy: permissive INSERT policies OR together,
 -- so the old rule did NOT reliably stop a blocked member from passing the other policy.
+-- The restrictive block-policy fix was applied live separately on 2026-11-15.
+-- Recreate it transactionally here so this migration works against that baseline.
 drop policy if exists "Block overrides permission to send direct messages"
+on public.connect_direct_messages;
+drop policy if exists "Block always prevents sending"
 on public.connect_direct_messages;
 create policy "Block always prevents sending"
 on public.connect_direct_messages as restrictive for insert to authenticated
