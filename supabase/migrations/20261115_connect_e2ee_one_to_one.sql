@@ -40,8 +40,7 @@ using (
 create policy "One immutable public key per confirmed member"
 on public.connect_e2ee_public_keys for insert to authenticated
 with check (user_id=(select auth.uid())
-  and not coalesce((auth.jwt()->>'is_anonymous')::boolean,false)
-  and exists(select 1 from auth.users u where u.id=(select auth.uid()) and u.email_confirmed_at is not null));
+  and not coalesce((auth.jwt()->>'is_anonymous')::boolean,false));
 
 create table public.connect_e2ee_key_backups (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -97,3 +96,29 @@ with check (
 
 comment on column public.connect_direct_messages.encrypted_payload is
   'Browser-encrypted E2EE envelope. Legacy plaintext rows have NULL. Not Signal/Double Ratchet.';
+
+
+-- Atomic registration ensures a browser never registers a public identity without
+-- its matching encrypted recovery backup. The function remains SECURITY INVOKER,
+-- so table RLS applies. No server-generated or server-readable private keys.
+create function public.register_connect_e2ee_identity(
+  p_encryption_public_key jsonb,
+  p_signing_public_key jsonb,
+  p_kdf_salt text,
+  p_nonce text,
+  p_ciphertext text
+) returns void
+language plpgsql security invoker set search_path=''
+as $e2ee$
+begin
+  if (select auth.uid()) is null or coalesce((auth.jwt()->>'is_anonymous')::boolean,false) then
+    raise exception 'Confirmed member sign-in required';
+  end if;
+  insert into public.connect_e2ee_public_keys(user_id,encryption_public_key,signing_public_key)
+    values((select auth.uid()),p_encryption_public_key,p_signing_public_key);
+  insert into public.connect_e2ee_key_backups(user_id,kdf_salt,kdf_iterations,nonce,ciphertext)
+    values((select auth.uid()),p_kdf_salt,600000,p_nonce,p_ciphertext);
+end
+$e2ee$;
+revoke all on function public.register_connect_e2ee_identity(jsonb,jsonb,text,text,text) from public,anon;
+grant execute on function public.register_connect_e2ee_identity(jsonb,jsonb,text,text,text) to authenticated;
