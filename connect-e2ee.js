@@ -16,6 +16,7 @@ function store(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB
 async function get(storeName,id){const db=await store();return new Promise((resolve,reject)=>{const t=db.transaction(storeName,'readonly'),r=t.objectStore(storeName).get(id);r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error);t.oncomplete=()=>db.close();t.onerror=()=>reject(t.error)})}
 async function put(storeName,id,value){const db=await store();return new Promise((resolve,reject)=>{const t=db.transaction(storeName,'readwrite');t.objectStore(storeName).put(value,id);t.oncomplete=()=>{db.close();resolve()};t.onerror=()=>{db.close();reject(t.error)}})}
 export const localIdentity=id=>get(STORE,id);
+export const persistIdentity=(id,local)=>put(STORE,id,local);
 export async function clearLocal(id){const db=await store();return new Promise((resolve,reject)=>{const t=db.transaction(STORE,'readwrite');t.objectStore(STORE).delete(id);t.oncomplete=()=>{db.close();resolve()};t.onerror=()=>{db.close();reject(t.error)}})}
 async function importPrivate(record){return {encryption:await subtle.importKey('pkcs8',un64(record.encryption),{name:'ECDH',namedCurve:'P-256'},false,['deriveBits']),signing:await subtle.importKey('pkcs8',un64(record.signing),{name:'ECDSA',namedCurve:'P-256'},false,['sign'])}}
 async function deriveBackup(passphrase,salt,iterations){const key=await subtle.importKey('raw',te.encode(passphrase),'PBKDF2',false,['deriveKey']);return subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt,iterations},key,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
@@ -34,7 +35,6 @@ export async function createIdentity(id,passphrase){
  const backup={user_id:id,kdf_salt:b64(salt),kdf_iterations:iterations,nonce:b64(iv),ciphertext:b64(cipher)};
  const keys=await importPrivate(priv);
  const local={...keys,publicRecord};
- await put(STORE,id,local);
  return {local,publicRecord,backup};
 }
 export async function restoreIdentity(id,passphrase,backup,publicRecord){
@@ -59,7 +59,7 @@ async function wrapKey(ephemeralPrivate,pub,salt,sender,recipient,target,cek){
 export async function encryptMessage(message,sender,recipient,selfKeys,selfPublic,peerPublic){
  if(!selfKeys||!peerPublic)throw Error('Both participants must enable encryption');
  if(typeof message!=='string'||!message.trim()||message.length>2000)throw Error('Message must have 1–2,000 characters');
- const ephem=await subtle.generateKey({name:'ECDH',namedCurve:'P-256'},false,['deriveBits']);
+ const ephem=await subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
  const ephemeralPub=await subtle.exportKey('jwk',ephem.publicKey),salt=fresh(16),iv=fresh(12),cek=fresh(32);
  const ciphertext=await subtle.encrypt({name:'AES-GCM',iv,additionalData:aad(sender,recipient)},await aes(cek),te.encode(message));
  const p={v:1,epk:ephemeralPub,salt:b64(salt),iv:b64(iv),ciphertext:b64(ciphertext),wraps:{}};
