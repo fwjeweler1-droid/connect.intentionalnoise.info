@@ -23,8 +23,7 @@ create table if not exists public.connect_invitation_roster (
   claimed_by uuid unique references auth.users(id) on delete set null,
   claimed_at timestamptz,
   created_at timestamptz not null default now(),
-  unique (campaign_code, match_key),
-  check ((claimed_by is null) = (claimed_at is null))
+  unique (campaign_code, match_key)
 );
 
 create table if not exists public.connect_invitation_redemptions (
@@ -100,24 +99,24 @@ begin
   if exists(select 1 from public.connect_account_price_locks where user_id=v_user)
     then return jsonb_build_object('status','already_locked'); end if;
   if exists(select 1 from public.artist_verification_payments where user_id=v_user)
-    then raise exception 'An existing payment record needs review before using an invitation'; end if;
+    then return jsonb_build_object('status','payment_review','message','An existing payment needs review before a complimentary pass can be issued'); end if;
 
   select * into v_campaign from public.connect_invitation_campaigns
    where code=v_code for update;
   if not found or v_campaign.enabled is distinct from true or
        v_campaign.seat_limit is null or v_campaign.roster_confirmed_at is null
-    then raise exception 'Invitation is not available or the name does not match'; end if;
+    then return jsonb_build_object('status','invalid','message','Invitation not active or roster name not matched'); end if;
   if (select count(*) from public.connect_invitation_roster where campaign_code=v_code)
        <> v_campaign.seat_limit then
-    raise exception 'Invitation roster has not been confirmed'; end if;
+    return jsonb_build_object('status','invalid','message','Invitation not active or roster name not matched'); end if;
   select * into v_roster from public.connect_invitation_roster
     where campaign_code=v_code and match_key=v_name for update;
-  if not found or v_roster.claimed_by is not null then
-    raise exception 'Invitation is not available or the name does not match'; end if;
+  if not found or v_roster.claimed_at is not null then
+    return jsonb_build_object('status','invalid','message','Invitation not active or roster name not matched'); end if;
 
   update public.connect_invitation_roster
     set claimed_by=v_user,claimed_at=now()
-    where id=v_roster.id and claimed_by is null;
+    where id=v_roster.id and claimed_by is null and claimed_at is null;
   if not found then raise exception 'Invitation has already been claimed'; end if;
 
   insert into public.connect_invitation_redemptions
@@ -160,11 +159,11 @@ $func$;
 revoke all on function public.redeem_connect_invitation(text,text) from public,anon;
 grant execute on function public.redeem_connect_invitation(text,text) to authenticated;
 
-insert into public.connect_invitation_campaigns
-  (code,validation_source,organizer,seat_limit,enabled)
-values ('BLINK7','BLINK7UPC','Marcus Klossek / BLINK 7',null,false)
-on conflict (code) do nothing;
-
+-- Owner-only setup (run privately, not committed with a reusable code):
+-- INSERT INTO public.connect_invitation_campaigns
+--   (code, validation_source, organizer, enabled)
+-- VALUES (<shared-code>, <private-validation-source>, <organizer>, false);
+--
 -- Owner intake: after Marcus responds, insert one roster entry per person
 -- (a first name OR last name is enough), including sound engineers,
 -- set the exact seat_limit, then activate only after reviewing duplicates and roles.
