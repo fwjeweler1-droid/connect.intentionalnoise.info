@@ -1,23 +1,28 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101d28"><title>Member Messages | Intentional Noise Connect</title><style>
-:root{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#101d28;color:#f4f7f8}a{color:#7de1df}.wrap{width:min(1080px,calc(100% - 40px));margin:auto}header{background:#142633;border-bottom:1px solid #2b4655}nav{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:20px 0}nav a{color:#b6d6df}main{padding:35px 0 70px}h1{font-size:clamp(2rem,5vw,3rem);margin:12px 0}p{line-height:1.6;color:#c4d5dc}.notice,.panel{background:#172b38;border:1px solid #2c4a59;border-radius:14px;padding:20px;margin-top:20px}.notice{border-left:4px solid #7de1df}.layout{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:18px}.thread-item{display:block;width:100%;text-align:left;background:#102632;color:#f4f7f8;border:1px solid #42616e;border-radius:9px;margin:8px 0;padding:12px;font:inherit;cursor:pointer}.thread-item[aria-current=true]{border-color:#7de1df;background:#19434a}.messages{max-height:440px;min-height:160px;overflow:auto;border:1px solid #355462;border-radius:10px;padding:12px;background:#10232f}.bubble{padding:10px 13px;border-radius:10px;background:#244150;margin:10px 0;max-width:95%;white-space:pre-wrap;overflow-wrap:anywhere}.bubble.mine{margin-left:auto;background:#1e504b}.bubble small{display:block;color:#d1e1e6;margin-bottom:6px}textarea{width:100%;min-height:95px;padding:12px;background:#0d202b;color:white;border:1px solid #78939e;border-radius:8px;font:inherit}button,.btn{background:#7de1df;color:#0c2027;border:0;border-radius:9px;padding:12px 17px;font:inherit;font-weight:700;cursor:pointer;display:inline-block;text-decoration:none}button:disabled{opacity:.6;cursor:wait}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px}.muted{font-size:.9rem;color:#bed3dc}[hidden]{display:none!important}:focus-visible{outline:3px solid #7de1df;outline-offset:3px}@media(max-width:700px){.layout{grid-template-columns:1fr}.messages{max-height:330px}} </style><script defer src="/local-translate.js"></script></head>
+:root{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#101d28;color:#f4f7f8}a{color:#7de1df}.wrap{width:min(1080px,calc(100% - 40px));margin:auto}header{background:#142633;border-bottom:1px solid #2b4655}nav{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:20px 0}nav a{color:#b6d6df}main{padding:35px 0 70px}h1{font-size:clamp(2rem,5vw,3rem);margin:12px 0}p{line-height:1.6;color:#c4d5dc}.notice,.panel{background:#172b38;border:1px solid #2c4a59;border-radius:14px;padding:20px;margin-top:20px}.notice{border-left:4px solid #7de1df}.layout{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:18px}.thread-item{display:block;width:100%;text-align:left;background:#102632;color:#f4f7f8;border:1px solid #42616e;border-radius:9px;margin:8px 0;padding:12px;font:inherit;cursor:pointer}.thread-item[aria-current=true]{border-color:#7de1df;background:#19434a}.messages{max-height:440px;min-height:160px;overflow:auto;border:1px solid #355462;border-radius:10px;padding:12px;background:#10232f}.bubble{padding:10px 13px;border-radius:10px;background:#244150;margin:10px 0;max-width:95%;white-space:pre-wrap;overflow-wrap:anywhere}.bubble.mine{margin-left:auto;background:#1e504b}.bubble small{display:block;color:#d1e1e6;margin-bottom:6px}textarea{width:100%;min-height:95px;padding:12px;background:#0d202b;color:white;border:1px solid #78939e;border-radius:8px;font:inherit}button,.btn{background:#7de1df;color:#0c2027;border:0;border-radius:9px;padding:12px 17px;font:inherit;font-weight:700;cursor:pointer;display:inline-block;text-decoration:none}button:disabled{opacity:.6;cursor:wait}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px}.contact-actions{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.contact-actions button{background:#284653;color:#f4f7f8;border:1px solid #7c9ca7;min-height:44px}.contact-actions button.danger{border-color:#cc8888;color:#ffe0e0}.contact-lists{margin:16px 0}.contact-lists details{margin:12px 0}.contact-lists summary{cursor:pointer;padding:8px 0;color:#b6d6df}.contact-lists .thread-item{font-size:.95rem}.muted{font-size:.9rem;color:#bed3dc}[hidden]{display:none!important}:focus-visible{outline:3px solid #7de1df;outline-offset:3px}@media(max-width:700px){.layout{grid-template-columns:1fr}.messages{max-height:330px}} </style><script defer src="/local-translate.js"></script></head>
 <body><header><nav class="wrap"><strong>INTENTIONAL NOISE <span style="color:#7de1df">CONNECT</span></strong><a href="/search.html">Find members</a></nav></header>
 <main class="wrap"><h1>Member messages</h1><p>Contact fellow listed members for free, without publishing your email address.</p>
 <div class="notice"><strong>Privacy note:</strong> Messages are handled by our service provider. This first version is not end-to-end encrypted. Do not send passwords or sensitive personal information. Hidden members can keep messaging existing contacts and can start conversations with listed members. Hidden profiles remain out of member search. <a href="https://intentionalnoise.info/privacy.html">Read our privacy information</a>.<p><a href="/translation-options.html">Compare browser translation: Chrome, Edge, Firefox and Safari</a> — see where webpage text is translated before using it on messages.</p></div>
 <section id="gate" class="panel" hidden><p>Sign in or create your free account to access private member messages.</p><a id="loginLink" class="btn" href="/auth.html">Sign up / log in</a></section>
-<section id="inbox" class="layout" hidden><aside class="panel"><h2>Conversations</h2><p class="muted">Messages you've sent or received.</p><div id="threads"></div><a class="btn" href="/search.html">Start a conversation</a></aside><div class="panel"><h2 id="conversationTitle">Select a conversation</h2><p id="availability" class="muted"></p><div id="messages" class="messages" role="log" aria-live="polite"></div><form id="compose" hidden><label for="body"><strong>Your message</strong></label><textarea id="body" maxlength="2000" required placeholder="Write a respectful, music-related message."></textarea><div class="toolbar"><span class="muted"><span id="count">0</span> / 2000</span><button type="submit" id="send">Send message</button></div></form></div></section>
+<section id="inbox" class="layout" hidden><aside class="panel"><h2>Conversations</h2><p class="muted">Messages you've sent or received.</p><div id="threads"></div><div class="contact-lists">
+<details id="ignoredSection" hidden><summary>Ignored (<span id="ignoredCount">0</span>)</summary><div id="ignoredThreads"></div></details>
+<details id="blockedSection" hidden><summary>Blocked (<span id="blockedCount">0</span>)</summary><div id="blockedThreads"></div></details>
+</div><a class="btn" href="/search.html">Start a conversation</a></aside><div class="panel"><h2 id="conversationTitle">Select a conversation</h2><div id="contactActions" class="contact-actions" hidden>
+<button id="ignoreContact" type="button">Ignore</button><button id="blockContact" type="button" class="danger">Block</button>
+</div><p id="availability" class="muted"></p><div id="messages" class="messages" role="log" aria-live="polite"></div><form id="compose" hidden><label for="body"><strong>Your message</strong></label><textarea id="body" maxlength="2000" required placeholder="Write a respectful, music-related message."></textarea><div class="toolbar"><span class="muted"><span id="count">0</span> / 2000</span><button type="submit" id="send">Send message</button></div></form></div></section>
 <p id="status" role="status" aria-live="polite">Checking member access…</p></main><footer class="wrap muted">© 2026 Intentional Noise · <a href="/">Connect home</a> · <a href="https://intentionalnoise.info/privacy.html">Privacy</a></footer>
 <script type="module">
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0');
 const $=id=>document.getElementById(id),uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-let user=null,peer=null,people=new Map(),listedPeers=new Set(),all=[],generation=0;
+let user=null,peer=null,people=new Map(),listedPeers=new Set(),prefs=new Map(),all=[],generation=0;
 const status=message=>$('status').textContent=message;
 $('loginLink').href='/auth.html?next='+encodeURIComponent('/make-contact.html'+location.search);
 $('body').addEventListener('input',()=>$('count').textContent=$('body').value.length);
 function label(id){return people.get(id)||'Private member'}
 function bubble(row){const el=document.createElement('div');el.className='bubble'+(row.sender_id===user.id?' mine':'');const s=document.createElement('small');s.textContent=(row.sender_id===user.id?'You':label(row.sender_id))+' · '+new Date(row.created_at).toLocaleString();const p=document.createElement('span');p.textContent=row.body;el.append(s,p);return el;}
-async function access(){const {data,error}=await db.auth.getUser();user=error?null:data.user;$('gate').hidden=!!user;$('inbox').hidden=!user;if(!user){generation++;$('threads').replaceChildren();$('messages').replaceChildren();$('compose').hidden=true;status('Sign in free to read or send messages.');}return !!user;}
+async function access(){const {data,error}=await db.auth.getUser();user=error?null:data.user;$('gate').hidden=!!user;$('inbox').hidden=!user;if(!user){generation++;$('threads').replaceChildren();$('messages').replaceChildren();$('compose').hidden=true;$('contactActions').hidden=true;prefs=new Map();peer=null;status('Sign in free to read or send messages.');}return !!user;}
 async function reload(){if(!await access())return;const tick=++generation;status('Loading your messages…');
 const [musicianSelf,instructorSelf]=await Promise.all([
   db.from('musician_profiles').select('is_public').eq('user_id',user.id).maybeSingle(),
@@ -25,7 +30,15 @@ const [musicianSelf,instructorSelf]=await Promise.all([
 ]);if(musicianSelf.error)throw musicianSelf.error;if(instructorSelf.error)throw instructorSelf.error;
 const hasProfile=!!musicianSelf.data||!!instructorSelf.data;
 const {data:rows,error}=await db.from('connect_direct_messages').select('id,sender_id,recipient_id,body,created_at').order('created_at',{ascending:false}).limit(500);if(error)throw error;if(tick!==generation)return;
-all=rows||[];const ids=new Set(all.flatMap(m=>[m.sender_id,m.recipient_id]).filter(id=>id!==user.id));if(peer)ids.add(peer);people=new Map();listedPeers=new Set();const idList=Array.from(ids);
+all=rows||[];
+const {data:settings,error:settingsError}=await db.from('connect_message_preferences')
+ .select('peer_id,blocked,ignored').eq('user_id',user.id);
+if(settingsError)throw settingsError;
+if(tick!==generation)return;
+prefs=new Map((settings||[]).map(p=>[p.peer_id,p]));
+const ids=new Set(all.flatMap(m=>[m.sender_id,m.recipient_id]).filter(id=>id!==user.id));
+for(const id of prefs.keys())ids.add(id);
+if(peer)ids.add(peer);people=new Map();listedPeers=new Set();const idList=Array.from(ids);
 if(idList.length){
   const [musicians,instructors]=await Promise.all([
     db.from('musician_profiles').select('user_id,display_name,is_public').in('user_id',idList),
@@ -39,16 +52,61 @@ if(idList.length){
 const {data:knownContacts,error:contactError}=await db.rpc('connect_message_contact_names');
 if(contactError)throw contactError;
 for(const contact of knownContacts||[])if(!people.has(contact.peer_id))people.set(contact.peer_id,contact.display_name+' (private)');
-const others=[...new Set([...all.map(m=>m.sender_id===user.id?m.recipient_id:m.sender_id),...(peer?[peer]:[])])];$('threads').replaceChildren();
-for(const id of others){const b=document.createElement('button');b.type='button';b.className='thread-item';b.setAttribute('aria-current',String(peer===id));b.textContent=label(id);b.addEventListener('click',()=>{peer=id;history.replaceState({},'', '/make-contact.html?member='+encodeURIComponent(id));reload().catch(fail)});$('threads').append(b);}
+const others=[...new Set([...all.map(m=>m.sender_id===user.id?m.recipient_id:m.sender_id),...prefs.keys(),...(peer?[peer]:[])])]; 
+for(const target of ['threads','ignoredThreads','blockedThreads'])$(target).replaceChildren();
+let ignoredCount=0,blockedCount=0;
+for(const id of others){
+  if(id===user.id)continue;
+  const b=document.createElement('button');b.type='button';b.className='thread-item';
+  b.setAttribute('aria-current',String(peer===id));b.textContent=label(id);
+  b.addEventListener('click',()=>{peer=id;history.replaceState({},'', '/make-contact.html?member='+encodeURIComponent(id));reload().catch(fail)});
+  const setting=prefs.get(id);
+  if(setting?.blocked){$('blockedThreads').append(b);blockedCount++;}
+  else if(setting?.ignored){$('ignoredThreads').append(b);ignoredCount++;}
+  else $('threads').append(b);
+}
+$('ignoredCount').textContent=String(ignoredCount);$('blockedCount').textContent=String(blockedCount);
+$('ignoredSection').hidden=ignoredCount===0;$('blockedSection').hidden=blockedCount===0;
 $('messages').replaceChildren();if(peer){$('conversationTitle').textContent=label(peer);for(const m of all.filter(m=>(m.sender_id===peer&&m.recipient_id===user.id)||(m.sender_id===user.id&&m.recipient_id===peer)).reverse())$('messages').append(bubble(m));$('messages').scrollTop=$('messages').scrollHeight;}else $('conversationTitle').textContent='Select a conversation';
 const existingContact=!!peer&&all.some(m=>(m.sender_id===peer&&m.recipient_id===user.id)||(m.sender_id===user.id&&m.recipient_id===peer));
-const eligible=!!peer&&hasProfile&&(listedPeers.has(peer)||existingContact);$('compose').hidden=!eligible;
-$('availability').textContent=!hasProfile?'Complete your free profile to send member messages.':!peer?'Start a conversation with a listed member or select an existing contact.':eligible?'Private conversation. Hiding your profile does not end this contact.':'This member is hidden and has not established a conversation with you.';
+const myPreference=peer?prefs.get(peer):null;
+$('contactActions').hidden=!peer||peer===user.id||!hasProfile;
+$('blockContact').textContent=myPreference?.blocked?'Unblock':'Block';
+$('ignoreContact').textContent=myPreference?.ignored?'Restore from ignored':'Ignore';
+$('ignoreContact').hidden=!!myPreference?.blocked;
+const eligible=!!peer&&hasProfile&&!myPreference?.blocked&&(listedPeers.has(peer)||existingContact);$('compose').hidden=!eligible;
+$('availability').textContent=!hasProfile?'Complete your free profile to send member messages.':
+ !peer?'Start a conversation with a listed member or select an existing contact.':
+ myPreference?.blocked?'You blocked this member. Messages are paused in both directions. Unblock to restore contact.':
+ myPreference?.ignored?'This conversation is ignored. You can still read and send messages.':
+ eligible?'Private conversation. Hiding your profile does not end this contact.':
+ 'This member is hidden and has not established a conversation with you.';
 status('Messages loaded. Latest 500 available.');
 }
-function fail(e){status(e.message||'Messages unavailable. Please try again.');}
-$('compose').addEventListener('submit',async e=>{e.preventDefault();const message=$('body').value.trim();if(!message||message.length>2000||!peer||!uuid.test(peer))return;$('send').disabled=true;try{if(!await access())return;const {error}=await db.from('connect_direct_messages').insert({sender_id:user.id,recipient_id:peer,body:message});if(error)throw error;$('body').value='';$('count').textContent='0';await reload();}catch(e){fail(e)}finally{$('send').disabled=false;}});
+function fail(e){status(e?.message||'Messages unavailable. Please try again.');}
+async function changePreference(key){
+ if(!peer||!uuid.test(peer)||!user||peer===user.id)return;
+ const original=prefs.get(peer)||{blocked:false,ignored:false};
+ const next={blocked:!!original.blocked,ignored:!!original.ignored};
+ next[key]=!next[key];
+ if(key==='blocked'&&next.blocked){
+   if(!confirm('Block this member? Neither of you will be able to send new messages until you unblock. Earlier messages stay saved.'))return;
+   next.ignored=false;
+ }
+ for(const id of ['blockContact','ignoreContact'])$(id).disabled=true;
+ try{
+   if(!await access())return;
+   const operation=next.blocked||next.ignored?
+     db.from('connect_message_preferences').upsert({user_id:user.id,peer_id:peer,...next},{onConflict:'user_id,peer_id'}):
+     db.from('connect_message_preferences').delete().eq('user_id',user.id).eq('peer_id',peer);
+   const {error}=await operation;if(error)throw error;
+   await reload();
+ }catch(e){fail(e)}
+ finally{for(const id of ['blockContact','ignoreContact'])$(id).disabled=false;}
+}
+$('blockContact').addEventListener('click',()=>changePreference('blocked'));
+$('ignoreContact').addEventListener('click',()=>changePreference('ignored'));
+$('compose').addEventListener('submit',async e=>{e.preventDefault();const message=$('body').value.trim();if(!message||message.length>2000||!peer||!uuid.test(peer))return;$('send').disabled=true;try{if(!await access())return;const {error}=await db.from('connect_direct_messages').insert({sender_id:user.id,recipient_id:peer,body:message});if(error)throw new Error(error.code==='42501'?'This member is not accepting messages from you.':error.message);$('body').value='';$('count').textContent='0';await reload();}catch(e){fail(e)}finally{$('send').disabled=false;}});
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){user=null;access().catch(fail)}});
 const param=new URLSearchParams(location.search).get('member');if(param&&uuid.test(param))peer=param;
 try{await reload()}catch(e){fail(e)}
