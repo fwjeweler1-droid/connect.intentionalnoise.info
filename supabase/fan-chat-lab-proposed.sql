@@ -82,14 +82,14 @@ for insert to authenticated with check (
 create policy "Pilot room members can read messages" on public.connect_fan_lab_messages
 for select to authenticated using (
   exists (select 1 from public.connect_fan_lab_access a where a.user_id=(select auth.uid()) and a.enabled)
-  and exists (select 1 from public.connect_fan_lab_members p where p.room_id=room_id and p.member_id=(select auth.uid()))
+  and exists (select 1 from public.connect_fan_lab_members p where p.room_id=public.connect_fan_lab_messages.room_id and p.member_id=(select auth.uid()))
 );
 create policy "Pilot room members can post" on public.connect_fan_lab_messages
 for insert to authenticated with check (
   sender_id=(select auth.uid())
   and exists (select 1 from public.connect_fan_lab_access a where a.user_id=(select auth.uid()) and a.enabled)
-  and exists (select 1 from public.connect_fan_lab_members p where p.room_id=room_id and p.member_id=(select auth.uid()) and p.can_post)
-  and exists (select 1 from public.connect_fan_lab_rooms r where r.id=room_id and r.status='live')
+  and exists (select 1 from public.connect_fan_lab_members p where p.room_id=public.connect_fan_lab_messages.room_id and p.member_id=(select auth.uid()) and p.can_post)
+  and exists (select 1 from public.connect_fan_lab_rooms r where r.id=public.connect_fan_lab_messages.room_id and r.status='live')
 );
 -- Realtime Postgres Changes; RLS still governs which rows clients can receive.
 -- Run only once after confirming the publication and table registration:
