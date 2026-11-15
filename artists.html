@@ -50,6 +50,7 @@ let artists=[];let verifiedArtistIds=new Set();const publishedLogos=new Map();
 function el(tag,txt,cls){const node=document.createElement(tag);if(txt!==undefined)node.textContent=txt;if(cls)node.className=cls;return node}
 function setStatus(text){$('status').textContent=text}
 function link(text,url,cls='button alt'){const a=el('a',text,cls);a.href=url;return a}
+function messageUrl(p,requestGig=false){return 'https://connect.intentionalnoise.info/make-contact.html?member='+encodeURIComponent(p.user_id)+(requestGig?'&kind=gig':'')}
 function artistUrl(p){return 'https://intentionalnoise.band/'+encodeURIComponent(p.slug)}
 function profileUrl(p){return location.pathname+'?slug='+encodeURIComponent(p.slug)}
 function safeImage(url){try{const u=new URL(url);return u.protocol==='https:'?u.href:null}catch{return null}}
@@ -94,7 +95,7 @@ function card(p){
  if(p.available_for_gigs)box.append(el('span','Available for gigs','pill'));
  if(p.bio)box.append(el('p',p.bio.slice(0,180)));
  if((p.genres||[]).length)box.append(el('p','Genres: '+p.genres.slice(0,6).join(', ')));
- const acts=el('div',null,'actions');acts.append(link('View profile',profileUrl(p)),link('Artist showcase',artistUrl(p)));box.append(acts);
+ const acts=el('div',null,'actions');acts.append(link('View profile',profileUrl(p)),link('Message this artist',messageUrl(p)),link('Request a gig',messageUrl(p,true)));box.append(acts);
  return box;
 }
 function showProfile(p){
@@ -107,7 +108,7 @@ function showProfile(p){
  detailLine(root,'Instruments',(p.instruments||[]).join(', '));
  detailLine(root,'Genres',(p.genres||[]).join(', '));
  detailLine(root,'Roles',(p.roles||[]).join(', '));
- const acts=el('div',null,'actions');acts.append(link('View full artist showcase',artistUrl(p)),link('Find booking opportunities','https://ineedagig.net/'),link('All published artists',location.pathname));root.append(acts);
+ const acts=el('div',null,'actions');acts.append(link('View full artist showcase',artistUrl(p)),link('Message this artist',messageUrl(p)),link('Request a gig / appearance',messageUrl(p,true)),link('All published artists',location.pathname));root.append(acts);
  root.hidden=false;
  setStatus('Public artist profile · automatically synchronized from Connect.');
 }
