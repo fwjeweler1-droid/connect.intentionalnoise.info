@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#101d28">
+<title>My Storefront | Intentional Noise Connect</title>
+<style>
+:root{font:17px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;background:#101d28;color:#f4f7f8}a{color:#8cebe2}
+header,main,footer{width:min(800px,calc(100% - 32px));margin:auto;padding:22px 0}
+header{border-bottom:1px solid #436375}header a{font-weight:800;text-decoration:none}
+.panel{background:#172b38;border:1px solid #436375;border-radius:16px;padding:clamp(18px,4vw,28px);margin:18px 0}
+h1{font-size:clamp(2rem,5vw,2.7rem);line-height:1.2;margin:0 0 15px}
+h2{font-size:1.2rem}p{color:#c9dde3}label{display:block;font-weight:700;margin:18px 0 7px}
+input,select{width:100%;padding:12px;border-radius:9px;border:1px solid #89a8b0;background:#0d202b;color:white;font:inherit}
+input[type=checkbox]{width:auto;vertical-align:middle;margin-right:8px}
+button{background:#8cebe2;color:#0d2630;font:inherit;font-weight:800;min-height:44px;border:0;border-radius:10px;padding:11px 17px;cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid white;outline-offset:3px}
+.notice{padding:12px 15px;border-left:4px solid #8cebe2;background:#20394a}small{color:#bed1d5}
+footer{font-size:.85rem;color:#a9c1ca}#cartForm[hidden],[hidden]{display:none!important}
+</style>
+</head><body>
+<header><a href="/auth.html">← Intentional Noise · Connect</a></header>
+<main>
+<h1>My shopping cart</h1>
+<p>Founder benefit: connect your <strong>own seller-operated shopping cart</strong> to your artist showcase. Customers check out with your chosen provider; you control products, prices, fulfillment, customer orders and taxes. Intentional Noise does not process your store's sales.</p>
+<section class="panel">
+<h2>One-time $12 Founder account</h2>
+<p id="eligibility" class="notice" role="status" aria-live="polite">Checking your signed-in account…</p>
+<p><a href="/payment-gateway.html">View my Founder status</a> · <a href="/band-page.html">Manage my artist page</a></p>
+</section>
+<section class="panel">
+<h2>Connect my existing cart</h2>
+<form id="cartForm" hidden>
+  <label for="storeName">Store name</label>
+  <input id="storeName" maxlength="90" minlength="2" required autocomplete="organization" placeholder="My music & merch shop">
+  <label for="provider">Your checkout provider</label>
+  <select id="provider" required>
+    <option value="stripe">Stripe</option><option value="shopify">Shopify</option>
+    <option value="square">Square</option><option value="paypal">PayPal</option>
+    <option value="other">Other secure shopping cart</option>
+  </select>
+  <label for="cartUrl">Your secure shop / cart URL (https://)</label>
+  <input id="cartUrl" type="url" inputmode="url" maxlength="1024" required placeholder="https://your-shop.example/">
+  <p><small>Enter your public shop URL, not an API key, payment secret, admin login, or private checkout session. One store link per artist account in this first phase. Your provider supplies the actual basket and checkout.</small></p>
+  <label><input type="checkbox" id="publish">Show “Shop this artist” on my public approved artist showcase</label>
+  <p id="publicationHelp"><small>Published storefronts require your separate artist page to be approved and published. This setting is private until you opt in.</small></p>
+  <button id="save" type="submit">Save my cart settings</button>
+  <button id="remove" type="button" disabled>Remove store link</button>
+</form>
+<p id="status" role="status" aria-live="polite"></p>
+</section>
+<section class="panel"><h2>What this includes</h2>
+<p>The storefront link follows your one published artist identity across IntentionalNoise.band, IntentionalNoise.info, and IneedaGig. Your customers' checkout, tax calculation, and payment information stay with your selected merchant provider. You may change or unpublish the store without deleting your Connect account.</p>
+<p><small>Independent provider processing, hosting and shipping charges are not paid by the one-time Founder fee. This feature does not create a new merchant website or automatically open a seller payment account.</small></p></section>
+</main><footer>© 2026 Intentional Noise · Seller-operated carts · Private until you publish</footer>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
+const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0',
+{auth:{flowType:'pkce',detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+const $=id=>document.getElementById(id),form=$('cartForm');
+let user=null,hasFounder=false,hasPublicArtist=false,existing=false;
+function safeUrl(value){
+  const u=new URL(value.trim());
+  const host=u.hostname.toLowerCase();
+  if(u.protocol!=='https:'||u.username||u.password||u.hash||!host.includes('.')||
+     host==='localhost'||host.endsWith('.local')||/^127\./.test(host)||/^10\./.test(host)||
+     /^192\.168\./.test(host)||/^169\.254\./.test(host)||
+     /^172\.(1[6-9]|2[0-9]|3[01])\./.test(host))throw Error('Enter a public HTTPS shop URL.');
+  return u.href;
+}
+function say(message){$('status').textContent=message}
+async function load(){
+  const auth=await db.auth.getUser();user=auth.data?.user;
+  if(!user){$('eligibility').textContent='Sign in to Connect to access your private storefront settings.';say('Your store remains private.');return}
+  const [lock,profile]=await Promise.all([
+    db.from('connect_account_price_locks').select('locked_at').eq('user_id',user.id).maybeSingle(),
+    db.from('artist_pages').select('published,approved_at').eq('user_id',user.id).maybeSingle()
+  ]);
+  if(lock.error||profile.error){$('eligibility').textContent='Account status could not be verified; editing is unavailable.';return}
+  hasFounder=!!lock.data;
+  hasPublicArtist=!!(profile.data?.published&&profile.data?.approved_at);
+  $('eligibility').textContent=hasFounder?
+    'Founder account confirmed. Connect one merchant-operated cart to your artist showcase.' :
+    'Your account does not currently have the confirmed one-time Founder benefit. Your free Connect account and published artist page are unaffected.';
+  if(!hasFounder)return;
+  form.hidden=false;
+  $('publish').disabled=!hasPublicArtist;
+  if(!hasPublicArtist)$('publicationHelp').textContent='Publish and obtain approval for your artist page before enabling your public shop link. Saving privately is available now.';
+  const {data,error}=await db.from('artist_storefronts').select('store_name,provider,cart_url,is_public').eq('user_id',user.id).maybeSingle();
+  if(error){say('Store setup is not active yet. The new database migration or permissions may still be pending.');form.querySelector('#save').disabled=true;return}
+  if(data){existing=true;$('storeName').value=data.store_name;$('provider').value=data.provider;$('cartUrl').value=data.cart_url;$('publish').checked=!!data.is_public&&hasPublicArtist;$('remove').disabled=false;}
+}
+form.addEventListener('submit',async e=>{
+ e.preventDefault();if(!user||!hasFounder)return;
+ $('save').disabled=true;say('Saving private store settings…');
+ try{
+  const store_name=$('storeName').value.trim(),provider=$('provider').value,cart_url=safeUrl($('cartUrl').value);
+  if(store_name.length<2||store_name.length>90)throw Error('Store name must contain 2–90 characters.');
+  if(!['stripe','shopify','square','paypal','other'].includes(provider))throw Error('Choose a checkout provider.');
+  const row={user_id:user.id,store_name,provider,cart_url,is_public:hasPublicArtist&&$('publish').checked,updated_at:new Date().toISOString()};
+  const {error}=await db.from('artist_storefronts').upsert(row,{onConflict:'user_id'});
+  if(error)throw error;existing=true;$('remove').disabled=false;
+  say(row.is_public?'Saved. Your shop can appear with your approved public artist page.':'Saved privately. Your shop is not published.');
+ }catch(err){say('Could not save: '+(err.message||err))}
+ finally{$('save').disabled=false}
+});
+$('remove').addEventListener('click',async()=>{
+ if(!user||!existing||!confirm('Remove your public storefront link? Your merchant-provider store and orders remain untouched.'))return;
+ const {error}=await db.from('artist_storefronts').delete().eq('user_id',user.id);
+ if(error){say('Could not remove: '+error.message);return}
+ existing=false;form.reset();$('remove').disabled=true;say('Storefront link removed. Your external shop is unchanged.');
+});
+load();
+</script>
+</body></html>
