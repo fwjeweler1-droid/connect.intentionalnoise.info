@@ -38,13 +38,14 @@ async function reload(){if(!await access())return;const tick=++generation;status
 const [musicianSelf,instructorSelf]=await Promise.all([
   db.from('musician_profiles').select('is_public').eq('user_id',user.id).maybeSingle(),
   db.from('instructor_profiles').select('is_public').eq('user_id',user.id).maybeSingle()
-]);if(musicianSelf.error)throw musicianSelf.error;if(instructorSelf.error)throw instructorSelf.error;
+]);// Profile lookup is optional: an inbox must still open when profile metadata is unavailable.
+if(musicianSelf.error||instructorSelf.error)console.warn('Profile metadata unavailable; loading messages anyway');
 const hasProfile=!!musicianSelf.data||!!instructorSelf.data;
 const {data:rows,error}=await db.from('connect_direct_messages').select('id,sender_id,recipient_id,body,created_at').order('created_at',{ascending:false}).limit(500);if(error)throw error;if(tick!==generation)return;
 all=rows||[];
 const {data:settings,error:settingsError}=await db.from('connect_message_preferences')
  .select('peer_id,blocked,ignored').eq('user_id',user.id);
-if(settingsError)throw settingsError;
+if(settingsError)console.warn('Message preferences unavailable; loading conversations anyway');
 if(tick!==generation)return;
 prefs=new Map((settings||[]).map(p=>[p.peer_id,p]));
 const ids=new Set(all.flatMap(m=>[m.sender_id,m.recipient_id]).filter(id=>id!==user.id));
@@ -55,19 +56,21 @@ if(idList.length){
     db.from('musician_profiles').select('user_id,display_name,is_public').in('user_id',idList),
     db.from('instructor_profiles').select('user_id,display_name,is_public').in('user_id',idList)
   ]);
-  if(musicians.error)throw musicians.error;if(instructors.error)throw instructors.error;
+  if(musicians.error||instructors.error)console.warn('Contact directory unavailable; retaining message history');
   const {data:publicArtists,error:artistError}=await db.from('artist_pages')
     .select('user_id,display_name').in('user_id',idList).eq('published',true).not('approved_at','is',null);
-  if(artistError)throw artistError;
+  if(artistError)console.warn('Public artist labels unavailable');
   for(const p of publicArtists||[]){publishedArtists.set(p.user_id,p.display_name);people.set(p.user_id,p.display_name);}
   for(const p of [...(musicians.data||[]),...(instructors.data||[])]){
     if(p.is_public){listedPeers.add(p.user_id);if(!people.has(p.user_id))people.set(p.user_id,p.display_name);}
   }
 }
 const {data:knownContacts,error:contactError}=await db.rpc('connect_message_contact_names');
-if(contactError)throw contactError;
+if(contactError)console.warn('Private contact labels unavailable');
 for(const contact of knownContacts||[])if(!people.has(contact.peer_id))people.set(contact.peer_id,contact.display_name+' (private)');
-const others=[...new Set([...all.map(m=>m.sender_id===user.id?m.recipient_id:m.sender_id),...prefs.keys(),...(peer?[peer]:[])])]; 
+const others=[...new Set([...all.map(m=>m.sender_id===user.id?m.recipient_id:m.sender_id),...prefs.keys(),...(peer?[peer]:[])])];
+// Default to the newest conversation so incoming messages are immediately visible.
+if(!peer&&others.length)peer=others[0]; 
 for(const target of ['threads','ignoredThreads','blockedThreads'])$(target).replaceChildren();
 let ignoredCount=0,blockedCount=0;
 for(const id of others){
@@ -95,7 +98,7 @@ $('availability').textContent=!peer?'Start a conversation with a listed member o
  myPreference?.ignored?'This conversation is ignored. You can still read and send messages.':
  eligible?'Private conversation. Hiding your profile does not end this contact.':
  'This member is hidden and has not established a conversation with you.';
-status('Messages loaded. Latest 500 available.');
+status('Messages loaded. '+all.length+' message(s) available.');
 }
 function fail(e){status(e?.message||'Messages unavailable. Please try again.');}
 async function changePreference(key){
@@ -132,4 +135,7 @@ if(!note||message.length>2000||!peer||!uuid.test(peer)){if(message.length>2000)s
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){user=null;access().catch(fail)}});
 const param=new URLSearchParams(location.search).get('member');if(param&&uuid.test(param))peer=param;
 try{await reload()}catch(e){fail(e)}
+// Refresh on return to the tab and periodically while the inbox is visible.
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)reload().catch(fail)});
+setInterval(()=>{if(!document.hidden&&user)reload().catch(fail)},30000);
 </script></body></html>
