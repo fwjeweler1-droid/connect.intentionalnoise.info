@@ -153,5 +153,24 @@ async function syncMessages(){
  }catch(e){console.warn('Inbox sync retrying',e)}
  finally{refreshing=false}
 }
+// Realtime INSERT events are delivered only to authenticated rows allowed by RLS.
+// Polling remains as a fallback when mobile browsers suspend websocket connections.
+let liveChannel=null;
+function connectLiveMessages(){
+ if(liveChannel){db.removeChannel(liveChannel);liveChannel=null;}
+ if(!user)return;
+ liveChannel=db.channel('connect-dm-inbox-'+user.id)
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'connect_direct_messages'},payload=>{
+   const row=payload.new;
+   if(row&&(row.sender_id===user.id||row.recipient_id===user.id)){
+     reload().then(()=>{messageSignature=all.map(m=>m.id).join('|')}).catch(fail);
+   }
+  }).subscribe();
+}
+connectLiveMessages();
+db.auth.onAuthStateChange(event=>{
+ if(event==='SIGNED_OUT'){if(liveChannel){db.removeChannel(liveChannel);liveChannel=null;}}
+ if(event==='SIGNED_IN')setTimeout(connectLiveMessages,0);
+});
 setInterval(syncMessages,3000);
 </script></body></html>
