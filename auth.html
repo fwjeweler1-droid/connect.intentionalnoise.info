@@ -514,10 +514,10 @@ $('forgotPassword').addEventListener('click',async()=>{
  try{
   if(TURNSTILE_SITE_KEY&&!captchaToken){authNotice('Complete the Cloudflare verification before requesting a password reset.',true);if(turnstileWidget!==null&&window.turnstile)window.turnstile.reset(turnstileWidget);return;}
   const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/account-settings.html',captchaToken:TURNSTILE_SITE_KEY?captchaToken:undefined});
-  if(error)authNotice('Unable to request a reset right now. Please try again later.',true);
+  if(error){const code=String(error.code||'');if(code.includes('captcha'))authNotice('Cloudflare verification expired or was rejected. Complete a fresh check and select Forgot password again.',true);else if(code.includes('rate'))authNotice('Too many recovery requests. Wait a few minutes before trying again.',true);else authNotice('Recovery email could not be requested. Please try again shortly.',true);}
   else authNotice('If this address has a Connect account, a password-reset link will arrive by email. Check spam too.');
  }catch(e){authNotice('Password reset temporarily unavailable. Please try again.',true);}
- finally{$('forgotPassword').disabled=false;}
+ finally{captchaToken='';if(turnstileWidget!==null&&window.turnstile)window.turnstile.reset(turnstileWidget);$('forgotPassword').disabled=false;}
 });
 $('newAccountMode').addEventListener('click',()=>setAuthIntent('signup'));
 $('existingAccountMode').addEventListener('click',()=>setAuthIntent('login'));
