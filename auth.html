@@ -199,7 +199,7 @@ async function setupBotCheck(){
  if(!TURNSTILE_SITE_KEY)return;
  $('humanChallenge').hidden=false;
  const script=document.createElement('script');script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';script.async=true;
- script.onload=()=>{turnstileWidget=window.turnstile.render('#turnstileMount',{sitekey:TURNSTILE_SITE_KEY,callback:t=>{captchaToken=t},'expired-callback':()=>{captchaToken=''},'error-callback':()=>{captchaToken=''}})};
+ script.onload=()=>{turnstileWidget=window.turnstile.render('#turnstileMount',{sitekey:TURNSTILE_SITE_KEY,callback:t=>{captchaToken=t;const el=$('authStatus');if(el.textContent.includes('Cloudflare security verification'))authNotice('Security verification complete. You can sign in now.');},'expired-callback':()=>{captchaToken='';authNotice('Security verification expired. Complete the refreshed Cloudflare check and try again.',true);window.turnstile.reset(turnstileWidget)},'error-callback':()=>{captchaToken='';authNotice('Security verification needs to be repeated. Please complete the Cloudflare check.',true);window.turnstile.reset(turnstileWidget)}})};
  script.onerror=()=>status('authStatus','Human verification is unavailable. Try again later.');
  document.head.append(script);
 }
@@ -402,7 +402,8 @@ async function authAction(type){
    return;
   }
   if(TURNSTILE_SITE_KEY&&!captchaToken){
-   authNotice('Complete the Cloudflare security verification, then tap Sign in.',true);
+   authNotice('Cloudflare verification has not supplied a valid token. Complete the refreshed check, then sign in.',true);
+   if(turnstileWidget!==null&&window.turnstile)window.turnstile.reset(turnstileWidget);
    return;
   }
   const selectedKind=$('accountKind').value;
