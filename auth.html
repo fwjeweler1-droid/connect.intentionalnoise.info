@@ -513,7 +513,7 @@ $('forgotPassword').addEventListener('click',async()=>{
  $('forgotPassword').disabled=true;
  try{
   if(TURNSTILE_SITE_KEY&&!captchaToken){authNotice('Complete the Cloudflare verification before requesting a password reset.',true);if(turnstileWidget!==null&&window.turnstile)window.turnstile.reset(turnstileWidget);return;}
-  const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/auth.html?intent=recovery#auth',captchaToken:TURNSTILE_SITE_KEY?captchaToken:undefined});
+  const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/account-settings.html',captchaToken:TURNSTILE_SITE_KEY?captchaToken:undefined});
   if(error)authNotice('Unable to request a reset right now. Please try again later.',true);
   else authNotice('If this address has a Connect account, a password-reset link will arrive by email. Check spam too.');
  }catch(e){authNotice('Password reset temporarily unavailable. Please try again.',true);}
