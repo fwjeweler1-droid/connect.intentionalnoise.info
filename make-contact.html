@@ -22,7 +22,7 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0');
 const $=id=>document.getElementById(id),uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-let user=null,peer=null,people=new Map(),listedPeers=new Set(),publishedArtists=new Map(),prefs=new Map(),all=[],generation=0;
+let user=null,peer=null,people=new Map(),listedPeers=new Set(),publishedArtists=new Map(),prefs=new Map(),all=[],generation=0,refreshing=false;
 const kind=new URLSearchParams(location.search).get('kind')==='gig'?'gig':'message';
 $('bookingDetails').hidden=kind!=='gig';
 $('messageLabel').textContent=kind==='gig'?'Event details and invitation':'Your message';
@@ -137,5 +137,5 @@ const param=new URLSearchParams(location.search).get('member');if(param&&uuid.te
 try{await reload()}catch(e){fail(e)}
 // Refresh on return to the tab and periodically while the inbox is visible.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)reload().catch(fail)});
-setInterval(()=>{if(!document.hidden&&user)reload().catch(fail)},30000);
+setInterval(async()=>{if(document.hidden||!user||refreshing)return;refreshing=true;try{await reload()}catch(e){fail(e)}finally{refreshing=false}},5000);
 </script></body></html>
