@@ -137,5 +137,21 @@ const param=new URLSearchParams(location.search).get('member');if(param&&uuid.te
 try{await reload()}catch(e){fail(e)}
 // Refresh on return to the tab and periodically while the inbox is visible.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)reload().catch(fail)});
-setInterval(async()=>{if(document.hidden||!user||refreshing)return;refreshing=true;try{await reload()}catch(e){fail(e)}finally{refreshing=false}},5000);
+// Poll only message metadata; expensive profile/directory queries run only when messages change.
+let messageSignature=all.map(m=>m.id).join('|');
+async function syncMessages(){
+ if(document.hidden||!user||refreshing)return;
+ refreshing=true;
+ try{
+   const {data,error}=await db.from('connect_direct_messages').select('id').order('created_at',{ascending:false}).limit(500);
+   if(error)throw error;
+   const signature=(data||[]).map(m=>m.id).join('|');
+   if(signature!==messageSignature){
+     await reload();
+     messageSignature=all.map(m=>m.id).join('|');
+   }
+ }catch(e){console.warn('Inbox sync retrying',e)}
+ finally{refreshing=false}
+}
+setInterval(syncMessages,3000);
 </script></body></html>
