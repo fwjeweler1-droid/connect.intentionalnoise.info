@@ -99,7 +99,6 @@ $('availability').textContent=!peer?'Start a conversation with a listed member o
  eligible?'Private conversation. Hiding your profile does not end this contact.':
  'This member is hidden and has not established a conversation with you.';
 status('Messages loaded. '+all.length+' message(s) available.');
-if(typeof messageSignature!=='undefined')messageSignature=all.map(m=>m.id).join('|');
 }
 function fail(e){status(e?.message||'Messages unavailable. Please try again.');}
 async function changePreference(key){
