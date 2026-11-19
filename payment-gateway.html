@@ -8,7 +8,7 @@ body{margin:0;background:#101d28;color:#f4f7f8}header,main,footer{width:min(800p
 a{color:#8cebe2}header a{font-weight:800;text-decoration:none}.panel{background:#172b38;border:1px solid #436375;border-radius:16px;padding:clamp(18px,4vw,30px);margin:20px 0}
 h1{font-size:clamp(1.9rem,5vw,2.6rem);line-height:1.15}h2{font-size:1.3rem}.lead{font-size:1.12rem;color:#c9dde3}.hint{font-size:.92rem;color:#bad0d8}.price{font-size:2.2rem;font-weight:900;color:#9cecd8}.price small{font-size:.92rem;color:#c5d4dd}
 button,.button{font:inherit;font-weight:750;padding:13px 18px;border:0;border-radius:10px;background:#8cebe2;color:#0d2630;cursor:pointer;display:inline-block;text-decoration:none}
-button:disabled{opacity:.55;cursor:wait}.notice{padding:14px 16px;background:#20394a;border-left:4px solid #8cebe2;border-radius:4px}
+button:disabled{opacity:.55;cursor:wait} input{font:inherit;color:#f4f7f8;background:#0d2330;border:1px solid #6892a6;border-radius:8px;padding:11px 12px;max-width:100%;width:100%}.invite-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:12px 0}.invite-fields label{font-weight:700;font-size:.94rem;display:block}.invite-fields input{margin-top:4px}.notice{padding:14px 16px;background:#20394a;border-left:4px solid #8cebe2;border-radius:4px}
 ul{padding-left:22px}li{margin:6px 0}a:focus-visible,button:focus-visible{outline:3px solid #fff;outline-offset:4px}
 footer{font-size:.85rem;color:#a9c1ca}
 </style></head>
@@ -28,6 +28,13 @@ footer{font-size:.85rem;color:#a9c1ca}
 <section class="panel"><h2>Your account status</h2><p id="status" class="notice" role="status" aria-live="polite">Checking your signed-in account…</p>
 <div id="actions" hidden><button id="checkout" type="button">Pay $12 securely — one time</button></div>
 <p id="receipt" class="hint" hidden></p>
+<div id="invitePanel" class="panel" hidden><h2>Have a complimentary invitation?</h2>
+<p class="hint">After your event organizer confirms their guest list, enter the shared invitation code and the one name listed for you. A first name or last name is enough. Each approved musician or sound engineering participant receives one account seat. No card details are needed.</p>
+<form id="inviteForm"><div class="invite-fields">
+<label>Invitation code<input id="inviteCode" autocomplete="off" autocapitalize="characters" maxlength="40" required placeholder="Invitation code"></label>
+<label>Roster name<input id="inviteName" autocomplete="name" maxlength="100" required placeholder="First or last name"></label>
+</div><button id="redeemInvite" type="submit">Use invitation instead of payment</button></form>
+<p id="inviteStatus" role="status" aria-live="polite" class="hint"></p></div>
 <p class="hint">Payment card details are entered only on the payment processor's secure checkout page. This site never asks you to type a credit-card number.</p>
 <p><a href="/auth.html">Sign in or return to my member profile</a> · <a href="https://intentionalnoise.info/privacy.html">Privacy</a></p>
 </section></main><footer>© 2026 Intentional Noise · Verification is optional; existing free access remains available.</footer>
@@ -35,12 +42,14 @@ footer{font-size:.85rem;color:#a9c1ca}
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
 const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0',{auth:{flowType:'pkce',detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
 const status=document.getElementById('status'),actions=document.getElementById('actions'),receipt=document.getElementById('receipt'),pay=document.getElementById('checkout');
+const invitePanel=document.getElementById('invitePanel'),inviteForm=document.getElementById('inviteForm'),inviteCode=document.getElementById('inviteCode'),inviteName=document.getElementById('inviteName'),inviteStatus=document.getElementById('inviteStatus'),redeemInvite=document.getElementById('redeemInvite');
 const q=new URLSearchParams(location.search);
 async function load(){
- actions.hidden=true;receipt.hidden=true;
+ actions.hidden=true;receipt.hidden=true;invitePanel.hidden=true;
  const auth=await db.auth.getUser();
  const user=auth.data?.user;
  if(!user){status.textContent='Sign in to submit or review distribution proof before paying.';return;}
+ invitePanel.hidden=false;
  const [locked,verified,proof,payment]=await Promise.all([
   db.from('connect_account_price_locks').select('locked_at,locked_features').eq('user_id',user.id).maybeSingle(),
   db.from('verified_artist_accounts').select('verified_at').eq('user_id',user.id).maybeSingle(),
@@ -48,7 +57,7 @@ async function load(){
   db.from('artist_verification_payments').select('status,paid_at,amount_cents,currency').eq('user_id',user.id).maybeSingle()
  ]);
  if(locked.error||verified.error||proof.error||payment.error){status.textContent='Could not verify the account state. Retry after signing in.';return;}
- if(locked.data){status.textContent='Verified and price-locked. Your current included account features are guaranteed free. No further verification fee is due.';receipt.hidden=false;receipt.textContent='Guarantee recorded on '+new Date(locked.data.locked_at).toLocaleDateString()+'.';return;}
+ if(locked.data){invitePanel.hidden=true;status.textContent='Verified and price-locked. Your current included account features are guaranteed free. No further verification fee is due.';receipt.hidden=false;receipt.textContent='Guarantee recorded on '+new Date(locked.data.locked_at).toLocaleDateString()+'.';return;}
  if(payment.data?.status==='paid'||verified.data){status.textContent='A prior verification was found. Your account record is being reconciled; no additional charge should be made.';return;}
  const st=proof.data?.status;
  if(st==='pending'){status.textContent='Distribution proof submitted. Authorized review is pending. No payment is requested yet.';return;}
@@ -60,6 +69,19 @@ async function load(){
  else status.textContent='Your distribution proof has been approved. You may pay once to secure the current free-feature guarantee.';
  actions.hidden=false;
 }
+inviteForm.addEventListener('submit',async event=>{
+ event.preventDefault();redeemInvite.disabled=true;inviteStatus.textContent='Checking your invitation…';
+ try{
+  const result=await db.rpc('redeem_connect_invitation',{p_code:inviteCode.value.trim().toUpperCase(),p_name:inviteName.value.trim()});
+  if(result.error)throw result.error;
+  if(result.data?.status==='redeemed'||result.data?.status==='already_locked'){
+   inviteStatus.textContent='Invitation accepted. Your complimentary verification is recorded.';
+   await load();return;
+  }
+  inviteStatus.textContent=result.data?.message||'The invitation could not be matched. Please check your listed name or contact Intentional Noise.';
+ }catch(error){inviteStatus.textContent=error.message||'The invitation could not be validated. Please contact Intentional Noise.';}
+ finally{redeemInvite.disabled=false;}
+});
 pay.addEventListener('click',async()=>{
  pay.disabled=true;status.textContent='Requesting secure checkout…';
  try{
