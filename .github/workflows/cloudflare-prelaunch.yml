@@ -1,0 +1,95 @@
+name: Cloudflare prelaunch smoke gate
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/cloudflare-prelaunch.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-cutover-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check registry delegation, recursive DNS and DS removal
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, sys, urllib.request, urllib.parse
+          expected = {"nitin.ns.cloudflare.com", "tess.ns.cloudflare.com"}
+          failures = []
+          def get_json(url, headers=None):
+              req=urllib.request.Request(url, headers=headers or {"User-Agent":"IntentionalNoise-prelaunch/1.0"})
+              with urllib.request.urlopen(req, timeout=20) as response:
+                  return json.load(response)
+          try:
+              rdap=get_json("https://rdap.org/domain/intentionalnoise.info")
+              got={x.get("ldhName","").rstrip(".").lower() for x in rdap.get("nameservers",[])}
+              print("Registry nameservers:", sorted(got))
+              if got!=expected: failures.append("Registry delegation does not match Cloudflare")
+          except Exception as exc:
+              failures.append(f"Registry lookup failed: {exc}")
+          for name, base, headers in [
+              ("Google", "https://dns.google/resolve", {}),
+              ("Cloudflare", "https://cloudflare-dns.com/dns-query", {"accept":"application/dns-json"})
+          ]:
+              for kind, code in [("NS",2),("DS",43)]:
+                  try:
+                      url=base+"?"+urllib.parse.urlencode({"name":"intentionalnoise.info","type":kind})
+                      answer=get_json(url, headers)
+                      records=answer.get("Answer") or []
+                      if kind=="NS":
+                          got={x.get("data","").rstrip(".").lower() for x in records if x.get("type")==2}
+                          print(name, kind, sorted(got))
+                          if got!=expected: failures.append(f"{name} recursive DNS still uses a different delegation")
+                      else:
+                          got=[x.get("data") for x in records if x.get("type")==43]
+                          print(name, kind, got or "no DS")
+                          if got: failures.append(f"{name} still has a DS record")
+                  except Exception as exc:
+                      failures.append(f"{name} {kind} lookup failed: {exc}")
+          if failures:
+              print("DNS BLOCKERS:", *failures, sep="\n- ")
+              sys.exit(1)
+          print("DNS cutover passed")
+          PY
+
+      - name: Check live pages and critical routes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import sys, urllib.request
+          targets=[
+            ("Main site","https://intentionalnoise.info/","Intentional Noise | Creators First"),
+            ("Main published artists","https://intentionalnoise.info/artists.html","<html"),
+            ("Main www hostname","https://www.intentionalnoise.info/","Intentional Noise"),
+            ("Connect landing","https://connect.intentionalnoise.info/","Welcome to Intentional Noise Connect"),
+            ("Connect sign-in","https://connect.intentionalnoise.info/auth.html","Join for Free or Sign In"),
+            ("Connect artists","https://connect.intentionalnoise.info/artists.html","Published Artists"),
+            ("Connect Studio","https://connect.intentionalnoise.info/studio.html","Connect Studio"),
+            ("Connect member search","https://connect.intentionalnoise.info/search.html","Free Member Search"),
+            ("Preview Worker","https://bold-salad-486e.intntnlnoise.workers.dev/","Welcome to Intentional Noise Connect"),
+          ]
+          failures=[]
+          for name,url,needle in targets:
+              try:
+                  req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 (compatible; IN-LaunchCheck/1.0)"})
+                  with urllib.request.urlopen(req,timeout=20) as response:
+                      status=response.status
+                      final=response.url
+                      body=response.read(400000).decode("utf-8","replace")
+                  print(f"{name}: HTTP {status}; final={final}")
+                  if status!=200 or needle.lower() not in body.lower():
+                      failures.append(f"{name}: unexpected status or page content")
+              except Exception as exc:
+                  print(f"{name}: ERROR {exc}")
+                  failures.append(f"{name}: {exc}")
+          if failures:
+              print("LIVE-SITE BLOCKERS:", *failures, sep="\n- ")
+              sys.exit(1)
+          print("All public pages returned expected HTML")
+          print("NOTE: Interactive Turnstile, two-user RLS, Studio privacy and video playback still require browser acceptance.")
+          PY
