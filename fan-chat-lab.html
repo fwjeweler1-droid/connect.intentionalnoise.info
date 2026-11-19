@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content="#101d28">
+<title>Private fan chat lab | Connect</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:#101d28;color:#f4f7f8}main{max-width:990px;margin:auto;padding:24px 18px 70px}
+a{color:#8de5dc}p{line-height:1.55}.sub{color:#bdd3dc}.panel{border:1px solid #496677;background:#162c39;border-radius:13px;padding:17px;margin:15px 0}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.layout{display:grid;grid-template-columns:minmax(220px,280px) minmax(0,1fr);gap:16px}
+button,.action{font:inherit;border:0;border-radius:8px;background:#83e2d7;color:#0d2529;padding:10px 14px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}button.secondary{background:#304f5c;color:#fff;border:1px solid #718e99}
+input,select,textarea{background:#0d202b;border:1px solid #7d9ba7;border-radius:8px;color:white;font:inherit;padding:10px;max-width:100%}
+input,textarea{width:100%}label{display:block;margin:10px 0 6px;font-weight:600}
+textarea{min-height:86px}.room-btn{width:100%;text-align:left;margin:5px 0;background:#294653;color:white;border:1px solid #77949b}
+.room-btn[aria-pressed="true"]{border-color:#83e2d7;background:#2b6460}
+.messages{height:360px;overflow:auto;background:#0b1d29;border:1px solid #3d6070;border-radius:10px;padding:12px}
+.bubble{max-width:95%;padding:11px 13px;margin:9px 0;border-radius:10px;background:#294351;white-space:pre-wrap;overflow-wrap:anywhere}
+.bubble.mine{background:#22554a;margin-left:auto}.bubble small{display:block;color:#d5e6e9;margin-bottom:5px}
+.translation{padding-top:8px;border-top:1px solid #6b8c95;margin-top:9px;display:block;white-space:pre-wrap}
+.tiny{font-size:.84rem;color:#bed3dc}#notice{border-left:4px solid #dfc47d}#gate{border-left:4px solid #e09e83}
+[hidden]{display:none!important}:focus-visible{outline:3px solid #83e2d7;outline-offset:3px}
+@media(max-width:670px){.layout{grid-template-columns:1fr}.messages{height:290px}}
+</style>
+</head>
+<body><main>
+<div class="row"><strong>INTENTIONAL NOISE CONNECT</strong><span class="tiny">INTERNAL FAN CHAT LAB — TEST ONLY</span></div>
+<h1>Live fan conversation</h1><p class="sub">Private multilingual text-room prototype. No public listings, billing or automated invitations.</p>
+<section id="notice" class="panel"><strong>Privacy and pilot limits</strong>
+<p>Messages are stored on our Supabase server and are <strong>not end-to-end encrypted</strong>. Test with non-sensitive content only. Translation, when available, runs on your device using your browser's Translator API. Original text stays visible. Translation availability varies by browser and language.</p>
+</section>
+<section class="panel" id="gate"><strong>Restricted pilot.</strong><p id="gateStatus">Checking signed-in testing access…</p><a href="/auth.html?intent=login&amp;next=%2Ffan-chat-lab.html">Sign in to Connect</a></section>
+<section id="lab" hidden>
+<p class="tiny">Signed-in tester ID: <code id="userId"></code> <button class="secondary" id="copyId" type="button">Copy ID</button></p>
+<div class="layout">
+<aside class="panel">
+<h2>Your test rooms</h2><div id="rooms"></div>
+<form id="newRoom"><label for="newTitle">New session title</label><input id="newTitle" maxlength="100" minlength="3" required placeholder="Behind the music"><button type="submit">Create test session</button></form>
+<p class="tiny">Only users explicitly allowed into this pilot can be invited. Your rooms never appear in the public directory.</p>
+</aside>
+<section class="panel">
+<h2 id="roomTitle">Select a room</h2>
+<div id="roomControls" hidden>
+<div class="row"><span class="tiny" id="roomStatus"></span><button type="button" id="closeRoom" class="secondary" hidden>End session</button></div>
+<div id="inviteControls" hidden>
+<label for="inviteId">Invite another approved test account (user UUID)</label>
+<div class="row"><input id="inviteId" style="flex:1;min-width:190px" placeholder="Tester's user ID"><button id="inviteButton" type="button" class="secondary">Invite</button></div>
+</div>
+<div class="row"><label for="fromLanguage">Incoming language</label>
+<select id="fromLanguage"><option value="auto">Detect (if supported)</option><option value="es">Spanish</option><option value="en">English</option><option value="de">German</option><option value="fr">French</option><option value="pt">Portuguese</option><option value="ja">Japanese</option><option value="it">Italian</option></select>
+<label for="toLanguage">Translate into</label>
+<select id="toLanguage"><option value="en">English</option><option value="es">Spanish</option><option value="de">German</option><option value="fr">French</option><option value="pt">Portuguese</option><option value="ja">Japanese</option><option value="it">Italian</option></select>
+</div>
+<label class="tiny"><input type="checkbox" id="autoTranslate" style="width:auto"> Automatically translate new incoming messages on this device (when supported)</label>
+<p class="tiny" id="translationInfo"></p>
+<div class="messages" id="messages" role="log" aria-live="polite" aria-label="Room messages"></div>
+<form id="sendForm"><label for="messageBody">Message in your language</label><textarea id="messageBody" maxlength="1000" required></textarea><div class="row"><span class="tiny">1,000-character limit</span><button id="sendButton" type="submit">Send</button><button class="secondary" id="refresh" type="button">Refresh</button></div></form>
+</div>
+</section>
+</div>
+</section>
+<p id="result" role="status" aria-live="polite"></p>
+</main>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const supabase = createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0');
+const $=id=>document.getElementById(id);
+const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
+let me=null,room=null,channel=null,lastMessages=[];
+const state=message=>{$('result').textContent=message};
+const nativeTranslate=typeof globalThis.Translator !== 'undefined';
+const nativeDetect=typeof globalThis.LanguageDetector !== 'undefined';
+let detector=null;
+const translators=new Map();
+$('toLanguage').value=(navigator.language||'en').split('-')[0];
+if(!$('toLanguage').value)$('toLanguage').value='en';
+if(!nativeDetect){$('fromLanguage').value='es';$('fromLanguage').querySelector('[value=auto]').disabled=true;}
+$('translationInfo').textContent=nativeTranslate?'Browser on-device translation available for supported language pairs; model download may be required.':'This browser does not support the on-device Translator API. Originals remain available; no cloud translation is attempted.';
+$('autoTranslate').disabled=!nativeTranslate;
+function note(error){state(error?.message||String(error||'Please try again.'))}
+function clearRoom(){room=null;lastMessages=[];$('roomControls').hidden=true;$('roomTitle').textContent='Select a room';$('messages').replaceChildren();if(channel){supabase.removeChannel(channel);channel=null;}}
+async function authenticate(){
+ const {data,error}=await supabase.auth.getUser();me=error?null:data.user;
+ if(!me){$('gateStatus').textContent='Sign in with an authorized test account to continue.';$('lab').hidden=true;return false;}
+ const {data:allowed,error:permissionError}=await supabase.from('connect_fan_lab_access').select('enabled').eq('user_id',me.id).maybeSingle();
+ if(permissionError||!allowed?.enabled){$('gateStatus').textContent='The pilot is disabled for this account. No public access is available.';$('lab').hidden=true;return false;}
+ $('gate').hidden=true;$('lab').hidden=false;$('userId').textContent=me.id;
+ return true;
+}
+async function listRooms(){
+ const {data,error}=await supabase.from('connect_fan_lab_rooms').select('id,host_id,title,status,created_at').order('created_at',{ascending:false}).limit(30);
+ if(error)throw error;
+ $('rooms').replaceChildren();
+ if(!data?.length){const p=document.createElement('p');p.className='tiny';p.textContent='No pilot rooms yet.';$('rooms').append(p);}
+ for(const r of data||[]){const b=document.createElement('button');b.type='button';b.className='room-btn';b.textContent=r.title+' — '+r.status;b.setAttribute('aria-pressed',String(room?.id===r.id));b.addEventListener('click',()=>openRoom(r).catch(note));$('rooms').append(b);}
+ return data||[];
+}
+function makeBubble(message){
+ const wrap=document.createElement('div');wrap.className='bubble'+(message.sender_id===me.id?' mine':'');
+ const small=document.createElement('small');small.textContent=(message.sender_id===me.id?'You':'Test participant')+' · '+new Date(message.created_at).toLocaleTimeString();
+ const original=document.createElement('span');original.textContent=message.body;wrap.append(small,original);
+ if(message.sender_id!==me.id){
+  const btn=document.createElement('button');btn.className='secondary';btn.type='button';btn.textContent='Translate';btn.disabled=!nativeTranslate;btn.style.marginTop='10px';
+  const translated=document.createElement('span');translated.className='translation';translated.hidden=true;
+  btn.addEventListener('click',()=>translateMessage(message.body,translated,btn));wrap.append(btn,translated);
+  if($('autoTranslate').checked&&nativeTranslate)translateMessage(message.body,translated,btn);
+ }
+ return wrap;
+}
+async function translateMessage(original,out,button){
+ if(!nativeTranslate)return;button.disabled=true;button.textContent='Translating…';out.hidden=false;
+ try{
+  let from=$('fromLanguage').value;const target=$('toLanguage').value;
+  if(from==='auto'){
+   if(!nativeDetect)throw new Error('Choose an incoming language.');
+   detector ||= await LanguageDetector.create();
+   const guesses=await detector.detect(original);from=(guesses?.[0]?.detectedLanguage||'und').split('-')[0];
+  }
+  if(!from||from==='und')throw new Error('Choose the original language manually.');
+  if(from===target){out.textContent='Original is already in your language.';return;}
+  const key=from+':'+target;
+  if(!translators.has(key)){
+   translators.set(key,(async()=>{
+    const available=await Translator.availability({sourceLanguage:from,targetLanguage:target});
+    if(available==='unavailable')throw Error('This language pair is not available on this device.');
+    return Translator.create({sourceLanguage:from,targetLanguage:target});
+   })());
+  }
+  const translator=await translators.get(key);out.textContent=await translator.translate(original);out.lang=target;
+ }catch(e){out.textContent='Translation unavailable: '+(e?.message||'Please retry.');}
+ finally{button.disabled=!nativeTranslate;button.textContent='Translate again';}
+}
+async function getMessages(){
+ if(!room)return;
+ const activeId=room.id;
+ const {data,error}=await supabase.from('connect_fan_lab_messages').select('id,room_id,sender_id,body,created_at').eq('room_id',activeId).order('created_at',{ascending:false}).limit(100);
+ if(error)throw error;
+ if(!room||room.id!==activeId)return;
+ const incoming=(data||[]).reverse();
+ const changed=incoming.length!==lastMessages.length||incoming.some((m,i)=>m.id!==lastMessages[i]?.id);
+ if(!changed)return;
+ lastMessages=incoming;$('messages').replaceChildren(...incoming.map(makeBubble));
+ $('messages').scrollTop=$('messages').scrollHeight;
+}
+async function openRoom(next){
+ clearRoom();room=next;
+ $('roomTitle').textContent=next.title;$('roomControls').hidden=false;$('roomStatus').textContent=next.status==='live'?'Session live':'Session ended';
+ $('sendForm').hidden=next.status!=='live';
+ $('inviteControls').hidden=next.host_id!==me.id||next.status!=='live';
+ $('closeRoom').hidden=next.host_id!==me.id||next.status!=='live';
+ await getMessages();
+ // Supabase RLS filters INSERT events for subscribed participants. No public channel created.
+ channel=supabase.channel('connect-fan-lab-'+next.id)
+   .on('postgres_changes',{event:'INSERT',schema:'public',table:'connect_fan_lab_messages',filter:'room_id=eq.'+next.id},()=>getMessages().catch(note))
+   .subscribe(s=>{if(s==='CHANNEL_ERROR'||s==='TIMED_OUT')state('Realtime connection unavailable. Use Refresh to check messages.');});
+ await listRooms();state('Private pilot room loaded.');
+}
+$('copyId').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(me.id);state('Tester ID copied.')}catch{state('Select the ID shown above to copy it.')}});
+$('newRoom').addEventListener('submit',async e=>{
+ e.preventDefault();const title=$('newTitle').value.trim();if(title.length<3)return;
+ const button=$('newRoom').querySelector('button');button.disabled=true;
+ try{
+  const {data,error}=await supabase.from('connect_fan_lab_rooms').insert({host_id:me.id,title}).select('id,host_id,title,status,created_at').single();
+  if(error)throw error;
+  const joined=await supabase.from('connect_fan_lab_members').insert({room_id:data.id,member_id:me.id});
+  if(joined.error)throw joined.error;
+  $('newTitle').value='';await openRoom(data);
+ }catch(e){note(e)}finally{button.disabled=false;}
+});
+$('inviteButton').addEventListener('click',async()=>{
+ if(!room||room.host_id!==me.id||room.status!=='live')return;
+ const id=$('inviteId').value.trim();if(!uuid.test(id)){state('Enter the other approved tester’s valid user UUID.');return;}
+ $('inviteButton').disabled=true;
+ try{
+  const {error}=await supabase.from('connect_fan_lab_members').insert({room_id:room.id,member_id:id});
+  if(error)throw error;state('Approved test participant added. They can now find this room when signed in.');$('inviteId').value='';
+ }catch(e){note(e)}finally{$('inviteButton').disabled=false;}
+});
+$('closeRoom').addEventListener('click',async()=>{
+ if(!room||room.host_id!==me.id||!confirm('End this test session? Participants will no longer send messages.'))return;
+ const {error}=await supabase.from('connect_fan_lab_rooms').update({status:'ended'}).eq('id',room.id);
+ if(error){note(error);return;}
+ const next={...room,status:'ended'};await openRoom(next);
+});
+$('refresh').addEventListener('click',()=>getMessages().then(()=>state('Messages checked.')).catch(note));
+$('autoTranslate').addEventListener('change',()=>{$('messages').replaceChildren(...lastMessages.map(makeBubble));});
+$('sendForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!room||room.status!=='live')return;
+ const body=$('messageBody').value.trim();if(!body||body.length>1000)return;
+ $('sendButton').disabled=true;
+ try{
+  const {error}=await supabase.from('connect_fan_lab_messages').insert({room_id:room.id,sender_id:me.id,body});
+  if(error)throw error;$('messageBody').value='';await getMessages();state('Message sent to invited room members.');
+ }catch(e){note(e)}finally{$('sendButton').disabled=false;}
+});
+supabase.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){clearRoom();$('lab').hidden=true;$('gate').hidden=false;$('gateStatus').textContent='Signed out.';}});
+try{if(await authenticate())await listRooms();}catch(e){note(e);}
+</script></body></html>
