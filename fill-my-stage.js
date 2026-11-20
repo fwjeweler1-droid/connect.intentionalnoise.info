@@ -6,6 +6,9 @@ const $=id=>document.getElementById(id);
 const TAG='ineeda-gig-venue-form-v1';
 const sharedBookingId=(()=>{const id=new URLSearchParams(location.search).get('booking')||'';return /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id)?id:null})();
 let me=null,listed=false,myRequests=[],ownInterests=[],memberInterests=[],openRequests=[],editingId=null,step=0,busy=false;
+// Registered conversation panels use one shared metadata check to catch incoming replies.
+const threadViews=new Map();
+let threadPollBusy=false;
 const state=id=>{const node=$(id);return node?node.value.trim():''};
 const label=(node,tag,value,cls)=>{const x=document.createElement(tag);x.textContent=value||'';if(cls)x.className=cls;node.append(x);return x};
 const setStatus=(id,value)=>{$(id).textContent=value};
@@ -302,6 +305,7 @@ async function updateInterest(interest,to,button){
 }
 function appendThread(element,id){
  const wrap=label(element,'div',null),messages=label(wrap,'div','Loading private conversation…','thread');
+ let latestMessageId=null,hasLoaded=false,loadSerial=0;
  const form=label(wrap,'form');
  const l=label(form,'label','Send a private reply');
  const t=label(l,'textarea');t.required=true;t.maxLength=1800;
@@ -309,11 +313,15 @@ function appendThread(element,id){
  const submit=label(form,'button','Send private reply');submit.type='submit';
  const status=label(wrap,'p',null,'status');
  async function reload(){
+  const call=++loadSerial;
   const {data,error}=await db.from('venue_booking_thread_messages')
    .select('id,interest_id,author_id,body,created_at')
    .eq('interest_id',id).order('created_at',{ascending:true}).limit(150);
+  if(call!==loadSerial||!wrap.isConnected)return false;
+  if(error){messages.replaceChildren();label(messages,'p','Conversation unavailable: '+error.message);return false}
+  latestMessageId=data?.length?data[data.length-1].id:null;
+  hasLoaded=true;
   messages.replaceChildren();
-  if(error){label(messages,'p','Conversation unavailable: '+error.message);return}
   if(!data?.length)label(messages,'p','No messages yet.','hint');
   for(const row of data||[]){
    const bubble=label(messages,'div',null,'message'+(row.author_id===me?.id?' mine':''));
@@ -321,6 +329,7 @@ function appendThread(element,id){
    label(bubble,'span',row.body);
   }
   messages.scrollTop=messages.scrollHeight;
+  return true;
  }
  form.addEventListener('submit',async e=>{
   e.preventDefault();if(!me)return;
@@ -330,8 +339,39 @@ function appendThread(element,id){
   if(error){status.textContent='Could not send: '+error.message;submit.disabled=false;return}
   t.value='';await reload();status.textContent='Message sent.';submit.disabled=false;
  });
+ threadViews.set(id,{node:wrap,reload,loaded:()=>hasLoaded,latest:()=>latestMessageId,received:()=>{status.textContent='New private reply received.'}});
  reload().catch(e=>{status.textContent=e.message});
 }
+// Refresh messages independently of either participant sending another reply.
+// One batched metadata read handles all displayed private threads (RLS enforces participants).
+async function pollBookingReplies(){
+ if(threadPollBusy||document.hidden||!me)return;
+ for(const [id,view] of threadViews){if(!view.node.isConnected)threadViews.delete(id)}
+ const ids=[...threadViews.keys()];if(!ids.length)return;
+ threadPollBusy=true;
+ try{
+  const newest=new Map();
+  for(let i=0;i<ids.length;i+=60){
+   const {data,error}=await db.from('venue_booking_thread_messages')
+    .select('id,interest_id,created_at').in('interest_id',ids.slice(i,i+60))
+    .order('created_at',{ascending:false}).limit(1000);
+   if(error)throw error;
+   for(const row of data||[])if(!newest.has(row.interest_id))newest.set(row.interest_id,row.id);
+  }
+  for(const id of ids){
+   const view=threadViews.get(id);
+   if(!view||!view.node.isConnected||!view.loaded())continue;
+   if((newest.get(id)||null)!==view.latest()){
+    if(await view.reload())view.received();
+   }
+  }
+ }catch(e){console.warn('Booking reply sync will retry',e)}
+ finally{threadPollBusy=false}
+}
+setInterval(pollBookingReplies,4000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollBookingReplies()});
+window.addEventListener('pageshow',()=>pollBookingReplies());
+window.addEventListener('focus',()=>pollBookingReplies());
 $('refreshBookingReplies').addEventListener('click',async()=>{if(!me)return;setStatus('ownerStatus','Checking private replies…');try{await loadOwned()}catch(e){setStatus('ownerStatus','Could not refresh replies: '+e.message)}});
  async function loadMyInterests(){
  if(!me){$('myInterestArea').hidden=true;memberInterests=[];return}
@@ -389,6 +429,6 @@ async function init(){
  if(me){await loadOwned();await loadMyInterests();await loadPublic()}
 }
 db.auth.onAuthStateChange(event=>{
- if(event==='SIGNED_OUT'){me=null;listed=false;myRequests=[];memberInterests=[];hideBookingShare();$('myBookings').hidden=true;$('myInterestArea').hidden=true;loadPublic().catch(()=>{})}
+ if(event==='SIGNED_OUT'){me=null;listed=false;myRequests=[];memberInterests=[];threadViews.clear();hideBookingShare();$('myBookings').hidden=true;$('myInterestArea').hidden=true;loadPublic().catch(()=>{})}
 });
 try{await init()}catch(e){setStatus('formStatus','Could not initialize the booking page: '+(e.message||e))}
