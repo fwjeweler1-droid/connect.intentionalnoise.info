@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Private Booking Notifications | Intentional Noise Connect</title>
+<style>
+:root{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color-scheme:dark}*{box-sizing:border-box}
+body{background:#101d28;color:#f5f8f7;margin:0}a{color:#80e1dd}
+.wrap{width:min(900px,calc(100% - 30px));margin:auto;padding:22px 0}
+nav{display:flex;flex-wrap:wrap;gap:16px}header{background:#152d38;border-bottom:1px solid #3f626d}
+h1{margin:24px 0 10px}.hint{color:#c1d4d5}.item{border:1px solid #49737b;background:#1d3641;border-radius:12px;margin:14px 0;padding:18px}
+.item.unread{border:2px solid #7de1df}.item p{margin:7px 0 10px}
+button,.button{display:inline-block;min-height:44px;padding:10px 14px;border:1px solid #7de1df;border-radius:8px;background:#7de1df;color:#112831;text-decoration:none;font-weight:bold;cursor:pointer}
+button.secondary{background:transparent;color:#8de6e0}.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#status{min-height:28px}
+</style></head>
+<body><header><nav class="wrap"><a href="/auth.html#signedIn">Dashboard</a><a href="/make-contact.html">Private messages</a><a href="/fill-my-stage.html#myBookings">Booking offers and replies</a><a href="/search.html">Find musicians</a></nav></header>
+<main class="wrap"><h1>My private notifications</h1>
+<p class="hint">New private messages, venue replies, booking interest and shortlists appear here. Only your signed-in account can read its notifications. Email alerts require a separately configured sender; they are not proof of a confirmed booking.</p>
+<section id="signedOut" hidden><p>Sign in to see your private notifications.</p><a class="button" id="signIn" href="/auth.html?intent=login&next=%2Fnotifications.html">Sign in</a></section>
+<section id="signedIn" hidden><div class="actions"><button type="button" id="refresh">Refresh notifications</button><span id="unread" aria-live="polite"></span></div><p id="status" role="status" aria-live="polite"></p><div id="items" aria-live="polite"></div></section>
+</main><script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0');
+const $=id=>document.getElementById(id);
+const types={
+ private_message:['New private message','Open private messages'],
+ booking_interest:['A musician expressed interest','Manage venue booking'],
+ booking_reply:['New private booking reply','Open booking conversation'],
+ booking_shortlisted:['Your response was shortlisted','View your booking conversation']
+};
+let user=null,loading=false;
+function destination(row){
+ if(row.alert_type==='private_message'&&row.actor_id)return '/make-contact.html?member='+encodeURIComponent(row.actor_id);
+ if(row.alert_type==='booking_shortlisted')return '/fill-my-stage.html#myInterestArea';
+ return '/fill-my-stage.html'+(row.booking_id?'?booking='+encodeURIComponent(row.booking_id):'')+'#myBookings';
+}
+async function load(){
+ if(loading||!user)return;loading=true;$('status').textContent='Checking for new notifications…';
+ try{
+  const {data,error}=await db.from('connect_booking_alerts')
+   .select('id,actor_id,alert_type,booking_id,created_at,read_at')
+   .order('created_at',{ascending:false}).limit(100);
+  if(error)throw error;
+  const rows=data||[];$('unread').textContent=rows.filter(r=>!r.read_at).length+' unread';
+  const root=$('items');root.replaceChildren();
+  if(!rows.length){const p=document.createElement('p');p.className='hint';p.textContent='No private notifications yet.';root.append(p)}
+  for(const row of rows){
+   const tile=document.createElement('article');tile.className='item'+(row.read_at?'':' unread');
+   const heading=document.createElement('h2');heading.textContent=(types[row.alert_type]||['New Connect activity'])[0];tile.append(heading);
+   const date=document.createElement('p');date.className='hint';date.textContent=new Date(row.created_at).toLocaleString();tile.append(date);
+   const actions=document.createElement('div');actions.className='actions';
+   const link=document.createElement('a');link.className='button';link.href=destination(row);
+   link.textContent=(types[row.alert_type]||['','View notification'])[1]||'Open Connect';actions.append(link);
+   if(!row.read_at){
+    const button=document.createElement('button');button.className='secondary';button.textContent='Mark read';
+    button.addEventListener('click',async()=>{
+     button.disabled=true;
+     const {error:e}=await db.from('connect_booking_alerts')
+      .update({read_at:new Date().toISOString()}).eq('id',row.id);
+     if(e){$('status').textContent='Could not mark notification read: '+e.message;button.disabled=false;return}
+     load();
+    });
+    actions.append(button);
+   }
+   tile.append(actions);root.append(tile);
+  }
+  $('status').textContent='Notifications checked.';
+ }catch(e){$('status').textContent='Notifications are not yet available or could not be loaded: '+(e.message||e)}
+ finally{loading=false}
+}
+async function access(){
+ const {data,error}=await db.auth.getUser();user=error?null:data.user;
+ $('signedOut').hidden=!!user;$('signedIn').hidden=!user;
+ if(user)await load();
+}
+$('refresh').addEventListener('click',load);
+db.auth.onAuthStateChange(()=>setTimeout(access,0));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+setInterval(()=>{if(!document.hidden)load()},30000);
+access();
+</script></body></html>
