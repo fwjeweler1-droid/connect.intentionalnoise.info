@@ -9,6 +9,7 @@ let me=null,listed=false,myRequests=[],ownInterests=[],memberInterests=[],openRe
 // Registered conversation panels use one shared metadata check to catch incoming replies.
 const threadViews=new Map();
 let threadPollBusy=false;
+let bookingRealtimeChannel=null;
 const state=id=>{const node=$(id);return node?node.value.trim():''};
 const label=(node,tag,value,cls)=>{const x=document.createElement(tag);x.textContent=value||'';if(cls)x.className=cls;node.append(x);return x};
 const setStatus=(id,value)=>{$(id).textContent=value};
@@ -360,7 +361,9 @@ async function pollBookingReplies(){
   }
   for(const id of ids){
    const view=threadViews.get(id);
-   if(!view||!view.node.isConnected||!view.loaded())continue;
+   if(!view||!view.node.isConnected)continue;
+   // A fast initial render or temporary error must never disable a conversation forever.
+   if(!view.loaded()){await view.reload();continue;}
    if((newest.get(id)||null)!==view.latest()){
     if(await view.reload())view.received();
    }
@@ -368,7 +371,21 @@ async function pollBookingReplies(){
  }catch(e){console.warn('Booking reply sync will retry',e)}
  finally{threadPollBusy=false}
 }
-setInterval(pollBookingReplies,4000);
+// Try immediate incoming event delivery, with a polling fallback when sockets disconnect.
+function connectBookingRealtime(){
+ if(bookingRealtimeChannel){db.removeChannel(bookingRealtimeChannel);bookingRealtimeChannel=null;}
+ if(!me)return;
+ bookingRealtimeChannel=db.channel('booking-thread-inbox-'+me.id)
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'venue_booking_thread_messages'},event=>{
+   const id=event.new?.interest_id;
+   const view=id&&threadViews.get(id);
+   if(view?.node.isConnected){
+    view.reload().then(ok=>{if(ok)view.received()}).catch(e=>console.warn('Booking live refresh retrying',e));
+   } else if(!document.hidden)pollBookingReplies();
+  })
+  .subscribe(status=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')pollBookingReplies()});
+}
+setInterval(pollBookingReplies,3000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollBookingReplies()});
 window.addEventListener('pageshow',()=>pollBookingReplies());
 window.addEventListener('focus',()=>pollBookingReplies());
@@ -426,9 +443,10 @@ async function init(){
  const resumed=restoreForm();goToStep(resumed?2:0);
  await login();
  await loadPublic();
- if(me){await loadOwned();await loadMyInterests();await loadPublic()}
+ if(me){await loadOwned();await loadMyInterests();await loadPublic();connectBookingRealtime()}
 }
 db.auth.onAuthStateChange(event=>{
- if(event==='SIGNED_OUT'){me=null;listed=false;myRequests=[];memberInterests=[];threadViews.clear();hideBookingShare();$('myBookings').hidden=true;$('myInterestArea').hidden=true;loadPublic().catch(()=>{})}
+ if(event==='SIGNED_IN')setTimeout(()=>{if(me)connectBookingRealtime()},0);
+ if(event==='SIGNED_OUT'){if(bookingRealtimeChannel){db.removeChannel(bookingRealtimeChannel);bookingRealtimeChannel=null;}me=null;listed=false;myRequests=[];memberInterests=[];threadViews.clear();hideBookingShare();$('myBookings').hidden=true;$('myInterestArea').hidden=true;loadPublic().catch(()=>{})}
 });
 try{await init()}catch(e){setStatus('formStatus','Could not initialize the booking page: '+(e.message||e))}
