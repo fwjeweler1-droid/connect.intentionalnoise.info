@@ -142,6 +142,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)reload().c
  window.addEventListener('focus',()=>{if(!document.hidden)syncMessages().catch(fail)});
 // Poll only message metadata; expensive profile/directory queries run only when messages change.
 let messageSignature=all.map(m=>m.id).join('|');
+let lastFullInboxRefresh=Date.now();
 async function syncMessages(){
  if(document.hidden||!user||refreshing)return;
  refreshing=true;
@@ -149,9 +150,11 @@ async function syncMessages(){
    const {data,error}=await db.from('connect_direct_messages').select('id').order('created_at',{ascending:false}).limit(500);
    if(error)throw error;
    const signature=(data||[]).map(m=>m.id).join('|');
-   if(signature!==messageSignature){
+   // Recover from a silent or stale desktop subscription, even if the signature check stops changing.
+   if(signature!==messageSignature||Date.now()-lastFullInboxRefresh>20000){
      await reload();
      messageSignature=all.map(m=>m.id).join('|');
+     lastFullInboxRefresh=Date.now();
    }
  }catch(e){console.warn('Inbox sync retrying',e)}
  finally{refreshing=false}
@@ -166,7 +169,7 @@ function connectLiveMessages(){
   .on('postgres_changes',{event:'INSERT',schema:'public',table:'connect_direct_messages'},payload=>{
    const row=payload.new;
    if(row&&(row.sender_id===user.id||row.recipient_id===user.id)){
-     reload().then(()=>{messageSignature=all.map(m=>m.id).join('|')}).catch(fail);
+     reload().then(()=>{messageSignature=all.map(m=>m.id).join('|');lastFullInboxRefresh=Date.now()}).catch(fail);
    }
   }).subscribe();
 }
