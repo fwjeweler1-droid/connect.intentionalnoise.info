@@ -332,7 +332,8 @@ function appendThread(element,id){
  });
  reload().catch(e=>{status.textContent=e.message});
 }
-async function loadMyInterests(){
+$('refreshBookingReplies').addEventListener('click',async()=>{if(!me)return;setStatus('ownerStatus','Checking private replies…');try{await loadOwned()}catch(e){setStatus('ownerStatus','Could not refresh replies: '+e.message)}});
+ async function loadMyInterests(){
  if(!me){$('myInterestArea').hidden=true;memberInterests=[];return}
  const {data,error}=await db.from('venue_booking_interests')
   .select('id,booking_id,pitch,status,created_at').eq('musician_id',me.id)
@@ -348,6 +349,17 @@ async function loadMyInterests(){
   label(card,'p',interest.pitch);
   label(card,'span','Response: '+interest.status,'tag');
   if(interest.status!=='declined')appendThread(card,interest.id);
+   if(interest.status==='shortlisted'){
+    const accept=label(card,'button','Send private acceptance','secondary');accept.type='button';
+    accept.addEventListener('click',async()=>{
+     if(!confirm('Send a private acceptance response? This does not finalize a contract or guarantee a booking.'))return;
+     accept.disabled=true;
+     const note='I accept the invitation to discuss this booking and am ready to confirm the final date, fee, performance requirements and terms directly with the venue. Please reply here with the final details. This message is not a signed contract.';
+     const {error}=await db.from('venue_booking_thread_messages').insert({interest_id:interest.id,author_id:me.id,body:note});
+     if(error){setStatus('interestStatus','Acceptance was not sent: '+error.message);accept.disabled=false;return}
+     await loadMyInterests();setStatus('interestStatus','Your private acceptance response was sent. Await venue confirmation in the conversation.');
+    });
+   }
   const btn=label(card,'button','Withdraw interest','secondary');
   btn.type='button';btn.addEventListener('click',async()=>{
    if(!confirm('Withdraw your response and remove its conversation?'))return;
