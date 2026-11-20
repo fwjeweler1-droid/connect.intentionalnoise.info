@@ -34,6 +34,10 @@ Deno.serve(async req=>{
   .eq('id',id).maybeSingle();
  if(error||!alert) return json({error:'Alert not found'},404);
  if(alert.email_sent_at) return json({ok:true,alreadySent:true});
+ const {data:preference,error:prefError}=await db.from('connect_booking_alert_preferences')
+  .select('email_enabled').eq('user_id',alert.recipient_id).maybeSingle();
+ if(prefError)return json({error:'Alert preference unavailable'},500);
+ if(preference?.email_enabled===false)return json({ok:true,skipped:'recipient-opted-out'});
  const {data:recipient,error:lookupError}=await db.auth.admin.getUserById(alert.recipient_id);
  if(lookupError||!recipient.user?.email) return json({error:'Recipient email unavailable'},422);
  const url='https://connect.intentionalnoise.info/notifications.html';
