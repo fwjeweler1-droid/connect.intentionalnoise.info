@@ -1,0 +1,55 @@
+name: Restore-point archive — four sites (2026-11-20)
+on:
+  push:
+    branches:
+      - backup/export-four-site-bundle-20261120
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Capture exact public website sources and assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p backup/sites
+          while IFS='|' read -r short repo commit; do
+            echo "Capturing $repo at $commit"
+            git clone --quiet --single-branch --branch backup/2026-11-20-four-site-working-baseline "https://github.com/$repo.git" "source-$short"
+            actual="$(git -C "source-$short" rev-parse HEAD)"
+            if [ "$actual" != "$commit" ]; then
+              echo "::error::Commit mismatch $repo $actual != $commit"
+              exit 1
+            fi
+            mkdir -p "backup/sites/$short"
+            git -C "source-$short" archive --format=tar HEAD | tar -xf - -C "backup/sites/$short"
+            printf '%s|%s|%s\n' "$short" "$repo" "$commit" >> backup/COMMIT_MANIFEST.txt
+            rm -rf "source-$short"
+          done <<'SITES'
+          ineedagig|fwjeweler1-droid/ineedagig|baf0311a050c0b7889b64b9c24cf7f38a6cce11d
+          connect|fwjeweler1-droid/connect.intentionalnoise.info|e5cf9a3cbd3c058f6ac594a3f6c32e54c03e0f1a
+          band|fwjeweler1-droid/intentionalnoise.band|f820734a0e48323486807f621309cc4a886d803a
+          info|fwjeweler1-droid/intentionalnoise.info|691fee425594dd8d2a8cc0f0fbac15f1c5ffd384
+          SITES
+          cat > backup/README_BACKUP.txt <<'README'
+          Intentional Noise / IneedaGig four-site source and asset snapshot.
+          Captured: November 20, 2026. See COMMIT_MANIFEST.txt for exact repository commits.
+          This contains tracked project source code, site pages, and tracked assets.
+          Not included: private Supabase database records, user emails, DNS zone configuration,
+          Cloudflare account security settings, environment secrets, GitHub untracked files,
+          or content in external pCloud/ChatGPT Library storage.
+          DO NOT treat this archive as a full production disaster-recovery backup.
+          README
+          (cd backup && zip -qr ../intentionalnoise_four_sites_2026-11-20.zip .)
+          sha256sum intentionalnoise_four_sites_2026-11-20.zip > SHA256SUMS.txt
+          ls -lh intentionalnoise_four_sites_2026-11-20.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: intentionalnoise-4site-backup-2026-11-20
+          path: |
+            intentionalnoise_four_sites_2026-11-20.zip
+            SHA256SUMS.txt
+          retention-days: 30
+          if-no-files-found: error
