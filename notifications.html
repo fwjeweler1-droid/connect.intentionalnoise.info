@@ -16,7 +16,7 @@ button.secondary{background:transparent;color:#8de6e0}.actions{display:flex;flex
 <main class="wrap"><h1>My private notifications</h1>
 <p class="hint">New private messages, venue replies, booking interest and shortlists appear here. Only your signed-in account can read its notifications. Email alerts require a separately configured sender; they are not proof of a confirmed booking.</p>
 <section id="signedOut" hidden><p>Sign in to see your private notifications.</p><a class="button" id="signIn" href="/auth.html?intent=login&next=%2Fnotifications.html">Sign in</a></section>
-<section id="signedIn" hidden><div class="actions"><button type="button" id="refresh">Refresh notifications</button><span id="unread" aria-live="polite"></span></div><p id="status" role="status" aria-live="polite"></p><div id="items" aria-live="polite"></div></section>
+<section id="signedIn" hidden><div class="actions"><button type="button" id="refresh">Refresh notifications</button><span id="unread" aria-live="polite"></span></div><p><label><input id="emailAlerts" type="checkbox" checked> Send private booking notifications to my account email (when enabled)</label></p><p id="prefStatus" class="hint" role="status"></p><p id="status" role="status" aria-live="polite"></p><div id="items" aria-live="polite"></div></section>
 </main><script type="module">
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 const db=createClient('https://xyudcdgjyormlokwhfoi.supabase.co','sb_publishable_-gMviWXPBzov-2D-htf9iA_y6ZVV-q0');
@@ -67,10 +67,31 @@ async function load(){
  }catch(e){$('status').textContent='Notifications are not yet available or could not be loaded: '+(e.message||e)}
  finally{loading=false}
 }
+async function loadPreference(){
+ if(!user)return;
+ const {data,error}=await db.from('connect_booking_alert_preferences')
+  .select('email_enabled').eq('user_id',user.id).maybeSingle();
+ if(error){$('prefStatus').textContent='Email preferences are not yet available.';return}
+ $('emailAlerts').checked=data?.email_enabled!==false;
+ $('prefStatus').textContent='Account email remains private. Email delivery is activated only after sender setup and testing.';
+}
+$('emailAlerts').addEventListener('change',async()=>{
+ if(!user)return;
+ const checkbox=$('emailAlerts'),choice=checkbox.checked;checkbox.disabled=true;
+ const {data,error:readError}=await db.from('connect_booking_alert_preferences')
+  .select('user_id').eq('user_id',user.id).maybeSingle();
+ if(readError){$('prefStatus').textContent=readError.message;checkbox.disabled=false;return}
+ const result=data?
+   await db.from('connect_booking_alert_preferences').update({email_enabled:choice}).eq('user_id',user.id):
+   await db.from('connect_booking_alert_preferences').insert({user_id:user.id,email_enabled:choice});
+ $('prefStatus').textContent=result.error?'Could not update email preference: '+result.error.message:'Email preference saved.';
+ if(result.error)checkbox.checked=!choice;
+ checkbox.disabled=false;
+});
 async function access(){
  const {data,error}=await db.auth.getUser();user=error?null:data.user;
  $('signedOut').hidden=!!user;$('signedIn').hidden=!user;
- if(user)await load();
+ if(user){await loadPreference();await load();}
 }
 $('refresh').addEventListener('click',load);
 db.auth.onAuthStateChange(()=>setTimeout(access,0));
