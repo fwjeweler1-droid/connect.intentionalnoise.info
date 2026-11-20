@@ -32,6 +32,27 @@ create policy "Only recipient marks an alert read"
  using (recipient_id = (select auth.uid()))
  with check (recipient_id = (select auth.uid()));
 
+-- Transactional booking email preference. Defaults ON only when email delivery
+-- is separately configured and approved; members can turn it OFF in Connect.
+create table if not exists public.connect_booking_alert_preferences (
+ user_id uuid primary key references auth.users(id) on delete cascade,
+ email_enabled boolean not null default true
+);
+alter table public.connect_booking_alert_preferences enable row level security;
+revoke all on public.connect_booking_alert_preferences from public, anon, authenticated;
+grant select,insert,update(email_enabled) on public.connect_booking_alert_preferences to authenticated;
+drop policy if exists "Owner reads alert preference" on public.connect_booking_alert_preferences;
+create policy "Owner reads alert preference" on public.connect_booking_alert_preferences
+ for select to authenticated using (user_id=(select auth.uid()));
+drop policy if exists "Owner creates alert preference" on public.connect_booking_alert_preferences;
+create policy "Owner creates alert preference" on public.connect_booking_alert_preferences
+ for insert to authenticated with check (user_id=(select auth.uid()));
+drop policy if exists "Owner edits alert preference" on public.connect_booking_alert_preferences;
+create policy "Owner edits alert preference" on public.connect_booking_alert_preferences
+ for update to authenticated
+ using (user_id=(select auth.uid()))
+ with check (user_id=(select auth.uid()));
+
 -- Trigger functions are internal to private schema. They are NOT HTTP RPC endpoints.
 create or replace function private.connect_enqueue_booking_alert()
 returns trigger
