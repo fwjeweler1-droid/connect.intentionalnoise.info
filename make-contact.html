@@ -137,6 +137,9 @@ const param=new URLSearchParams(location.search).get('member');if(param&&uuid.te
 try{await reload()}catch(e){fail(e)}
 // Refresh on return to the tab and periodically while the inbox is visible.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)reload().catch(fail)});
+ // Recheck after iOS tab restore, bfcache navigation or desktop refocus.
+ window.addEventListener('pageshow',()=>{if(!document.hidden)syncMessages().catch(fail)});
+ window.addEventListener('focus',()=>{if(!document.hidden)syncMessages().catch(fail)});
 // Poll only message metadata; expensive profile/directory queries run only when messages change.
 let messageSignature=all.map(m=>m.id).join('|');
 async function syncMessages(){
